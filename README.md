@@ -80,9 +80,24 @@ Task layer (the regimes where HOMYMOLY showed learning is motivated):
   sets under candidate constraints with certified nullities, and the
   identifiability threshold N* = cycle rank of the target.
 
-104 tests. What does not exist yet: any learned model, any router, any
-experiment, any claim. When experiments start, they inherit HOMYMOLY's
-sealed-seed, frozen-claim, adversarial-audit methodology.
+Router (v0, the repo's only torch code — import it explicitly with
+`from universa.router import StructureRouter`; a plain `import universa`
+stays torch-free, and torch is an optional dependency:
+`pip install -e ".[router]"`):
+
+- `universa.router` — the temperature-annealed structure router: shared
+  per-candidate MLP over certified budget features, soft gates annealed
+  from tau = 2.0 to 0.25 during training, strictly discrete argmax with
+  straight-through gradients at inference, and a Switch-style
+  load-balancing loss against collapse. Trained on one seed block and
+  evaluated on a disjoint block, always reported beside the non-learned
+  argmin-residual baseline. On this clean regime the baseline is
+  essentially perfect and the v0 deliverable is the machinery and
+  generalization plumbing; degraded regimes (partial observation) are v1.
+
+118 tests. What does not exist yet: any claim. When experiments start,
+they inherit HOMYMOLY's sealed-seed, frozen-claim, adversarial-audit
+methodology.
 
 ## Layout
 

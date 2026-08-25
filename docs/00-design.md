@@ -90,6 +90,18 @@ The router jumps between structures. Decided properties:
   evidence is that hard constraints beat soft penalties when the structure
   is right. Soft mixing is the *training* mechanism, not the *answer*.
 
+v0 implemented (`router.py`): a shared per-candidate MLP over certified
+budget features (identification residual, feasible-set nullity, threshold,
+structural dims), soft gates annealed exponentially from tau = 2.0 to 0.25,
+one-hot argmax with straight-through gradients at inference, Switch-style
+load-balancing loss, train/eval on disjoint seed blocks, reported beside
+the non-learned argmin-residual baseline. On the clean regime the baseline
+is essentially perfect — v0's deliverable is the annealed-routing
+machinery and generalization plumbing, verified working. v1 targets
+degraded regimes (partial observation), where exact residual computation
+is polluted and an amortized router must earn its keep; that is the first
+regime where a learned router can be honestly claimed to matter.
+
 ## 5. Seeded library plus discovery
 
 The model is given a small library of structures with their projectors and

@@ -154,16 +154,17 @@ class SwitchInstance:
     def commutation_scores(self) -> tuple[float, ...]:
         """Commutation residual of the planted map against each candidate.
 
-        Index 0 is the true target (exactly 0.0); decoys are positive. This
-        is the structure-level misfit the router/discovery layer will read.
+        Index 0 is the true target (exactly 0.0); decoys are positive. For
+        multi-degree instances the score is the max residual over degrees.
+        This is the structure-level misfit the router/discovery layer reads.
         """
         scores = []
         for candidate in self.candidates:
             probe = ChainMap(
                 self.chain_map.source, candidate, self.chain_map.maps
             )
-            (residual,) = probe.commutation_residuals()
-            scores.append(residual)
+            residuals = probe.commutation_residuals()
+            scores.append(max(residuals) if residuals else 0.0)
         return tuple(scores)
 
 

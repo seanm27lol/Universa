@@ -51,7 +51,7 @@ class ChainComplex:
                     f"boundaries[{k + 1}] is {upper.shape}"
                 )
             residue = lower @ upper
-            if float(np.abs(residue).max()) > D2_TOL:
+            if residue.size and float(np.abs(residue).max()) > D2_TOL:
                 raise ValueError(
                     f"d^2 != 0 at degree {k}: max |d d| = "
                     f"{float(np.abs(residue).max()):.3e} > {D2_TOL}"

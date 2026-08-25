@@ -105,9 +105,22 @@ auditable against ground truth.
 Generator families: graphs, 2-complexes, sheaves-on-complexes, and small
 categories (via nerves, so the fourth is nearly free). Tasks plant chain
 maps between structures and arrange the answer to be cheap in one structure
-and hidden in another, with known ground-truth switch points. First family
-implemented: random graphs with planted quotient chain maps and decoy
-structures (`src/universa/generators.py`).
+and hidden in another, with known ground-truth switch points. All four
+families now exist and share one contract — planted maps commute with
+residual exactly 0.0, decoys are accepted only above a 1e-9 residual, and
+instances are deterministic from integer seeds:
+
+- graphs (`generators.py`): random connected graphs, quotient chain maps;
+- 2-complexes (`complexes2.py`): deterministic fundamental-cycle faces (a
+  Z-basis of the cycle space), quotient maps lifted to degree 2 by exact
+  integer solves over `fractions.Fraction`;
+- cellular sheaves (`sheaves.py`): stalks + restriction maps, block
+  coboundary compiled to the same format, planted stalk-isomorphism
+  morphisms with exactly-zero naturality residuals (dyadic scalings only,
+  so no rational arithmetic is ever needed);
+- categories (`category_instances.py`): finite groups as one-object
+  categories, homomorphism-induced nerve chain maps (the bar construction
+  is functorial — commutation is exact at degrees 1 and 2).
 
 Planned escalation: multi-hop transport (switch twice), partial observation
 of boundary operators, sub-identifiability probe budgets (the regimes where

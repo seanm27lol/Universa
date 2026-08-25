@@ -41,17 +41,30 @@ signal that tells it none of them fit, and a router that jumps between them.
 
 ## Status
 
-Scaffold only. What exists today:
+Early build. What exists today:
 
 - `universa.structures` — the chain-complex format with fail-closed `d^2 = 0`
   validation, and chain maps with exact commutation checks.
 - `universa.nerve` — finite categories -> nerve -> chain complex.
 - `universa.operators` — SVD nullspace bases, orthogonal projectors, the
   transport-and-project atomic move, commutation/misfit residuals.
-- `universa.generators` — first synthetic family: random graphs with planted
-  quotient chain maps (exact integer arithmetic), with decoy structures for
+- `universa.generators` — graph family: random connected graphs with planted
+  quotient chain maps (exact integer arithmetic) and decoy structures for
   auditable routing ground truth; SHA-256-derived sub-seeds.
+- `universa.complexes2` — 2-complex family: faces attached to deterministic
+  fundamental cycles (a Z-basis of the cycle space) and quotient maps lifted
+  to degree 2 by exact integer solves.
+- `universa.sheaves` — cellular-sheaf family: stalks + restriction maps over
+  a graph, block coboundary, planted stalk-isomorphism morphisms with
+  exactly-zero naturality residuals.
+- `universa.category_instances` — group bar-construction family: finite
+  groups as one-object categories, homomorphism-induced nerve chain maps
+  (Z/6 -> Z/3, Z/4 -> Z/2, S3 -> Z/2 by sign).
 - `examples/quickstart.py` — end-to-end misfit-discrimination demo.
+
+All four families share one contract: planted maps have commutation
+residual exactly 0.0, decoys are accepted only if the residual exceeds
+1e-9, and instances are deterministic from integer seeds. 63 tests.
 
 What does not exist yet: any learned model, any router, any experiment, any
 claim. When experiments start, they inherit HOMYMOLY's sealed-seed,

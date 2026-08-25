@@ -122,9 +122,21 @@ instances are deterministic from integer seeds:
   categories, homomorphism-induced nerve chain maps (the bar construction
   is functorial — commutation is exact at degrees 1 and 2).
 
-Planned escalation: multi-hop transport (switch twice), partial observation
-of boundary operators, sub-identifiability probe budgets (the regimes where
-HOMYMOLY showed learning is motivated).
+Planned escalation, now implemented: multi-hop transport
+(`multihop.py` — verified composition, per-hop misfit localization: a
+wrong choice at hop k is visible exactly at hop k; composition alone can
+hide a defect annihilated by later maps, so residuals are probed per
+hop), partial observation of boundary operators (`partial.py` — masked
+edges, corrupted signs, nested deterministic degradation, measured
+breakdown fractions), and sub-identifiability probe budgets
+(`budgets.py` — affine feasible sets under candidate constraints,
+certified nullities, threshold N* = target cycle rank). These are the
+three regimes where HOMYMOLY showed learning is motivated. A design
+finding from the budgets family: decoy structures that share the true
+target's kernel (e.g. relabeled complete quotients) are indiscriminable
+by any transported quantity, so the generator rejects them — the router
+can only be asked to distinguish structures whose constraint sets
+actually differ.
 
 ## 7. Methodology inheritance
 

@@ -1,5 +1,17 @@
 """Universa: structure-switching architecture research scaffold."""
 
+from universa.budgets import (
+    BudgetCurve,
+    BudgetInstance,
+    ProbeInstance,
+    Probes,
+    budget_curve,
+    identifiability_threshold,
+    identification_residual,
+    make_budget_instance,
+    probe_instance,
+    probe_operator,
+)
 from universa.category_instances import (
     GroupSwitchInstance,
     cyclic_group,
@@ -21,6 +33,13 @@ from universa.generators import (
     random_connected_graph,
     subseed,
 )
+from universa.multihop import (
+    DECOY_TOL,
+    HopChain,
+    compose,
+    localize_misfit,
+    make_multihop_instance,
+)
 from universa.nerve import FiniteCategory, nerve_chain_complex
 from universa.operators import (
     SubspaceCertificate,
@@ -28,6 +47,15 @@ from universa.operators import (
     nullspace_basis,
     projector,
     transport_and_project,
+)
+from universa.partial import (
+    DEFAULT_FRACTIONS,
+    ObservationModel,
+    ObservedComplex,
+    RankingRow,
+    breakdown_fraction,
+    observed_misfit,
+    ranking_study,
 )
 from universa.sheaves import (
     Sheaf,
@@ -41,32 +69,54 @@ from universa.sheaves import (
 from universa.structures import ChainComplex, ChainMap
 
 __all__ = [
+    "BudgetCurve",
+    "BudgetInstance",
     "ChainComplex",
     "ChainMap",
+    "DECOY_TOL",
+    "DEFAULT_FRACTIONS",
     "FiniteCategory",
     "GroupSwitchInstance",
+    "HopChain",
+    "ObservationModel",
+    "ObservedComplex",
+    "ProbeInstance",
+    "Probes",
+    "RankingRow",
     "Sheaf",
     "SheafMorphism",
     "SubspaceCertificate",
     "SwitchInstance",
+    "breakdown_fraction",
+    "budget_curve",
     "coboundary",
+    "compose",
     "cyclic_group",
     "group_as_category",
+    "identifiability_threshold",
+    "identification_residual",
     "incidence_matrix",
     "induced_nerve_map",
     "induced_quotient_map",
+    "localize_misfit",
+    "make_budget_instance",
     "make_group_switch_instance",
+    "make_multihop_instance",
     "make_sheaf_switch_instance",
     "make_switch_instance",
     "make_two_complex_switch_instance",
     "misfit",
     "nerve_chain_complex",
     "nullspace_basis",
+    "observed_misfit",
     "planted_morphism",
+    "probe_instance",
+    "probe_operator",
     "projector",
     "quotient_chain_map",
     "random_connected_graph",
     "random_sheaf",
+    "ranking_study",
     "subseed",
     "symmetric_group_3",
     "to_chain_complex",

@@ -64,11 +64,25 @@ Early build. What exists today:
 
 All four families share one contract: planted maps have commutation
 residual exactly 0.0, decoys are accepted only if the residual exceeds
-1e-9, and instances are deterministic from integer seeds. 63 tests.
+1e-9, and instances are deterministic from integer seeds.
 
-What does not exist yet: any learned model, any router, any experiment, any
-claim. When experiments start, they inherit HOMYMOLY's sealed-seed,
-frozen-claim, adversarial-audit methodology.
+Task layer (the regimes where HOMYMOLY showed learning is motivated):
+
+- `universa.multihop` — multi-hop transport through chains of structures
+  with verified composition of chain maps and per-hop misfit
+  localization: a wrong choice at hop k produces a residual signature at
+  exactly hop k (composition alone can hide it — later maps may annihilate
+  an earlier defect, so the signal is probed per hop).
+- `universa.partial` — partial observation of structure: masked edges and
+  corrupted signs with full provenance, nested deterministic degradation,
+  ranking studies with measured breakdown fractions.
+- `universa.budgets` — sub-identifiability probe budgets: affine feasible
+  sets under candidate constraints with certified nullities, and the
+  identifiability threshold N* = cycle rank of the target.
+
+104 tests. What does not exist yet: any learned model, any router, any
+experiment, any claim. When experiments start, they inherit HOMYMOLY's
+sealed-seed, frozen-claim, adversarial-audit methodology.
 
 ## Layout
 

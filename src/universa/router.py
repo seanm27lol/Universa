@@ -28,9 +28,24 @@ residual already identifies the true candidate, so the non-learned baseline
 perfect and the learned router is expected only to *roughly match* it. The
 v0 deliverable is the annealed-routing machinery and the generalization
 plumbing (train on one seed block, evaluate on a disjoint block), not a win
-over the residual oracle. A v1 targets degraded regimes (partial
-observation, :mod:`universa.partial`) where exact residuals are polluted and
-learning is motivated.
+over the residual oracle.
+
+**v1: degraded regimes** (the second half of this module). v0's oracle is
+unbeatable only because it reads the *exact* boundary. Under partial
+observation (:mod:`universa.partial`) the boundary itself is polluted:
+``build_degraded_dataset`` swaps the clean residual for a *degradation
+profile* — the commutation misfit of the planted chain map against the
+candidate boundary observed through an :class:`ObservationModel`
+sign-corruption draw at every fraction of a profile grid (0.0..0.7 by 0.1
+by default), plus the profile slopes and v0's structural dims. The
+non-learned baseline becomes the *polluted* oracle: argmin over candidates
+of the single profile column at the operating fraction. The learned router
+reads the whole trajectory — anchored at the exact fraction-0 residual —
+so the honest v1 question is whether integrating the trajectory beats the
+myopic polluted reading under *held-out* degradation: training on one seed
+block over fractions 0.0..0.4, evaluating on a disjoint seed block over
+held-out fractions 0.5..0.7 (:func:`evaluate_held_out_regime`). Numbers are
+reported per fraction, either way.
 """
 
 from __future__ import annotations
@@ -39,7 +54,7 @@ import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""  # CPU-only, before the torch import
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import numpy as np
 import torch
@@ -55,7 +70,8 @@ from universa.budgets import (
 )
 from universa.generators import subseed
 from universa.operators import nullspace_basis
-from universa.structures import ChainComplex
+from universa.partial import ObservationModel, observed_misfit
+from universa.structures import ChainComplex, ChainMap
 
 RESIDUAL_TOL = 1e-9
 """Ground-truth audit tolerance: true residual below, decoy residuals above."""
@@ -401,6 +417,7 @@ def train_router(
     tau_end: float = 0.25,
     hidden_dim: int = 64,
     standardize: bool = True,
+    feature_dim: int = FEATURE_DIM,
 ) -> tuple[StructureRouter, dict]:
     """Train a :class:`StructureRouter`, deterministically, on CPU.
 
@@ -417,6 +434,11 @@ def train_router(
     only and stored in the model's buffers (the validation block is
     transformed with the training statistics — no leakage).
 
+    ``feature_dim`` is the expected per-candidate feature count — v0's
+    :data:`FEATURE_DIM` by default, :func:`degraded_feature_dim` for the
+    degraded-regime datasets of v1; datasets built with any other feature
+    width are rejected fail-closed.
+
     History records, per epoch: total loss, cross-entropy, auxiliary loss,
     tau, train/val accuracy under *hard* inference (strictly discrete
     argmax), mean soft-gate entropy on the training batch (nats), and the
@@ -429,8 +451,8 @@ def train_router(
     labels = np.asarray(labels)
     val_features = np.asarray(val_features)
     val_labels = np.asarray(val_labels)
-    if features.ndim != 3 or features.shape[-1] != FEATURE_DIM:
-        raise ValueError(f"features must have shape (M, K, {FEATURE_DIM})")
+    if features.ndim != 3 or features.shape[-1] != feature_dim:
+        raise ValueError(f"features must have shape (M, K, {feature_dim})")
     if labels.ndim != 1 or labels.shape[0] != features.shape[0]:
         raise ValueError("labels must be one per instance")
     k = features.shape[1]
@@ -440,7 +462,7 @@ def train_router(
         raise ValueError("labels out of range")
     if not np.isfinite(features).all():
         raise ValueError("features must be finite")
-    if val_features.ndim != 3 or val_features.shape[1:] != (k, FEATURE_DIM):
+    if val_features.ndim != 3 or val_features.shape[1:] != (k, feature_dim):
         raise ValueError("validation features must share (K, F) with train")
     if val_labels.ndim != 1 or val_labels.shape[0] != val_features.shape[0]:
         raise ValueError("validation labels must be one per instance")
@@ -450,9 +472,11 @@ def train_router(
         raise ValueError("lr must be positive")
     if lambda_aux < 0.0:
         raise ValueError("lambda_aux must be nonnegative")
+    if feature_dim < 1:
+        raise ValueError("feature_dim must be >= 1")
 
     torch.manual_seed(seed)
-    model = StructureRouter(features.shape[-1], hidden_dim)
+    model = StructureRouter(feature_dim, hidden_dim)
     x = _as_float32(features)
     y = torch.as_tensor(labels, dtype=torch.long)
     vx = _as_float32(val_features)
@@ -514,3 +538,469 @@ def train_router(
         )
     history["usage"] = np.stack(history["usage"])
     return model, history
+
+
+# ---------------------------------------------------------------------------
+# Router v1: degraded regimes — partial observation of the boundary.
+#
+# v0's argmin-residual oracle is unbeatable only because it reads the exact
+# boundary. v1 pollutes that oracle: candidates are observed through
+# partial.ObservationModel sign-corruption draws, and the per-candidate
+# feature is a DEGRADATION PROFILE — the commutation misfit of the planted
+# chain map against the observed candidate boundary at every fraction of a
+# profile grid — plus the profile slopes and v0's structural dims. The
+# learned router integrates the whole trajectory; the non-learned baseline
+# is the myopic polluted oracle reading only the operating fraction's
+# column. The protocol trains on one seed block over low fractions and
+# evaluates on a disjoint seed block over held-out higher fractions.
+
+DEFAULT_PROFILE_GRID = tuple(i / 10 for i in range(8))
+"""Default degradation profile grid: fractions 0.0 to 0.7 by 0.1."""
+
+DEGRADED_STRUCTURAL_NAMES = (
+    "num_target_vertices",
+    "num_target_edges",
+    "boundary_cycle_nullity",
+)
+"""The structural-dims block carried over from v0's feature layout."""
+
+
+def _validated_profile_grid(profile_grid) -> tuple[float, ...]:
+    """Fail-closed profile-grid validation: nonempty, within [0, 1],
+    strictly increasing, and anchored at exactly 0.0 (the fraction-0 column
+    is the exact-residual anchor the row audits below rely on)."""
+    grid = tuple(float(g) for g in profile_grid)
+    if not grid or grid[0] != 0.0:
+        raise ValueError("profile grid must be nonempty and start at 0.0")
+    if any(not 0.0 <= g <= 1.0 for g in grid):
+        raise ValueError("profile grid fractions must lie in [0, 1]")
+    if any(b <= a for a, b in zip(grid, grid[1:])):
+        raise ValueError("profile grid must be strictly increasing")
+    return grid
+
+
+def _fraction_key(fraction: float) -> str:
+    """Deterministic string key for one fraction in subseed components."""
+    return f"{fraction:.6f}"
+
+
+def degraded_feature_names(
+    profile_grid=DEFAULT_PROFILE_GRID,
+) -> tuple[str, ...]:
+    """Per-candidate v1 feature layout, in column order (float64 at build).
+
+    For a grid of ``G`` fractions the layout is ``2G - 1 + 3`` columns:
+    ``log1p`` of the observed commutation misfit at every grid fraction,
+    then the profile slopes (first differences, ``slope_{i} = profile[i+1]
+    - profile[i]``, named by the grid fractions they span), then the
+    structural dims :data:`DEGRADED_STRUCTURAL_NAMES`.
+    """
+    grid = _validated_profile_grid(profile_grid)
+    profile = tuple(f"log1p_observed_misfit_fraction_{g:.1f}" for g in grid)
+    slopes = tuple(
+        f"profile_slope_{a:.1f}_to_{b:.1f}" for a, b in zip(grid, grid[1:])
+    )
+    return profile + slopes + DEGRADED_STRUCTURAL_NAMES
+
+
+def degraded_feature_dim(profile_grid=DEFAULT_PROFILE_GRID) -> int:
+    """Feature width of a degraded-regime dataset row over ``profile_grid``."""
+    return len(degraded_feature_names(profile_grid))
+
+
+def degraded_candidate_features(
+    chain_map: ChainMap,
+    candidate: ChainComplex,
+    observation_seed: int,
+    profile_grid=DEFAULT_PROFILE_GRID,
+) -> np.ndarray:
+    """Degradation-profile feature vector for one candidate structure.
+
+    Columns follow :func:`degraded_feature_names`. The candidate boundary
+    is observed through :class:`ObservationModel` sign-corruption draws
+    (``corrupt_fraction = g`` for every grid fraction ``g``, masking off)
+    under the shared ``observation_seed`` — one draw per (instance,
+    fraction), reused across candidates exactly as
+    :func:`universa.partial.ranking_study` does — and the profile entry is
+    ``log1p`` of :func:`universa.partial.observed_misfit` of the planted
+    chain map against the observed candidate. At grid fraction 0 the
+    observation is exact, so the first column is ``log1p`` of the clean
+    commutation residual; log1p is strictly increasing, so the stored
+    profile keeps the residual's monotonicity (the true candidate's is
+    structurally non-decreasing, see :mod:`universa.partial`). The
+    certified-nullity cross-check from v0 is kept fail-closed.
+    """
+    grid = _validated_profile_grid(profile_grid)
+    if not isinstance(chain_map, ChainMap):
+        raise ValueError("chain_map must be a ChainMap instance")
+    if candidate.top_degree != 1:
+        raise ValueError("routing candidates are 1-complexes (graphs)")
+    boundary = candidate.boundaries[0]
+    misfits = [
+        observed_misfit(
+            chain_map,
+            ObservationModel(
+                candidate, observation_seed, corrupt_fraction=g
+            ).observe(),
+        )
+        for g in grid
+    ]
+    profile = np.log1p(np.asarray(misfits, dtype=np.float64))
+    slopes = np.diff(profile)
+    threshold = identifiability_threshold(candidate)
+    cycle_nullity = int(nullspace_basis(boundary).basis.shape[1])
+    if cycle_nullity != threshold:
+        raise ValueError(
+            f"certified nullities disagree: threshold {threshold} vs "
+            f"boundary cycle nullity {cycle_nullity}"
+        )
+    num_vertices, num_edges = boundary.shape
+    return np.concatenate(
+        [
+            profile,
+            slopes,
+            np.array(
+                [float(num_vertices), float(num_edges), float(cycle_nullity)],
+                dtype=np.float64,
+            ),
+        ]
+    )
+
+
+@dataclass(frozen=True)
+class DegradedInstanceMetadata:
+    """Provenance for one degraded-regime dataset row (instance x fraction).
+
+    Same contract as v0's :class:`InstanceMetadata`: ``permutation[i]`` is
+    the original candidate index sitting at permuted position ``i``, so
+    ``permutation[true_index] == 0`` always holds.
+    """
+
+    seed: int
+    fraction: float
+    threshold: int
+    permutation: tuple[int, ...]
+    true_index: int
+
+    def __post_init__(self) -> None:
+        k = len(self.permutation)
+        if k < 2:
+            raise ValueError("need at least two candidates")
+        if sorted(self.permutation) != list(range(k)):
+            raise ValueError("permutation must be a permutation of 0..K-1")
+        if not 0 <= self.true_index < k:
+            raise ValueError("true_index out of range")
+        if self.permutation[self.true_index] != 0:
+            raise ValueError("true_index must locate original candidate 0")
+        if not 0.0 <= self.fraction <= 1.0:
+            raise ValueError("fraction outside [0, 1]")
+        if self.threshold < 1:
+            raise ValueError("bad threshold")
+
+
+def build_degraded_dataset(
+    seeds,
+    fractions,
+    *,
+    profile_grid=DEFAULT_PROFILE_GRID,
+    num_vertices: int = 8,
+    num_edges: int = 14,
+    num_classes: int = 6,
+    num_decoys: int = 3,
+) -> tuple[np.ndarray, np.ndarray, tuple[DegradedInstanceMetadata, ...]]:
+    """Certified routing dataset over (seed, corruption fraction) rows.
+
+    Returns ``(features, labels, metadata)`` with ``features`` of shape
+    ``(M, K, F)`` in float64 where ``M = len(seeds) * len(fractions)``,
+    ``K = 1 + num_decoys``, and ``F = degraded_feature_dim(profile_grid)``;
+    ``labels`` holds the permuted true index. Every row of ``fractions``
+    must be a point of ``profile_grid`` — the row's fraction is what the
+    polluted oracle reads, so it must name a profile column.
+
+    Each row shares ONE observation draw across candidates
+    (``subseed(seed, "router-v1-observe", fraction)``), exactly as
+    :func:`universa.partial.ranking_study` shares its draw, and the profile
+    sweeps ``corrupt_fraction`` over the grid (nested draws: a larger
+    fraction flips a prefix-extension of the same master permutation). The
+    per-row candidate permutation is drawn from
+    ``subseed(seed, "router-v1-permutation", fraction)`` and the permuted
+    true index is recorded as the audited label, exactly as v0.
+
+    Fail-closed row audits, adapted to degradation: at profile fraction 0
+    (the exact observation) the true candidate's misfit must be at most
+    ``RESIDUAL_TOL`` and every decoy's strictly above it — a violation is
+    an error, never a dropped row. At higher grid fractions the polluted
+    values are just recorded, never audit-failed.
+    """
+    grid = _validated_profile_grid(profile_grid)
+    seeds = tuple(int(s) for s in seeds)
+    fractions = tuple(float(f) for f in fractions)
+    if not seeds:
+        raise ValueError("seeds must be nonempty")
+    if not fractions:
+        raise ValueError("fractions must be nonempty")
+    for fraction in fractions:
+        if not 0.0 <= fraction <= 1.0:
+            raise ValueError(f"fraction {fraction} outside [0, 1]")
+        if not any(abs(g - fraction) <= 1e-9 for g in grid):
+            raise ValueError(
+                f"fraction {fraction} is not a profile grid point; the "
+                "row fraction must name a profile column"
+            )
+    if num_decoys < 1:
+        raise ValueError("need at least one decoy (K >= 2)")
+    k = num_decoys + 1
+    features: list[np.ndarray] = []
+    labels: list[int] = []
+    metadata: list[DegradedInstanceMetadata] = []
+    for seed in seeds:
+        instance = make_budget_instance(
+            seed, num_vertices, num_edges, num_classes, num_decoys
+        )
+        for fraction in fractions:
+            key = _fraction_key(fraction)
+            observation_seed = subseed(seed, "router-v1-observe", key)
+            per_candidate = [
+                degraded_candidate_features(
+                    instance.chain_map, candidate, observation_seed, grid
+                )
+                for candidate in instance.candidates
+            ]
+            rng = np.random.default_rng(
+                subseed(seed, "router-v1-permutation", key)
+            )
+            permutation = tuple(int(p) for p in rng.permutation(k))
+            true_index = permutation.index(0)
+            block = np.stack([per_candidate[p] for p in permutation])
+            if not np.isfinite(block).all():
+                raise RuntimeError(
+                    f"seed {seed}, fraction {fraction}: non-finite features"
+                )
+            clean = np.expm1(block[:, 0])  # grid fraction 0: exact column
+            if clean[true_index] > RESIDUAL_TOL:
+                raise RuntimeError(
+                    f"seed {seed}, fraction {fraction}: true candidate "
+                    f"misfit {clean[true_index]:.3e} at fraction 0 exceeds "
+                    f"{RESIDUAL_TOL}"
+                )
+            decoy_clean = np.delete(clean, true_index)
+            if float(decoy_clean.min()) <= RESIDUAL_TOL:
+                raise RuntimeError(
+                    f"seed {seed}, fraction {fraction}: a decoy misfit "
+                    f"{float(decoy_clean.min()):.3e} at fraction 0 is at or "
+                    f"below {RESIDUAL_TOL}; ground truth is not separable"
+                )
+            features.append(block)
+            labels.append(true_index)
+            metadata.append(
+                DegradedInstanceMetadata(
+                    seed=seed,
+                    fraction=fraction,
+                    threshold=instance.threshold,
+                    permutation=permutation,
+                    true_index=true_index,
+                )
+            )
+    return (
+        np.stack(features),
+        np.asarray(labels, dtype=np.int64),
+        tuple(metadata),
+    )
+
+
+def observed_residual_oracle_accuracy(
+    features,
+    labels,
+    fraction: float,
+    *,
+    profile_grid=DEFAULT_PROFILE_GRID,
+) -> float:
+    """The polluted oracle: argmin over candidates of the observed misfit.
+
+    Reads the single profile column at ``fraction`` (log1p of the observed
+    commutation misfit; log1p is strictly increasing, so this is exactly
+    argmin of the misfit) and predicts its argmin — no learning. At
+    fraction 0 this is the exact-residual oracle and is essentially
+    perfect; at higher fractions the observation is polluted and the
+    reading degrades. This is the reference the learned router is honestly
+    compared against at every eval fraction.
+    """
+    grid = _validated_profile_grid(profile_grid)
+    features = np.asarray(features)
+    labels = np.asarray(labels)
+    expected = degraded_feature_dim(grid)
+    if features.ndim != 3 or features.shape[-1] != expected:
+        raise ValueError(f"features must have shape (M, K, {expected})")
+    if labels.ndim != 1 or labels.shape[0] != features.shape[0]:
+        raise ValueError("labels must be one per instance")
+    matches = [i for i, g in enumerate(grid) if abs(g - fraction) <= 1e-9]
+    if not matches:
+        raise ValueError(f"fraction {fraction} is not a profile grid point")
+    predictions = features[..., matches[0]].argmin(axis=1)
+    return float((predictions == labels).mean())
+
+
+@dataclass(frozen=True)
+class FractionReport:
+    """Learned-vs-oracle accuracies at one eval fraction."""
+
+    fraction: float
+    num_instances: int
+    learned_accuracy: float
+    oracle_accuracy: float
+
+    def __post_init__(self) -> None:
+        if not 0.0 <= self.fraction <= 1.0:
+            raise ValueError("fraction outside [0, 1]")
+        if self.num_instances < 1:
+            raise ValueError("num_instances must be >= 1")
+        for name, value in (
+            ("learned_accuracy", self.learned_accuracy),
+            ("oracle_accuracy", self.oracle_accuracy),
+        ):
+            if not 0.0 <= value <= 1.0:
+                raise ValueError(f"{name} outside [0, 1]")
+
+
+@dataclass(frozen=True)
+class DegradedRegimeReport:
+    """Result of a held-out-regime evaluation (router v1).
+
+    ``per_fraction`` carries one :class:`FractionReport` per eval fraction
+    — the deliverable: the learned router's hard-inference accuracy beside
+    the polluted oracle's, at each held-out degradation level.
+    ``history`` is the :func:`train_router` history (excluded from
+    equality: it holds numpy arrays).
+    """
+
+    train_seeds: tuple[int, ...]
+    eval_seeds: tuple[int, ...]
+    train_fractions: tuple[float, ...]
+    eval_fractions: tuple[float, ...]
+    profile_grid: tuple[float, ...]
+    final_train_accuracy: float
+    final_eval_accuracy: float
+    per_fraction: tuple[FractionReport, ...]
+    history: dict = field(compare=False, repr=False)
+
+    def __post_init__(self) -> None:
+        if set(self.train_seeds) & set(self.eval_seeds):
+            raise ValueError("train/eval seed blocks overlap")
+        if set(self.train_fractions) & set(self.eval_fractions):
+            raise ValueError("train/eval fractions overlap")
+        if not self.per_fraction:
+            raise ValueError("per_fraction must be nonempty")
+        for name, value in (
+            ("final_train_accuracy", self.final_train_accuracy),
+            ("final_eval_accuracy", self.final_eval_accuracy),
+        ):
+            if not 0.0 <= value <= 1.0:
+                raise ValueError(f"{name} outside [0, 1]")
+
+
+def evaluate_held_out_regime(
+    train_seeds,
+    eval_seeds,
+    train_fractions,
+    eval_fractions,
+    *,
+    profile_grid=DEFAULT_PROFILE_GRID,
+    epochs: int = 150,
+    lr: float = 1e-3,
+    seed: int = 0,
+    lambda_aux: float = DEFAULT_LAMBDA_AUX,
+    tau_start: float = 2.0,
+    tau_end: float = 0.25,
+    hidden_dim: int = 64,
+    num_vertices: int = 8,
+    num_edges: int = 14,
+    num_classes: int = 6,
+    num_decoys: int = 3,
+) -> tuple[StructureRouter, DegradedRegimeReport]:
+    """The v1 protocol: generalization to unseen degradation.
+
+    Trains a :class:`StructureRouter` (:func:`train_router`, annealed,
+    load-balanced, deterministic) on the degraded dataset over
+    ``train_seeds`` x ``train_fractions`` and evaluates on the DISJOINT
+    ``eval_seeds`` x the HELD-OUT ``eval_fractions`` — split hygiene is
+    fail-closed: any seed or fraction overlap is an error. At every eval
+    fraction the learned router's hard-inference (strictly discrete
+    argmax) accuracy is reported beside the polluted oracle's
+    (:func:`observed_residual_oracle_accuracy` at that fraction). The
+    honest v1 question — does the learned router beat the polluted oracle
+    under held-out degradation? — is answered by the numbers in the
+    report, whichever way they go.
+    """
+    train_seeds = tuple(int(s) for s in train_seeds)
+    eval_seeds = tuple(int(s) for s in eval_seeds)
+    train_fractions = tuple(float(f) for f in train_fractions)
+    eval_fractions = tuple(float(f) for f in eval_fractions)
+    if not train_seeds or not eval_seeds:
+        raise ValueError("train and eval seed blocks must be nonempty")
+    if set(train_seeds) & set(eval_seeds):
+        raise ValueError("train/eval seed blocks must be disjoint")
+    if not train_fractions or not eval_fractions:
+        raise ValueError("train and eval fractions must be nonempty")
+    if set(train_fractions) & set(eval_fractions):
+        raise ValueError("train/eval fractions must be disjoint")
+    grid = _validated_profile_grid(profile_grid)
+    dim = degraded_feature_dim(grid)
+    train_data = build_degraded_dataset(
+        train_seeds,
+        train_fractions,
+        profile_grid=grid,
+        num_vertices=num_vertices,
+        num_edges=num_edges,
+        num_classes=num_classes,
+        num_decoys=num_decoys,
+    )
+    eval_data = build_degraded_dataset(
+        eval_seeds,
+        eval_fractions,
+        profile_grid=grid,
+        num_vertices=num_vertices,
+        num_edges=num_edges,
+        num_classes=num_classes,
+        num_decoys=num_decoys,
+    )
+    model, history = train_router(
+        train_data,
+        eval_data,
+        epochs,
+        lr=lr,
+        seed=seed,
+        lambda_aux=lambda_aux,
+        tau_start=tau_start,
+        tau_end=tau_end,
+        hidden_dim=hidden_dim,
+        feature_dim=dim,
+    )
+    features, labels, metadata = eval_data
+    rows: list[FractionReport] = []
+    for fraction in eval_fractions:
+        mask = np.array([m.fraction == fraction for m in metadata])
+        block_features, block_labels = features[mask], labels[mask]
+        rows.append(
+            FractionReport(
+                fraction=fraction,
+                num_instances=int(mask.sum()),
+                learned_accuracy=hard_accuracy(
+                    model, block_features, block_labels
+                ),
+                oracle_accuracy=observed_residual_oracle_accuracy(
+                    block_features, block_labels, fraction, profile_grid=grid
+                ),
+            )
+        )
+    report = DegradedRegimeReport(
+        train_seeds=train_seeds,
+        eval_seeds=eval_seeds,
+        train_fractions=train_fractions,
+        eval_fractions=eval_fractions,
+        profile_grid=grid,
+        final_train_accuracy=history["train_accuracy"][-1],
+        final_eval_accuracy=history["val_accuracy"][-1],
+        per_fraction=tuple(rows),
+        history=history,
+    )
+    return model, report

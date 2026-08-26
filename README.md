@@ -91,11 +91,31 @@ stays torch-free, and torch is an optional dependency:
   straight-through gradients at inference, and a Switch-style
   load-balancing loss against collapse. Trained on one seed block and
   evaluated on a disjoint block, always reported beside the non-learned
-  argmin-residual baseline. On this clean regime the baseline is
-  essentially perfect and the v0 deliverable is the machinery and
-  generalization plumbing; degraded regimes (partial observation) are v1.
+  argmin-residual baseline. On the clean regime the baseline is
+  essentially perfect and v0's deliverable was the machinery.
+- Router v1 (same module): degradation-profile features from
+  `universa.partial` observation models, trained on fractions 0.0-0.4 and
+  evaluated on disjoint seeds at HELD-OUT fractions 0.5/0.6/0.7. First
+  regime where the learned router earns its keep: 1.0000 hard accuracy
+  at all three held-out fractions while the polluted argmin oracle
+  collapses to 0.3750/0.0625/0.0000 (chance is 0.25). The win is real
+  but asymmetric by design — the learned router integrates the whole
+  degradation trajectory anchored at the exact fraction-0 residual while
+  the oracle reads one polluted column; see `examples/router_v1_demo.py`.
 
-118 tests. What does not exist yet: any claim. When experiments start,
+Discovery head (numpy only):
+
+- `universa.discovery` — the seeded-library-plus-discovery mechanism of
+  the design doc: certified SVD estimation of the data-supported
+  consistent subspace from transported vector observations, an
+  annihilator constraint with a certificate residual, fail-closed
+  insufficiency (dimensional stabilization or it refuses), and a novelty
+  gate so the library admits only genuinely new certified structures.
+  End-to-end on the graph-quotient family with the truth withheld:
+  full coverage recovered and the planted map's misfit against the
+  discovered constraint below 1e-9 on all documented seeds.
+
+137 tests. What does not exist yet: any claim. When experiments start,
 they inherit HOMYMOLY's sealed-seed, frozen-claim, adversarial-audit
 methodology.
 

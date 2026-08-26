@@ -17,19 +17,27 @@ from universa.budgets import (
     probe_operator,
 )
 from universa.router import (
+    DEFAULT_PROFILE_GRID,
     FEATURE_DIM,
     FEATURE_NAMES,
+    DegradedInstanceMetadata,
     InstanceMetadata,
     StructureRouter,
     anneal_temperature,
     argmin_residual_accuracy,
     build_dataset,
+    build_degraded_dataset,
     candidate_features,
+    degraded_feature_dim,
+    degraded_feature_names,
+    evaluate_held_out_regime,
     hard_accuracy,
     hard_predictions,
     load_balancing_loss,
+    observed_residual_oracle_accuracy,
     train_router,
 )
+from universa.structures import ChainMap
 
 BUILD_SEEDS = (11, 12, 13)
 GRID = (1, 2, 3)
@@ -303,3 +311,214 @@ def test_plain_import_of_universa_does_not_import_torch():
         timeout=120,
     )
     assert result.returncode == 0, result.stderr
+
+
+# ---------------------------------------------------------------------------
+# Router v1: degraded regimes (polluted oracle, held-out fractions).
+
+DEGRADED_SEEDS = (51, 52, 53)
+DEGRADED_FRACTIONS = (0.0, 0.1, 0.2)
+GRID_LEN = len(DEFAULT_PROFILE_GRID)
+DEGRADED_DIM = degraded_feature_dim(DEFAULT_PROFILE_GRID)
+
+
+def small_degraded_dataset():
+    return build_degraded_dataset(
+        DEGRADED_SEEDS, DEGRADED_FRACTIONS, num_decoys=NUM_DECOYS
+    )
+
+
+def test_degraded_dataset_shapes_finiteness_determinism():
+    features, labels, metadata = small_degraded_dataset()
+    rows = len(DEGRADED_SEEDS) * len(DEGRADED_FRACTIONS)
+    assert features.shape == (rows, K, DEGRADED_DIM)
+    assert DEGRADED_DIM == len(degraded_feature_names(DEFAULT_PROFILE_GRID))
+    assert DEGRADED_DIM == 2 * GRID_LEN + 2  # profile + slopes + 3 dims
+    assert features.dtype == np.float64
+    assert np.isfinite(features).all()
+    assert labels.shape == (rows,) and labels.dtype == np.int64
+    assert 0 <= labels.min() and labels.max() < K
+    assert len(metadata) == rows
+    assert {meta.seed for meta in metadata} == set(DEGRADED_SEEDS)
+    assert {meta.fraction for meta in metadata} == set(DEGRADED_FRACTIONS)
+    # Deterministic rebuild: identical features, labels, and metadata.
+    again = small_degraded_dataset()
+    assert np.array_equal(features, again[0])
+    assert np.array_equal(labels, again[1])
+    assert metadata == again[2]
+    # Audited permutation labels, exactly as v0.
+    for i, meta in enumerate(metadata):
+        assert sorted(meta.permutation) == list(range(K))
+        assert meta.permutation[meta.true_index] == 0
+        assert labels[i] == meta.true_index
+    assert len(set(int(label) for label in labels)) > 1
+
+
+def test_degraded_profile_fraction_zero_matches_clean_residual():
+    features, _, metadata = small_degraded_dataset()
+    for row, meta in enumerate(metadata):
+        instance = make_budget_instance(meta.seed, num_decoys=NUM_DECOYS)
+        for position, original in enumerate(meta.permutation):
+            candidate = instance.candidates[original]
+            probe = ChainMap(
+                instance.source, candidate, instance.chain_map.maps
+            )
+            (clean,) = probe.commutation_residuals()
+            assert np.isclose(
+                np.expm1(features[row, position, 0]),
+                clean,
+                rtol=1e-9,
+                atol=1e-12,
+            )
+        # The audited fraction-0 column separates: true ~0, decoys above.
+        assert np.expm1(features[row, meta.true_index, 0]) <= 1e-9
+        for position in range(K):
+            if position != meta.true_index:
+                assert np.expm1(features[row, position, 0]) > 1e-9
+
+
+def test_degraded_true_profile_monotone_nondecreasing_fixed_seeds():
+    features, _, metadata = small_degraded_dataset()
+    for row, meta in enumerate(metadata):
+        profile = np.expm1(features[row, meta.true_index, :GRID_LEN])
+        # Structural monotonicity (proved in universa.partial): nested
+        # sign-flips add Frobenius-orthogonal contributions to the squared
+        # misfit of the planted map against the true candidate.
+        assert (np.diff(profile) >= -1e-9).all()
+        assert profile[0] <= 1e-9  # exact at fraction 0
+
+
+def test_degraded_fail_closed_validation():
+    with pytest.raises(ValueError):
+        build_degraded_dataset(
+            [], DEGRADED_FRACTIONS, num_decoys=NUM_DECOYS
+        )  # no seeds
+    with pytest.raises(ValueError):
+        build_degraded_dataset(
+            DEGRADED_SEEDS, (), num_decoys=NUM_DECOYS
+        )  # no fractions
+    with pytest.raises(ValueError):
+        build_degraded_dataset(
+            DEGRADED_SEEDS, (1.1,), num_decoys=NUM_DECOYS
+        )  # outside [0, 1]
+    with pytest.raises(ValueError):
+        build_degraded_dataset(
+            DEGRADED_SEEDS, (0.45,), num_decoys=NUM_DECOYS
+        )  # not a grid point
+    with pytest.raises(ValueError):
+        build_degraded_dataset(
+            DEGRADED_SEEDS,
+            (0.0,),
+            profile_grid=(0.1, 0.2),
+            num_decoys=NUM_DECOYS,
+        )  # grid must start at 0.0
+    with pytest.raises(ValueError):
+        build_degraded_dataset(
+            DEGRADED_SEEDS,
+            (0.0,),
+            profile_grid=(0.0, 0.0),
+            num_decoys=NUM_DECOYS,
+        )  # grid must be strictly increasing
+    with pytest.raises(ValueError):
+        DegradedInstanceMetadata(0, 0.0, 1, (1, 1), 0)  # not a permutation
+    with pytest.raises(ValueError):
+        DegradedInstanceMetadata(0, 0.0, 1, (0, 1), 1)  # must locate 0
+    with pytest.raises(ValueError):
+        DegradedInstanceMetadata(0, 1.5, 1, (0, 1), 0)  # bad fraction
+    features, labels, _ = small_degraded_dataset()
+    with pytest.raises(ValueError):
+        observed_residual_oracle_accuracy(features, labels, 0.45)  # off grid
+
+
+def test_observed_oracle_exact_at_fraction_zero():
+    features, labels, _ = small_degraded_dataset()
+    # At fraction 0 the observation is exact, so the oracle is perfect.
+    assert observed_residual_oracle_accuracy(features, labels, 0.0) == 1.0
+    # log1p is strictly increasing: the stored column's argmin is the raw
+    # residual's argmin.
+    raw = np.expm1(features[..., 0])
+    assert (raw.argmin(axis=1) == labels).all()
+
+
+def tiny_degraded_protocol(**overrides):
+    kwargs = dict(
+        train_seeds=(101, 102, 103, 104),
+        eval_seeds=(201, 202, 203),
+        train_fractions=(0.0, 0.1, 0.2),
+        eval_fractions=(0.3, 0.4),
+        epochs=80,
+        lr=3e-3,
+        seed=5,
+        num_decoys=NUM_DECOYS,
+    )
+    kwargs.update(overrides)
+    return evaluate_held_out_regime(**kwargs)
+
+
+def test_protocol_split_hygiene():
+    with pytest.raises(ValueError):
+        tiny_degraded_protocol(eval_seeds=(104, 205))  # seed overlap
+    with pytest.raises(ValueError):
+        tiny_degraded_protocol(eval_fractions=(0.2, 0.5))  # fraction overlap
+    _, report = tiny_degraded_protocol()
+    assert set(report.train_seeds).isdisjoint(report.eval_seeds)
+    assert set(report.train_fractions).isdisjoint(report.eval_fractions)
+    assert [row.fraction for row in report.per_fraction] == [0.3, 0.4]
+    assert all(row.num_instances == 3 for row in report.per_fraction)
+
+
+def test_degraded_training_smoke_above_chance():
+    _, report = tiny_degraded_protocol()
+    # Learns above chance 1/K at the train fractions.
+    assert report.final_train_accuracy > 1.0 / K + 0.2
+
+
+def test_degraded_pipeline_determinism():
+    model_a, report_a = tiny_degraded_protocol()
+    model_b, report_b = tiny_degraded_protocol()
+    assert report_a == report_b  # history excluded from equality
+    for value_a, value_b in zip(
+        model_a.state_dict().values(), model_b.state_dict().values()
+    ):
+        assert torch.equal(value_a, value_b)
+
+
+def test_full_protocol_report_only():
+    train_seeds = tuple(range(301, 309))
+    eval_seeds = tuple(range(401, 405))
+    train_fractions = (0.0, 0.1, 0.2, 0.3)
+    eval_fractions = (0.5, 0.6, 0.7)  # held-out degradation
+    _, report = evaluate_held_out_regime(
+        train_seeds,
+        eval_seeds,
+        train_fractions,
+        eval_fractions,
+        epochs=60,
+        lr=3e-3,
+        seed=11,
+        num_decoys=NUM_DECOYS,
+    )
+    assert len(report.per_fraction) == len(eval_fractions)
+    for row in report.per_fraction:
+        assert row.num_instances == len(eval_seeds)
+        assert 0.0 <= row.learned_accuracy <= 1.0
+        assert 0.0 <= row.oracle_accuracy <= 1.0
+    # Deterministic rerun of the whole protocol.
+    _, report_again = evaluate_held_out_regime(
+        train_seeds,
+        eval_seeds,
+        train_fractions,
+        eval_fractions,
+        epochs=60,
+        lr=3e-3,
+        seed=11,
+        num_decoys=NUM_DECOYS,
+    )
+    assert report == report_again
+    # Report-only: print the learned-vs-oracle table; no assertion that the
+    # learned router beats the polluted oracle — the numbers stand either way.
+    for row in report.per_fraction:
+        print(
+            f"fraction {row.fraction:.1f}: learned={row.learned_accuracy:.4f}"
+            f" oracle={row.oracle_accuracy:.4f} (n={row.num_instances})"
+        )

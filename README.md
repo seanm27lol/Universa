@@ -115,9 +115,16 @@ Discovery head (numpy only):
   full coverage recovered and the planted map's misfit against the
   discovered constraint below 1e-9 on all documented seeds.
 
-137 tests. What does not exist yet: any claim. When experiments start,
-they inherit HOMYMOLY's sealed-seed, frozen-claim, adversarial-audit
-methodology.
+137 tests plus the sealed-experiment suite. **First sealed result
+(`docs/03-router-v1-sealed-1-results.md`):** on the graph-quotient family
+under sign-corrupted observation, the learned router beat the polluted
+oracle at every held-out fraction — mean paired accuracy margins +0.73
+(0.5), +0.91 (0.6, primary), +0.99 (0.7), all with one-sided Bonferroni
+lower bounds far above zero at n=36 — and matched the exact oracle at the
+clean anchor (bounded harm, zero variance). Full HOMYMOLY ceremony:
+frozen protocol, two-commit seal pushed before any sealed seed was
+opened, canonical run, independent recomputation from raw rows, immutable
+result artifact. Scope caveats in the results record.
 
 ## Layout
 

@@ -1,0 +1,1584 @@
+#!/usr/bin/env python3
+"""Sealed runner for experiment ``universa-router-v1-sealed-1``.
+
+The frozen design: one :class:`universa.router.StructureRouter`
+(``feature_dim=18``, ``hidden_dim=64``) trained on the 18-dim degradation
+profiles of graph-quotient switch instances over the train seed block
+10001..10200 x operating fractions 0.0..0.4, then compared against the
+polluted argmin observed-residual oracle on the sealed eval seed block
+30101..30136 x held-out fractions {0.5, 0.6, 0.7} plus the clean anchor 0.0.
+Both arms read the SAME R=4 replicate observation draws per (seed, fraction)
+(``subseed(seed, "sealed-replicate", str(fraction), str(replicate_index))``);
+the generator seed is the inference unit for the four one-sided Bonferroni
+claims (per-claim alpha 0.05/4 = 0.0125).
+
+**Declared caveat (frozen).** The comparison is asymmetric by design: the
+learned router reads the whole degradation profile anchored at the exact
+fraction-0 residual; the oracle reads only the polluted operating-fraction
+column. Demo-scale numbers are not evidence.
+
+This runner must not be executed on the sealed eval seed block until the
+protocol, this runner, and the seal record (``docs/02-router-v1-seal.json``)
+have been committed and pushed. It keeps the seed block inert at import
+time: no instance is constructed until every preflight check in
+:func:`_preflight` has passed, in the frozen order — output missing, clean
+worktree, seal committed at HEAD, seal validation, file hashes, runtime
+hash, environment — and only then any data construction.
+"""
+
+from __future__ import annotations
+
+import argparse
+import hashlib
+import json
+import math
+import os
+import platform
+import statistics
+import subprocess
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+
+# The operator-provided CUDA visibility is captured BEFORE the runner hides
+# CUDA from torch, so the result records both the operator-provided and the
+# effective value.
+OPERATOR_CUDA_VISIBLE_DEVICES = os.environ.get("CUDA_VISIBLE_DEVICES")
+os.environ["CUDA_VISIBLE_DEVICES"] = ""  # CPU-only, before the torch import
+
+import torch
+
+from universa.budgets import make_budget_instance
+from universa.generators import subseed
+from universa.partial import ObservationModel, observed_misfit
+from universa.router import (
+    DEFAULT_PROFILE_GRID,
+    RESIDUAL_TOL,
+    _fraction_key,  # the permutation key must match build_degraded_dataset
+    build_degraded_dataset,
+    degraded_candidate_features,
+    degraded_feature_dim,
+    hard_predictions,
+    train_router,
+)
+
+EXPERIMENT_ID = "universa-router-v1-sealed-1"
+RESULT_SCHEMA = "universa-router-v1-sealed-result/1"
+
+# The one canonical execution command, recorded verbatim in every result.
+CANONICAL_COMMAND = (
+    "env CUDA_VISIBLE_DEVICES=-1 PYTHONPATH=src python "
+    "scripts/run_router_v1_sealed_1.py --output "
+    "results/experiments/router-v1-sealed-1.json"
+)
+
+PROTOCOL = "docs/01-sealed-router-v1-protocol.md"
+RUNNER_SOURCE = "scripts/run_router_v1_sealed_1.py"
+DEFAULT_SEAL = "docs/02-router-v1-seal.json"
+SEAL_SCHEMA = "universa-seal/1"
+
+PROTOCOL_SHA256 = (
+    "53eb06d7074701f165864532e20991cbf3f1e1ef3f6f4860f8a93d901d5ef6eb"
+)
+"""Frozen fingerprint of the sealed protocol.
+
+The committed runner embeds the sealed protocol's SHA-256 as this constant;
+the value must equal the seal record's ``protocol_sha256``. Any protocol edit
+after the seal requires re-pinning this constant (and a new seal record) —
+the fail-closed refusal in :func:`_frozen_protocol_sha256` then catches the
+mismatch. While the value is the placeholder ``PENDING_PROTOCOL_SHA256`` the
+runner refuses every execution.
+"""
+
+# Frozen task family: graph-quotient switch instances, K = 4 candidates with
+# the true target at index 0 pre-permutation.
+NUM_VERTICES = 8
+NUM_EDGES = 14
+NUM_CLASSES = 6
+NUM_DECOYS = 3
+NUM_CANDIDATES = 1 + NUM_DECOYS
+
+TRAIN_SEEDS = tuple(range(10001, 10201))  # 10001..10200
+SEALED_EVAL_SEEDS = tuple(range(30101, 30137))  # 30101..30136
+TRAIN_FRACTIONS = (0.0, 0.1, 0.2, 0.3, 0.4)
+HELD_OUT_FRACTIONS = (0.5, 0.6, 0.7)
+CLEAN_ANCHOR_FRACTION = 0.0
+EVAL_FRACTIONS = (*HELD_OUT_FRACTIONS, CLEAN_ANCHOR_FRACTION)
+PROFILE_GRID = DEFAULT_PROFILE_GRID  # 0.0..0.7 by 0.1 (8 points)
+REPLICATES = 4
+
+FEATURE_DIM = 18
+HIDDEN_DIM = 64
+EPOCHS = 150
+LEARNING_RATE = 1e-3
+TORCH_SEED = 4242
+LAMBDA_AUX = 0.01
+TAU_START = 2.0
+TAU_END = 0.25
+
+FAMILYWISE_ALPHA = 0.05
+NUM_CLAIMS = 4
+PER_CLAIM_ALPHA = FAMILYWISE_ALPHA / NUM_CLAIMS  # 0.0125
+MIN_ELIGIBLE = 30
+AUDIT_TOL = RESIDUAL_TOL  # 1e-9
+H4_MARGIN = -0.05
+
+# One-sided Bonferroni Student-t critical values t.ppf(1 - 0.05/4, n - 1) for
+# the eligible n, computed once at design time with scipy:
+#     from scipy.stats import t
+#     {n: t.ppf(1 - 0.05 / 4, n - 1) for n in range(30, 37)}
+_T_ONE_SIDED_BONFERRONI = {
+    30: 2.36384607320831,
+    31: 2.359562458700931,
+    32: 2.3555682821599135,
+    33: 2.3518351803763706,
+    34: 2.348338377257479,
+    35: 2.3450561343451817,
+    36: 2.3419692993010397,
+}
+
+# The frozen four-claim confirmatory family. The decision logic keys off this
+# table alone; the seal must carry exactly these claim ids, in this order.
+_CLAIM_DEFINITIONS: tuple[dict[str, Any], ...] = (
+    {
+        "id": "h1-held-out-0.6-primary",
+        "fraction": 0.6,
+        "threshold": 0.0,
+        "role": "primary",
+        "description": (
+            "the learned router beats the polluted argmin observed-residual "
+            "oracle at the held-out fraction 0.6"
+        ),
+    },
+    {
+        "id": "h2-held-out-0.5",
+        "fraction": 0.5,
+        "threshold": 0.0,
+        "role": "secondary",
+        "description": (
+            "the learned router beats the polluted argmin observed-residual "
+            "oracle at the held-out fraction 0.5"
+        ),
+    },
+    {
+        "id": "h3-held-out-0.7",
+        "fraction": 0.7,
+        "threshold": 0.0,
+        "role": "secondary",
+        "description": (
+            "the learned router beats the polluted argmin observed-residual "
+            "oracle at the held-out fraction 0.7"
+        ),
+    },
+    {
+        "id": "h4-clean-anchor-bounded-harm",
+        "fraction": 0.0,
+        "threshold": H4_MARGIN,
+        "role": "bounded-harm",
+        "description": (
+            "bounded harm at the clean anchor: the learned router does not "
+            "lose more than 0.05 mean accuracy to the exact oracle at "
+            "fraction 0.0"
+        ),
+    },
+)
+CLAIM_IDS = tuple(definition["id"] for definition in _CLAIM_DEFINITIONS)
+
+# The subfields the seal record must carry for each frozen claim (protocol
+# section 12: id, fraction, theta, null, alternative, reference, bound
+# direction, threshold, support rule).
+_CLAIM_SEAL_KEYS = (
+    "id",
+    "fraction",
+    "theta",
+    "null",
+    "alternative",
+    "reference",
+    "bound_direction",
+    "threshold",
+    "support_rule",
+)
+
+DECLARED_CAVEAT = (
+    "the comparison is asymmetric by design: the learned router reads the "
+    "whole degradation profile anchored at the exact fraction-0 residual; "
+    "the oracle reads only the polluted operating-fraction column. "
+    "Demo-scale numbers are not evidence."
+)
+
+if FEATURE_DIM != degraded_feature_dim(PROFILE_GRID):
+    raise RuntimeError(
+        f"frozen FEATURE_DIM={FEATURE_DIM} disagrees with universa.router: "
+        f"degraded_feature_dim(PROFILE_GRID)={degraded_feature_dim(PROFILE_GRID)}"
+    )
+
+
+class DesignFailureError(RuntimeError):
+    """A frozen-design validation failure: the whole run is a design failure."""
+
+    def __init__(self, message: str, *, seed: int | None = None) -> None:
+        super().__init__(message)
+        self.seed = seed
+
+
+@dataclass(frozen=True)
+class _ReplicateRow:
+    """One (seed, fraction, replicate) observation draw, both arms' input.
+
+    ``features`` is the permuted (K, FEATURE_DIM) float64 degradation-profile
+    block exactly as :func:`universa.router.build_degraded_dataset` computes
+    it (per-candidate profiles of ``log1p`` observed misfit over the grid,
+    slopes, structural dims), and ``observed_residuals`` the raw per-candidate
+    misfits at the operating fraction in the same permuted order — the column
+    the polluted oracle reads. Both derive from ONE shared observation draw,
+    so the arms are exactly paired.
+    """
+
+    seed: int
+    fraction: float
+    replicate: int
+    observation_seed: int
+    features: np.ndarray
+    true_index: int
+    permutation: tuple[int, ...]
+    observed_residuals: tuple[float, ...] | None
+
+
+# ---------------------------------------------------------------------------
+# Hashing, git, and atomic publication helpers.
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def _is_lower_hex(value: Any, length: int) -> bool:
+    return (
+        isinstance(value, str)
+        and len(value) == length
+        and all(character in "0123456789abcdef" for character in value)
+    )
+
+
+def _validate_sha256(value: Any, *, label: str) -> None:
+    if not _is_lower_hex(value, 64):
+        raise RuntimeError(f"stop condition: {label} must be a lowercase SHA-256")
+
+
+def _verified_sha256(
+    project_root: Path, relative_path: str, expected: str, *, label: str
+) -> str:
+    _validate_sha256(expected, label=f"expected {label} fingerprint")
+    path = project_root / relative_path
+    try:
+        actual = _sha256(path)
+    except FileNotFoundError as error:
+        raise RuntimeError(
+            f"stop condition: {label} is missing at {relative_path}"
+        ) from error
+    if actual != expected:
+        raise RuntimeError(
+            f"stop condition: {label} SHA-256 is {actual}, expected {expected}"
+        )
+    return actual
+
+
+def _git_checked(project_root: Path, *args: str) -> str:
+    result = subprocess.run(
+        ("git", *args),
+        cwd=project_root,
+        check=False,
+        capture_output=True,
+        text=True,
+        timeout=15,
+    )
+    if result.returncode != 0:
+        detail = result.stderr.strip() or "unknown git error"
+        raise RuntimeError(
+            f"stop condition: git {' '.join(args)} failed: {detail}"
+        )
+    return result.stdout.strip()
+
+
+def _git_head_blob(project_root: Path, relative_path: str) -> bytes:
+    """The exact bytes of a blob committed at HEAD (no text decoding)."""
+    result = subprocess.run(
+        ("git", "show", f"HEAD:{relative_path}"),
+        cwd=project_root,
+        check=False,
+        capture_output=True,
+        timeout=15,
+    )
+    if result.returncode != 0:
+        detail = result.stderr.decode("utf-8", errors="replace").strip()
+        raise RuntimeError(
+            f"stop condition: git show HEAD:{relative_path} failed: "
+            f"{detail or 'unknown git error'}"
+        )
+    return result.stdout
+
+
+def _code_manifest(project_root: Path) -> dict[str, str]:
+    """Per-file SHA-256 of every ``src/universa/*.py``, sorted by path."""
+    directory = project_root / "src" / "universa"
+    files = sorted(directory.glob("*.py"), key=lambda path: path.name)
+    if not files:
+        raise RuntimeError(
+            "stop condition: no src/universa/*.py files found under the "
+            "project root"
+        )
+    return {
+        file.relative_to(project_root).as_posix(): _sha256(file)
+        for file in files
+    }
+
+
+def _manifest_digest(manifest: dict[str, str]) -> str:
+    canonical = json.dumps(manifest, sort_keys=True).encode("utf-8")
+    return hashlib.sha256(canonical).hexdigest()
+
+
+def _atomic_json_new(path: Path, payload: dict[str, Any]) -> None:
+    """Atomically publish JSON without ever replacing an existing result."""
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(path.suffix + f".{os.getpid()}.tmp")
+    try:
+        with temporary.open("x", encoding="utf-8") as handle:
+            handle.write(json.dumps(payload, indent=2, sort_keys=True) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        try:
+            os.link(temporary, path)
+        except FileExistsError as error:
+            raise RuntimeError(
+                f"stop condition: output appeared during execution: {path}"
+            ) from error
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
+# ---------------------------------------------------------------------------
+# Seal parsing and validation.
+
+
+def _validate_seed_block(block: Any, expected: tuple[int, ...], *, label: str) -> None:
+    if (
+        not isinstance(block, dict)
+        or set(block) - {"first", "last"}
+        or block.get("first") != expected[0]
+        or block.get("last") != expected[-1]
+    ):
+        raise RuntimeError(
+            f"stop condition: design seal {label} must be exactly "
+            f"{{'first': {expected[0]}, 'last': {expected[-1]}}}"
+        )
+
+
+def _load_seal(project_root: Path, seal_relative: str) -> dict[str, Any]:
+    """Parse the committed design seal and validate its frozen structure."""
+
+    path = project_root / seal_relative
+    try:
+        text = path.read_text(encoding="utf-8")
+    except FileNotFoundError as error:
+        raise RuntimeError(
+            f"stop condition: design seal is missing at {seal_relative}"
+        ) from error
+    try:
+        seal = json.loads(text)
+    except json.JSONDecodeError as error:
+        raise RuntimeError(
+            f"stop condition: design seal is not valid JSON: {error}"
+        ) from error
+    if not isinstance(seal, dict):
+        raise RuntimeError("stop condition: design seal must be a JSON object")
+    if seal.get("schema") != SEAL_SCHEMA:
+        raise RuntimeError(
+            f"stop condition: design seal schema must be {SEAL_SCHEMA!r}, got "
+            f"{seal.get('schema')!r}"
+        )
+    required = (
+        "schema",
+        "design_commit",
+        "protocol_sha256",
+        "runner_sha256",
+        "code_manifest",
+        "train_seed_block",
+        "eval_seed_block",
+        "no_preview_declaration",
+        "primary_family",
+        "stop_rules",
+        "output_path",
+    )
+    missing = [key for key in required if key not in seal]
+    if missing:
+        raise RuntimeError(
+            f"stop condition: design seal is missing keys: {missing}"
+        )
+    unknown = sorted(key for key in seal if key not in required)
+    if unknown:
+        raise RuntimeError(
+            f"stop condition: design seal has unknown keys: {unknown}"
+        )
+    if not _is_lower_hex(seal["design_commit"], 40):
+        raise RuntimeError(
+            "stop condition: design seal design_commit must be a full "
+            "lowercase commit hash"
+        )
+    # The pinned design commit must exist in this repository.
+    _git_checked(
+        project_root, "cat-file", "-e", seal["design_commit"] + "^{commit}"
+    )
+    _validate_sha256(seal["protocol_sha256"], label="design seal protocol_sha256")
+    _validate_sha256(seal["runner_sha256"], label="design seal runner_sha256")
+    _validate_seed_block(
+        seal["train_seed_block"], TRAIN_SEEDS, label="train_seed_block"
+    )
+    _validate_seed_block(
+        seal["eval_seed_block"], SEALED_EVAL_SEEDS, label="eval_seed_block"
+    )
+    declaration = seal["no_preview_declaration"]
+    if not isinstance(declaration, str) or not declaration.strip():
+        raise RuntimeError(
+            "stop condition: design seal no_preview_declaration must be a "
+            "nonempty string"
+        )
+    manifest = seal["code_manifest"]
+    if not isinstance(manifest, dict) or not manifest:
+        raise RuntimeError(
+            "stop condition: design seal code_manifest must be a nonempty "
+            "object of per-file SHA-256 values"
+        )
+    for key, value in manifest.items():
+        if (
+            not isinstance(key, str)
+            or not key.startswith("src/universa/")
+            or not key.endswith(".py")
+            or key.count("/") != 2
+        ):
+            raise RuntimeError(
+                "stop condition: design seal code_manifest keys must be "
+                f"src/universa/*.py paths, got {key!r}"
+            )
+        _validate_sha256(value, label=f"design seal code_manifest[{key!r}]")
+    family = seal["primary_family"]
+    if not isinstance(family, list) or len(family) != NUM_CLAIMS:
+        raise RuntimeError(
+            "stop condition: design seal primary_family must list exactly "
+            "the four frozen claims"
+        )
+    for claim in family:
+        if not isinstance(claim, dict):
+            raise RuntimeError(
+                "stop condition: every design seal primary_family entry "
+                "must be a claim object"
+            )
+        missing_claim_keys = [key for key in _CLAIM_SEAL_KEYS if key not in claim]
+        if missing_claim_keys:
+            raise RuntimeError(
+                "stop condition: design seal primary_family entry "
+                f"{claim.get('id')!r} is missing keys: {missing_claim_keys}"
+            )
+        if not isinstance(claim["id"], str):
+            raise RuntimeError(
+                "stop condition: every design seal primary_family entry "
+                "needs a string id"
+            )
+    if tuple(claim["id"] for claim in family) != CLAIM_IDS:
+        raise RuntimeError(
+            "stop condition: design seal primary_family claim ids must be "
+            f"exactly {list(CLAIM_IDS)} in order"
+        )
+    for claim, definition in zip(family, _CLAIM_DEFINITIONS):
+        if (
+            claim["fraction"] != definition["fraction"]
+            or claim["threshold"] != definition["threshold"]
+            or claim["bound_direction"] != "greater"
+            or ("role" in claim and claim["role"] != definition["role"])
+        ):
+            raise RuntimeError(
+                "stop condition: design seal primary_family claim "
+                f"{claim['id']!r} does not match the frozen definition "
+                "(fraction, threshold, bound_direction, role)"
+            )
+    stop_rules = seal["stop_rules"]
+    if (
+        not isinstance(stop_rules, list)
+        or not stop_rules
+        or any(not isinstance(rule, str) or not rule.strip() for rule in stop_rules)
+    ):
+        raise RuntimeError(
+            "stop condition: design seal stop_rules must be a nonempty list "
+            "of nonempty strings"
+        )
+    if not isinstance(seal["output_path"], str) or not seal["output_path"]:
+        raise RuntimeError(
+            "stop condition: design seal output_path must be a nonempty string"
+        )
+    return seal
+
+
+# ---------------------------------------------------------------------------
+# Environment and preflight.
+
+
+def _frozen_protocol_sha256() -> str:
+    """The runner's pinned protocol fingerprint.
+
+    The committed runner embeds the sealed protocol hash; any protocol edit
+    requires re-pinning it. The refusal below is what fires while the value
+    is still the placeholder.
+    """
+    if not _is_lower_hex(PROTOCOL_SHA256, 64):
+        raise RuntimeError(
+            "stop condition: the runner's PROTOCOL_SHA256 is still the "
+            "placeholder PENDING_PROTOCOL_SHA256; the committed runner must "
+            "embed the sealed protocol hash, and any protocol edit requires "
+            "re-pinning it"
+        )
+    return PROTOCOL_SHA256
+
+
+def _execution_environment() -> dict[str, Any]:
+    """Pin single-thread CPU float32 execution and refuse a visible CUDA."""
+
+    torch.set_num_threads(1)
+    if torch.get_num_threads() != 1:
+        raise RuntimeError(
+            "stop condition: PyTorch must run with exactly one thread, got "
+            f"{torch.get_num_threads()}"
+        )
+    if torch.cuda.is_available():
+        raise RuntimeError(
+            "stop condition: CUDA must be unavailable or hidden "
+            "(run with CUDA_VISIBLE_DEVICES=-1)"
+        )
+    probe = torch.tensor([1.0, -2.0], dtype=torch.float32, device="cpu")
+    reduced = float((probe * 3.0).sum())
+    if (
+        probe.dtype is not torch.float32
+        or probe.device.type != "cpu"
+        or reduced != -3.0
+    ):
+        raise RuntimeError("stop condition: CPU float32 tensor operation failed")
+    return {
+        "tensor_device": "cpu",
+        "tensor_dtype": "float32",
+        "torch_num_threads": torch.get_num_threads(),
+        "torch_num_interop_threads": torch.get_num_interop_threads(),
+        "cuda_available": False,
+        "cuda_visible_devices": os.environ.get("CUDA_VISIBLE_DEVICES"),
+        "cuda_visible_devices_operator": OPERATOR_CUDA_VISIBLE_DEVICES,
+        "omp_num_threads": os.environ.get("OMP_NUM_THREADS"),
+        "mkl_num_threads": os.environ.get("MKL_NUM_THREADS"),
+        "argv": list(sys.argv),
+    }
+
+
+def _environment_provenance() -> dict[str, Any]:
+    uname = platform.uname()
+    return {
+        "python": platform.python_version(),
+        "torch": torch.__version__,
+        "numpy": np.__version__,
+        "platform": {
+            "system": uname.system,
+            "node": uname.node,
+            "release": uname.release,
+            "version": uname.version,
+            "machine": uname.machine,
+            "processor": uname.processor,
+        },
+        "torch_cuda_build": torch.version.cuda,
+    }
+
+
+def _preflight(project_root: Path, output: Path, *, seal: str) -> dict[str, Any]:
+    """Fail closed before constructing any instance from a sealed seed.
+
+    Frozen order: output missing -> clean worktree -> seal committed at HEAD
+    -> seal validation -> file hashes -> runtime hash -> environment. No data
+    construction of any kind may happen before this returns.
+    """
+
+    # 1. The output must not exist and must lie inside the project root.
+    if output.exists():
+        raise RuntimeError(f"stop condition: output already exists: {output}")
+    try:
+        output_relative = output.relative_to(project_root).as_posix()
+    except ValueError as error:
+        raise RuntimeError(
+            "stop condition: output must lie inside the project root"
+        ) from error
+
+    # 2. The worktree must be clean; nothing is opened on a dirty tree.
+    status = _git_checked(
+        project_root, "status", "--porcelain", "--untracked-files=all"
+    )
+    if status:
+        raise RuntimeError(
+            "stop condition: working tree is dirty; no seed was opened"
+        )
+
+    # 3. The seal itself must be committed at HEAD, and the committed blob
+    # must equal the on-disk bytes: a clean worktree alone does not catch an
+    # assume-unchanged/skip-worktree swap. A symlinked seal is refused
+    # because git stores symlinks as target text, which would defeat the
+    # blob comparison.
+    seal_path = Path(seal)
+    if seal_path.is_absolute():
+        try:
+            seal_path = seal_path.relative_to(project_root)
+        except ValueError as error:
+            raise RuntimeError(
+                "stop condition: the design seal must lie inside the project root"
+            ) from error
+    seal_relative = seal_path.as_posix()
+    _git_checked(project_root, "cat-file", "-e", f"HEAD:{seal_relative}")
+    if (project_root / seal_relative).is_symlink():
+        raise RuntimeError(
+            f"stop condition: the design seal must not be a symlink: "
+            f"{seal_relative}"
+        )
+    if _git_head_blob(project_root, seal_relative) != (
+        project_root / seal_relative
+    ).read_bytes():
+        raise RuntimeError(
+            "stop condition: the on-disk design seal differs from the seal "
+            "blob committed at HEAD"
+        )
+
+    # 4. Seal structure and frozen content.
+    seal_record = _load_seal(project_root, seal_relative)
+    if seal_record["output_path"] != output_relative:
+        raise RuntimeError(
+            "stop condition: design seal output_path "
+            f"{seal_record['output_path']!r} does not match --output "
+            f"{output_relative!r}"
+        )
+
+    # 5. File hashes: the sealed protocol and the universa code manifest.
+    protocol_constant = _frozen_protocol_sha256()
+    if seal_record["protocol_sha256"] != protocol_constant:
+        raise RuntimeError(
+            "stop condition: embedded protocol fingerprint differs from the "
+            "design seal"
+        )
+    if (project_root / PROTOCOL).is_symlink():
+        raise RuntimeError(
+            f"stop condition: the sealed protocol must not be a symlink: "
+            f"{PROTOCOL}"
+        )
+    protocol_hash = _verified_sha256(
+        project_root, PROTOCOL, protocol_constant, label="sealed protocol"
+    )
+    manifest = _code_manifest(project_root)
+    if seal_record["code_manifest"] != manifest:
+        raise RuntimeError(
+            "stop condition: the design seal code_manifest does not match "
+            "the on-disk src/universa/*.py files"
+        )
+
+    # 6. The running file must be exactly the sealed runner.
+    if (project_root / RUNNER_SOURCE).is_symlink():
+        raise RuntimeError(
+            f"stop condition: the sealed runner must not be a symlink: "
+            f"{RUNNER_SOURCE}"
+        )
+    runner_hash = _sha256(Path(__file__).resolve())
+    if runner_hash != seal_record["runner_sha256"]:
+        raise RuntimeError(
+            "stop condition: the running file's SHA-256 differs from the "
+            "sealed runner"
+        )
+
+    # 7. Environment: CUDA hidden, one torch thread, CPU float32.
+    execution = _execution_environment()
+    environment = _environment_provenance()
+
+    revision = _git_checked(project_root, "rev-parse", "HEAD")
+    return {
+        "git_revision": revision,
+        "execution_revision": revision,
+        "clean_worktree": True,
+        "git_status_porcelain": status,
+        "seal": {
+            "path": seal_relative,
+            "schema": SEAL_SCHEMA,
+            "sha256": _sha256(project_root / seal_relative),
+            "design_commit": seal_record["design_commit"],
+            "committed_at_head": True,
+        },
+        "protocol": {"path": PROTOCOL, "sha256": protocol_hash},
+        "runner": {"path": RUNNER_SOURCE, "sha256": runner_hash},
+        "code_manifest": {
+            "glob": "src/universa/*.py",
+            "sha256": _manifest_digest(manifest),
+            "files": manifest,
+        },
+        "environment": environment,
+        "execution": execution,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Instance construction, audits, and replicate rows.
+
+
+def _replicate_observation_seed(seed: int, fraction: float, replicate: int) -> int:
+    """The frozen R=4 replicate draw, SHARED across both arms."""
+    if replicate < 0:
+        raise ValueError("replicate must be nonnegative")
+    return subseed(seed, "sealed-replicate", str(fraction), str(replicate))
+
+
+def _fraction0_misfits(instance: Any) -> tuple[float, ...]:
+    """Per-candidate observed misfit at fraction 0 (the exact observation).
+
+    At ``corrupt_fraction=0.0`` (masking always 0.0) the observation is
+    exact, so these are the clean commutation residuals; the replicate-0
+    fraction-0.0 observation seed is used for provenance and is inert.
+    """
+    observation_seed = _replicate_observation_seed(instance.seed, 0.0, 0)
+    return tuple(
+        observed_misfit(
+            instance.chain_map,
+            ObservationModel(
+                candidate,
+                observation_seed,
+                mask_fraction=0.0,
+                corrupt_fraction=0.0,
+            ).observe(),
+        )
+        for candidate in instance.candidates
+    )
+
+
+def _build_replicate_row(
+    instance: Any,
+    seed: int,
+    fraction: float,
+    replicate: int,
+    *,
+    with_residuals: bool,
+) -> _ReplicateRow:
+    """One paired replicate row: features for the learned arm, residuals for
+    the oracle, from ONE shared observation draw.
+
+    The feature block is computed exactly as
+    :func:`universa.router.build_degraded_dataset` computes it —
+    :func:`universa.router.degraded_candidate_features` per candidate under a
+    shared observation seed, the per-(seed, fraction) candidate permutation
+    from ``subseed(seed, "router-v1-permutation", fraction key)``, and the
+    same fail-closed fraction-0 audits — with the observation seed replaced
+    by the frozen sealed-replicate draw.
+    """
+    candidates = instance.candidates
+    if len(candidates) != NUM_CANDIDATES:
+        raise DesignFailureError(
+            f"seed {seed}: expected {NUM_CANDIDATES} candidates, got "
+            f"{len(candidates)}",
+            seed=seed,
+        )
+    if not any(abs(g - fraction) <= 1e-9 for g in PROFILE_GRID):
+        raise DesignFailureError(
+            f"seed {seed}: fraction {fraction} is not a profile grid point",
+            seed=seed,
+        )
+    observation_seed = _replicate_observation_seed(seed, fraction, replicate)
+    try:
+        per_candidate = [
+            degraded_candidate_features(
+                instance.chain_map, candidate, observation_seed, PROFILE_GRID
+            )
+            for candidate in candidates
+        ]
+    except DesignFailureError:
+        raise
+    except Exception as error:
+        # A violation inside the certified feature machinery is a
+        # whole-run design failure, never an execution failure.
+        raise DesignFailureError(
+            f"seed {seed}, fraction {fraction}: certified feature "
+            f"construction failed: {type(error).__name__}: {error}",
+            seed=seed,
+        ) from error
+    rng = np.random.default_rng(
+        subseed(seed, "router-v1-permutation", _fraction_key(fraction))
+    )
+    permutation = tuple(int(p) for p in rng.permutation(NUM_CANDIDATES))
+    true_index = permutation.index(0)
+    block = np.stack([per_candidate[p] for p in permutation])
+    if block.shape != (NUM_CANDIDATES, FEATURE_DIM):
+        raise DesignFailureError(
+            f"seed {seed}, fraction {fraction}: feature block has shape "
+            f"{block.shape}, expected {(NUM_CANDIDATES, FEATURE_DIM)}",
+            seed=seed,
+        )
+    if not np.isfinite(block).all():
+        raise DesignFailureError(
+            f"seed {seed}, fraction {fraction}: non-finite features",
+            seed=seed,
+        )
+    clean = np.expm1(block[:, 0])  # grid fraction 0: the exact column
+    if clean[true_index] > AUDIT_TOL:
+        raise DesignFailureError(
+            f"seed {seed}, fraction {fraction}: true candidate misfit "
+            f"{clean[true_index]:.3e} at fraction 0 exceeds {AUDIT_TOL}",
+            seed=seed,
+        )
+    decoy_clean = np.delete(clean, true_index)
+    if float(decoy_clean.min()) <= AUDIT_TOL:
+        raise DesignFailureError(
+            f"seed {seed}, fraction {fraction}: a decoy misfit "
+            f"{float(decoy_clean.min()):.3e} at fraction 0 is at or below "
+            f"{AUDIT_TOL}; ground truth is not separable",
+            seed=seed,
+        )
+    residuals = None
+    if with_residuals:
+        try:
+            raw = [
+                observed_misfit(
+                    instance.chain_map,
+                    ObservationModel(
+                        candidate,
+                        observation_seed,
+                        mask_fraction=0.0,
+                        corrupt_fraction=fraction,
+                    ).observe(),
+                )
+                for candidate in candidates
+            ]
+        except Exception as error:
+            raise DesignFailureError(
+                f"seed {seed}, fraction {fraction}: certified residual "
+                f"computation failed: {type(error).__name__}: {error}",
+                seed=seed,
+            ) from error
+        residuals = tuple(float(raw[p]) for p in permutation)
+    return _ReplicateRow(
+        seed=seed,
+        fraction=fraction,
+        replicate=replicate,
+        observation_seed=observation_seed,
+        features=block,
+        true_index=true_index,
+        permutation=permutation,
+        observed_residuals=residuals,
+    )
+
+
+def _build_train_block() -> tuple[np.ndarray, np.ndarray]:
+    """The frozen train block: one row per (seed, fraction), 1000 rows.
+
+    Built by :func:`universa.router.build_degraded_dataset` itself with the
+    frozen instance constants — one observation draw per (seed, fraction)
+    (``subseed(seed, "router-v1-observe", key)``), not the sealed-replicate
+    draws, which exist only for the eval pairing. The dataset's own
+    fail-closed audits apply; any violation is a whole-run design failure,
+    never a dropped row.
+    """
+    try:
+        features, labels, _metadata = build_degraded_dataset(
+            TRAIN_SEEDS,
+            TRAIN_FRACTIONS,
+            profile_grid=PROFILE_GRID,
+            num_vertices=NUM_VERTICES,
+            num_edges=NUM_EDGES,
+            num_classes=NUM_CLASSES,
+            num_decoys=NUM_DECOYS,
+        )
+    except Exception as error:
+        raise DesignFailureError(
+            f"train block construction failed: {type(error).__name__}: "
+            f"{error}"
+        ) from error
+    expected_rows = len(TRAIN_SEEDS) * len(TRAIN_FRACTIONS)
+    if features.shape != (expected_rows, NUM_CANDIDATES, FEATURE_DIM):
+        raise DesignFailureError(
+            f"train block has shape {features.shape}, expected "
+            f"{(expected_rows, NUM_CANDIDATES, FEATURE_DIM)}"
+        )
+    return features, labels
+
+
+def _model_state_sha256(model: Any) -> str:
+    """Canonical model-state fingerprint of the frozen design.
+
+    SHA-256 over the concatenation, in lexicographic name order, of each
+    ``state_dict`` entry's UTF-8 name, a NUL byte, and its little-endian
+    float32 bytes.
+    """
+    digest = hashlib.sha256()
+    for name, tensor in sorted(model.state_dict().items()):
+        digest.update(name.encode("utf-8"))
+        digest.update(b"\x00")
+        array = tensor.detach().cpu().contiguous().numpy()
+        digest.update(array.astype("<f4", copy=False).tobytes(order="C"))
+    return digest.hexdigest()
+
+
+def _train_model(
+    features: np.ndarray, labels: np.ndarray
+) -> tuple[Any, dict[str, Any]]:
+    """Train the one frozen StructureRouter and record training provenance."""
+    # The frozen design defines no validation split; the train block itself
+    # is passed as the validation monitor (history-only — it cannot affect
+    # the fitted parameters), so only train seeds are ever seen.
+    dataset = (features, labels, ())
+    try:
+        model, history = train_router(
+            dataset,
+            dataset,
+            EPOCHS,
+            lr=LEARNING_RATE,
+            seed=TORCH_SEED,
+            lambda_aux=LAMBDA_AUX,
+            tau_start=TAU_START,
+            tau_end=TAU_END,
+            hidden_dim=HIDDEN_DIM,
+            feature_dim=FEATURE_DIM,
+        )
+    except Exception as error:
+        # A violation inside the certified training machinery (e.g. a
+        # non-finite loss) is a whole-run design failure, never an
+        # execution failure — the same classification _build_train_block
+        # applies.
+        raise DesignFailureError(
+            f"the frozen training call failed: {type(error).__name__}: "
+            f"{error}"
+        ) from error
+    provenance = {
+        "torch_seed": TORCH_SEED,
+        "epochs": EPOCHS,
+        "lr": LEARNING_RATE,
+        "lambda_aux": LAMBDA_AUX,
+        "tau_start": TAU_START,
+        "tau_end": TAU_END,
+        "hidden_dim": HIDDEN_DIM,
+        "feature_dim": FEATURE_DIM,
+        "optimizer": "full-batch Adam",
+        "dtype_device": "CPU float32",
+        "num_train_rows": int(labels.shape[0]),
+        "standardization": "input mean/std measured on the train block only",
+        "validation_monitor": (
+            "the train block itself; the frozen design defines no "
+            "validation split"
+        ),
+        "final": {
+            key: float(history[key][-1])
+            for key in (
+                "loss",
+                "cross_entropy",
+                "aux_loss",
+                "tau",
+                "train_accuracy",
+                "val_accuracy",
+                "gate_entropy",
+            )
+        },
+        "model_state_sha256": _model_state_sha256(model),
+    }
+    return model, provenance
+
+
+# ---------------------------------------------------------------------------
+# Inference: per-seed paired differences and the four frozen claims.
+
+
+def _score_row(
+    model: Any,
+    features: np.ndarray,
+    observed_residuals: tuple[float, ...],
+    true_index: int,
+) -> tuple[bool, bool]:
+    """Score one replicate row under both arms: (learned_correct, oracle_correct).
+
+    Learned: strictly discrete hard argmax over candidate logits. Oracle:
+    argmin over the per-candidate observed residuals at the operating
+    fraction (the row's profile column; log1p is strictly increasing, so
+    this is exactly argmin of the misfit). Both read the same row, so the
+    correctness pair is exactly paired.
+    """
+    learned_index = int(hard_predictions(model, features[np.newaxis])[0])
+    oracle_index = int(np.argmin(np.asarray(observed_residuals)))
+    return learned_index == true_index, oracle_index == true_index
+
+
+def _estimand(definition: dict[str, Any]) -> str:
+    return (
+        f"mean over eligible seeds of d(seed, {definition['fraction']}) with "
+        "d = learned_acc - oracle_acc, accuracies over "
+        f"R={REPLICATES} shared replicate draws"
+    )
+
+
+def _claim_summary(
+    definition: dict[str, Any], values: list[float]
+) -> dict[str, Any]:
+    """One-sided Student-t lower bound for one claim's per-seed differences."""
+    n = len(values)
+    if n not in _T_ONE_SIDED_BONFERRONI:
+        raise DesignFailureError(
+            f"no frozen Bonferroni critical value for n={n}; the design "
+            "pins n = 30..36"
+        )
+    critical = _T_ONE_SIDED_BONFERRONI[n]
+    estimate = statistics.fmean(values)
+    sd = statistics.stdev(values)  # sample SD, ddof=1
+    se = sd / math.sqrt(n)
+    lower_bound = estimate - critical * se
+    threshold = definition["threshold"]
+    return {
+        "id": definition["id"],
+        "role": definition["role"],
+        "description": definition["description"],
+        "fraction": definition["fraction"],
+        "estimand": _estimand(definition),
+        "direction": "greater",
+        "threshold": threshold,
+        "n": n,
+        "estimate": estimate,
+        "standard_deviation": sd,
+        "standard_error": se,
+        "critical_value": critical,
+        "lower_bound": lower_bound,
+        "supported": bool(lower_bound > threshold),
+    }
+
+
+def _claims_family(claims: list[dict[str, Any]]) -> dict[str, Any]:
+    return {
+        "family_size": NUM_CLAIMS,
+        "familywise_alpha": FAMILYWISE_ALPHA,
+        "per_claim_alpha": PER_CLAIM_ALPHA,
+        "method": (
+            "one-sided Student-t lower bounds with Bonferroni correction; "
+            "the generator seed is the inference unit"
+        ),
+        "critical_values_n30_to_n36": {
+            str(n): value for n, value in sorted(_T_ONE_SIDED_BONFERRONI.items())
+        },
+        "claims": claims,
+    }
+
+
+def _claim_inference(paired: list[dict[str, Any]]) -> dict[str, Any]:
+    claims = [
+        _claim_summary(
+            definition,
+            [
+                row["d"]
+                for row in paired
+                if row["fraction"] == definition["fraction"]
+            ],
+        )
+        for definition in _CLAIM_DEFINITIONS
+    ]
+    return _claims_family(claims)
+
+
+def _null_claims() -> dict[str, Any]:
+    """All four frozen claims with a null decision after a failed run."""
+    claims = []
+    for definition in _CLAIM_DEFINITIONS:
+        claims.append(
+            {
+                "id": definition["id"],
+                "role": definition["role"],
+                "description": definition["description"],
+                "fraction": definition["fraction"],
+                "estimand": _estimand(definition),
+                "direction": "greater",
+                "threshold": definition["threshold"],
+                "n": None,
+                "estimate": None,
+                "standard_deviation": None,
+                "standard_error": None,
+                "critical_value": None,
+                "lower_bound": None,
+                "supported": None,
+            }
+        )
+    family = _claims_family(claims)
+    family["critical_values_n30_to_n36"] = None
+    family["role"] = "no confirmatory decision: the run did not complete"
+    return family
+
+
+# ---------------------------------------------------------------------------
+# Audit and design records.
+
+
+def _recompute_paired(raw_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Per-(seed, fraction) accuracies and differences, from raw rows only."""
+    groups: dict[tuple[int, float], list[dict[str, Any]]] = {}
+    order: list[tuple[int, float]] = []
+    for row in raw_rows:
+        key = (row["seed"], row["fraction"])
+        if key not in groups:
+            groups[key] = []
+            order.append(key)
+        groups[key].append(row)
+    recomputed = []
+    for seed, fraction in order:
+        rows = groups[(seed, fraction)]
+        learned = sum(1 for row in rows if row["learned_correct"]) / len(rows)
+        oracle = sum(1 for row in rows if row["oracle_correct"]) / len(rows)
+        recomputed.append(
+            {
+                "seed": seed,
+                "fraction": fraction,
+                "replicates": len(rows),
+                "learned_acc": learned,
+                "oracle_acc": oracle,
+                "d": learned - oracle,
+            }
+        )
+    return recomputed
+
+
+def _audit_block(
+    eligibility: dict[str, Any],
+    raw_rows: list[dict[str, Any]],
+    *,
+    complete: bool,
+) -> dict[str, Any]:
+    """Eligibility counts plus raw-row-recomputable claim aggregation."""
+    block: dict[str, Any] = {
+        "recompute_scope": (
+            "the eligibility counts and seed ids come from the eligibility "
+            "pass, not from the raw rows; the learned arm's per-row bits "
+            "are recomputable only with the retained model (hash-pinned in "
+            "training.model_state_sha256), so this block recomputes the "
+            "aggregation from the retained raw rows, not the learned arm"
+        ),
+        "declared_seeds": eligibility["declared"],
+        "eligible_seeds": eligibility["eligible"],
+        "eligible_seed_ids": list(eligibility["eligible_seeds"]),
+        "ineligible_seed_rows": len(eligibility["ineligible"]),
+        "build_failure_rows": len(eligibility["build_failures"]),
+        "raw_rows": len(raw_rows),
+        "replicates_per_seed_fraction": REPLICATES,
+    }
+    if complete:
+        recomputed = _recompute_paired(raw_rows)
+        block["per_seed_fraction"] = recomputed
+        claims: dict[str, Any] = {}
+        for definition in _CLAIM_DEFINITIONS:
+            values = [
+                row["d"]
+                for row in recomputed
+                if row["fraction"] == definition["fraction"]
+            ]
+            n = len(values)
+            if n not in _T_ONE_SIDED_BONFERRONI:
+                raise DesignFailureError(
+                    f"no frozen Bonferroni critical value for n={n}; the "
+                    "design pins n = 30..36"
+                )
+            estimate = statistics.fmean(values)
+            standard_error = statistics.stdev(values) / math.sqrt(n)
+            lower_bound = (
+                estimate - _T_ONE_SIDED_BONFERRONI[n] * standard_error
+            )
+            claims[definition["id"]] = {
+                "estimate": estimate,
+                "standard_error": standard_error,
+                "lower_bound": lower_bound,
+                "supported": bool(lower_bound > definition["threshold"]),
+            }
+        block["claims"] = claims
+    return block
+
+
+def _design_record() -> dict[str, Any]:
+    return {
+        "experiment_id": EXPERIMENT_ID,
+        "canonical_command": CANONICAL_COMMAND,
+        "task_family": (
+            "graph-quotient switch instances via "
+            "universa.budgets.make_budget_instance(num_vertices=8, "
+            "num_edges=14, num_classes=6, num_decoys=3); K=4 candidates, "
+            "true target at index 0 pre-permutation"
+        ),
+        "observation_degradation": (
+            "universa.partial.ObservationModel sign-corruption only "
+            "(mask_fraction = 0.0 always)"
+        ),
+        "feature": (
+            "the 18-dim degradation-profile feature vector exactly as "
+            "universa.router.build_degraded_dataset computes it"
+        ),
+        "profile_grid": list(PROFILE_GRID),
+        "train_seeds": {"first": TRAIN_SEEDS[0], "last": TRAIN_SEEDS[-1]},
+        "eval_seeds": {
+            "first": SEALED_EVAL_SEEDS[0],
+            "last": SEALED_EVAL_SEEDS[-1],
+        },
+        "train_fractions": list(TRAIN_FRACTIONS),
+        "eval_fractions": list(EVAL_FRACTIONS),
+        "held_out_fractions": list(HELD_OUT_FRACTIONS),
+        "clean_anchor_fraction": CLEAN_ANCHOR_FRACTION,
+        "replicates": REPLICATES,
+        "replicate_subseed": (
+            "subseed(seed, 'sealed-replicate', str(fraction), "
+            "str(replicate_index)), shared across both arms"
+        ),
+        "permutation": (
+            "per (seed, fraction) from subseed(seed, "
+            "'router-v1-permutation', fraction) exactly as "
+            "universa.router.build_degraded_dataset, with audited labels"
+        ),
+        "training": {
+            "model": "StructureRouter(feature_dim=18, hidden_dim=64)",
+            "epochs": EPOCHS,
+            "lr": LEARNING_RATE,
+            "torch_seed": TORCH_SEED,
+            "lambda_aux": LAMBDA_AUX,
+            "tau_start": TAU_START,
+            "tau_end": TAU_END,
+            "optimizer": "full-batch Adam",
+            "dtype_device": "CPU float32",
+            "standardization": "train block only",
+        },
+        "inference_unit": "the generator seed",
+        "estimand": (
+            "per (seed, fraction) paired difference d = learned_acc - "
+            "oracle_acc, accuracies over R=4 shared replicates"
+        ),
+        "familywise_alpha": FAMILYWISE_ALPHA,
+        "per_claim_alpha": PER_CLAIM_ALPHA,
+        "minimum_eligible": MIN_ELIGIBLE,
+        "eligibility_rule": (
+            "the instance builds and the fraction-0 audit passes (true "
+            "misfit <= 1e-9, every decoy > 1e-9)"
+        ),
+        "no_outcome_dependent_stopping": True,
+        "no_seed_deletion": True,
+        "declared_caveat": DECLARED_CAVEAT,
+    }
+
+
+# ---------------------------------------------------------------------------
+# The sealed campaign.
+
+
+def run(project_root: Path, output: Path, *, seal: str = DEFAULT_SEAL) -> dict[str, Any]:
+    """Run the complete sealed design after fail-closed preflight checks.
+
+    The terminal status is one of ``complete``, ``design_failure``,
+    ``design_failure_insufficient_eligible``, ``execution_failure``, or
+    ``interrupted``. Every failure path preserves all completed raw rows and
+    emits all four claims with ``supported: null``.
+    """
+
+    provenance = _preflight(project_root, output, seal=seal)
+
+    # Eligibility pass over ALL sealed eval seeds, before any fit: an
+    # instance build exception is a whole-run design failure (never an
+    # exclusion); a fraction-0 audit failure makes the seed ineligible with
+    # a recorded reason. No outcome-dependent stopping, no seed deletion.
+    # Any other failure of the pass itself is classified into the frozen
+    # status vocabulary below, preserving every completed seed record.
+    seed_records: list[dict[str, Any]] = []
+    eligible: list[tuple[int, Any]] = []
+    build_failure: dict[str, Any] | None = None
+    eligibility_failure: tuple[str, BaseException] | None = None
+    try:
+        for seed in SEALED_EVAL_SEEDS:
+            try:
+                instance = make_budget_instance(
+                    seed, NUM_VERTICES, NUM_EDGES, NUM_CLASSES, NUM_DECOYS
+                )
+            except Exception as error:  # a build exception stops the whole run
+                build_failure = {
+                    "seed": seed,
+                    "type": type(error).__name__,
+                    "message": str(error),
+                }
+                break
+            misfits = _fraction0_misfits(instance)
+            true_misfit, decoy_misfits = misfits[0], misfits[1:]
+            problems = []
+            if true_misfit > AUDIT_TOL:
+                problems.append(
+                    f"true candidate misfit {true_misfit:.3e} at fraction 0 "
+                    f"exceeds {AUDIT_TOL}"
+                )
+            bad_decoys = [
+                (index, misfit)
+                for index, misfit in enumerate(decoy_misfits)
+                if misfit <= AUDIT_TOL
+            ]
+            for index, misfit in bad_decoys:
+                problems.append(
+                    f"decoy {index} misfit {misfit:.3e} at fraction 0 is at or "
+                    f"below {AUDIT_TOL}"
+                )
+            seed_records.append(
+                {
+                    "seed": seed,
+                    "eligible": not problems,
+                    "reason": None if not problems else "; ".join(problems),
+                    "true_misfit_fraction0": true_misfit,
+                    "decoy_misfits_fraction0": list(decoy_misfits),
+                    "threshold": instance.threshold,
+                }
+            )
+            if not problems:
+                eligible.append((seed, instance))
+    except DesignFailureError as error:
+        eligibility_failure = ("design_failure", error)
+    except KeyboardInterrupt as error:
+        eligibility_failure = ("interrupted", error)
+    except Exception as error:  # unexpected faults are preserved
+        eligibility_failure = ("execution_failure", error)
+
+    eligibility = {
+        "declared": len(SEALED_EVAL_SEEDS),
+        "attempted": len(seed_records) + (1 if build_failure else 0),
+        "eligible": len(eligible),
+        "eligible_seeds": [seed for seed, _ in eligible],
+        "ineligible": [
+            {"seed": record["seed"], "reason": record["reason"]}
+            for record in seed_records
+            if not record["eligible"]
+        ],
+        "build_failures": [build_failure] if build_failure else [],
+    }
+    base: dict[str, Any] = {
+        "schema": RESULT_SCHEMA,
+        "experiment_id": EXPERIMENT_ID,
+        "provenance": provenance,
+        "design": _design_record(),
+        "eligibility": eligibility,
+        "seed_records": seed_records,
+    }
+    if eligibility_failure is not None:
+        status, error = eligibility_failure
+        base["status"] = status
+        base["failure"] = {
+            "seed": getattr(error, "seed", None),
+            "phase": "eligibility",
+            "type": type(error).__name__,
+            "message": str(error) or type(error).__name__,
+        }
+        base["stop_condition"] = (
+            "the eligibility pass itself failed; every completed seed "
+            "record is preserved and every claim carries a null decision"
+        )
+        base["training"] = None
+        base["raw_rows"] = []
+        base["paired"] = []
+        base["claims"] = _null_claims()
+        base["audit"] = _audit_block(eligibility, [], complete=False)
+        return base
+    if build_failure is not None:
+        base["status"] = "design_failure"
+        base["failure"] = {
+            "seed": build_failure["seed"],
+            "phase": "eligibility",
+            "type": build_failure["type"],
+            "message": build_failure["message"],
+        }
+        base["stop_condition"] = (
+            "an instance build exception is a whole-run design failure, "
+            "never an exclusion; no fits ran"
+        )
+        base["training"] = None
+        base["raw_rows"] = []
+        base["paired"] = []
+        base["claims"] = _null_claims()
+        base["audit"] = _audit_block(eligibility, [], complete=False)
+        return base
+    if len(eligible) < MIN_ELIGIBLE:
+        base["status"] = "design_failure_insufficient_eligible"
+        base["stop_condition"] = (
+            f"only {len(eligible)} seeds were eligible; minimum is "
+            f"{MIN_ELIGIBLE}; no fits ran and no claims were decided"
+        )
+        base["training"] = None
+        base["raw_rows"] = []
+        base["paired"] = []
+        base["claims"] = _null_claims()
+        base["audit"] = _audit_block(eligibility, [], complete=False)
+        return base
+
+    raw_rows: list[dict[str, Any]] = []
+    training: dict[str, Any] | None = None
+    failure: tuple[str, BaseException] | None = None
+    try:
+        train_features, train_labels = _build_train_block()
+        model, training = _train_model(train_features, train_labels)
+        for seed, instance in eligible:
+            try:
+                for fraction in EVAL_FRACTIONS:
+                    for replicate in range(REPLICATES):
+                        row = _build_replicate_row(
+                            instance, seed, fraction, replicate,
+                            with_residuals=True,
+                        )
+                        assert row.observed_residuals is not None
+                        learned_correct, oracle_correct = _score_row(
+                            model,
+                            row.features,
+                            row.observed_residuals,
+                            row.true_index,
+                        )
+                        raw_rows.append(
+                            {
+                                "seed": seed,
+                                "fraction": fraction,
+                                "replicate_index": replicate,
+                                "observation_seed": row.observation_seed,
+                                "learned_correct": learned_correct,
+                                "oracle_correct": oracle_correct,
+                                "observed_residuals": list(
+                                    row.observed_residuals
+                                ),
+                                "permutation": list(row.permutation),
+                                "true_index": row.true_index,
+                            }
+                        )
+            except BaseException as error:
+                if getattr(error, "seed", None) is None:
+                    error.seed = seed
+                raise
+        # Fail-closed row-count invariant: every eligible seed must have
+        # contributed exactly R rows per eval fraction before any summary.
+        expected_rows = REPLICATES * len(EVAL_FRACTIONS) * len(eligible)
+        if len(raw_rows) != expected_rows:
+            raise DesignFailureError(
+                f"row-count invariant violated: {len(raw_rows)} raw rows, "
+                f"expected {expected_rows} (R={REPLICATES} x "
+                f"{len(EVAL_FRACTIONS)} fractions x {len(eligible)} "
+                "eligible seeds)"
+            )
+        # Summaries are computed only after every required raw row has
+        # completed (frozen stop rule: no interim analysis).
+        paired = _recompute_paired(raw_rows)
+        base["claims"] = _claim_inference(paired)
+    except DesignFailureError as error:
+        failure = ("design_failure", error)
+    except KeyboardInterrupt as error:
+        failure = ("interrupted", error)
+    except Exception as error:  # unexpected faults are preserved
+        failure = ("execution_failure", error)
+
+    base["training"] = training
+    base["raw_rows"] = raw_rows
+    base["paired"] = _recompute_paired(raw_rows)
+    if failure is not None:
+        status, error = failure
+        base["status"] = status
+        base["failure"] = {
+            "seed": getattr(error, "seed", None),
+            "phase": "campaign",
+            "type": type(error).__name__,
+            "message": str(error) or type(error).__name__,
+        }
+        base["stop_condition"] = (
+            "the campaign stopped before completion; all completed raw rows "
+            "are preserved and every claim carries a null decision"
+        )
+        base["claims"] = _null_claims()
+        base["audit"] = _audit_block(eligibility, raw_rows, complete=False)
+        return base
+
+    # TOCTOU guard, just before a COMPLETE artifact is published: the
+    # worktree must still be clean and the universa code manifest unchanged
+    # since preflight. The post-run status is recorded next to the pre-run
+    # one in the provenance.
+    post_run_status = _git_checked(
+        project_root, "status", "--porcelain", "--untracked-files=all"
+    )
+    if post_run_status:
+        raise RuntimeError(
+            "stop condition: working tree became dirty during execution"
+        )
+    if _code_manifest(project_root) != provenance["code_manifest"]["files"]:
+        raise RuntimeError(
+            "stop condition: src/universa/*.py changed during execution"
+        )
+    provenance["git_status_porcelain_post_run"] = post_run_status
+    base["audit"] = _audit_block(eligibility, raw_rows, complete=True)
+    base["status"] = "complete"
+    return base
+
+
+def main(argv: list[str] | None = None) -> int:
+    default_root = Path(__file__).resolve().parent.parent
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--project-root", type=Path, default=default_root)
+    parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument(
+        "--seal",
+        default=DEFAULT_SEAL,
+        help=(
+            "repository-relative path of the committed design-seal JSON "
+            f"(default: {DEFAULT_SEAL})"
+        ),
+    )
+    args = parser.parse_args(argv)
+    root = args.project_root.expanduser().resolve()
+    output = args.output.expanduser().resolve()
+    report = run(root, output, seal=args.seal)
+    if report["status"] == "complete":
+        publish_path = output
+    else:
+        # Failure artifacts never occupy the canonical output path; the
+        # deterministic per-status failure name is likewise no-clobber.
+        publish_path = (
+            output.parent
+            / "failures"
+            / f"{output.stem}.{report['status']}{output.suffix}"
+        )
+    try:
+        _atomic_json_new(publish_path, report)
+    except RuntimeError as error:
+        # The target was occupied or appeared mid-run: preserve the attempt
+        # under a distinct secondary path and still exit non-zero.
+        publish_path = publish_path.with_name(
+            f"{publish_path.name}.{os.getpid()}.failed.json"
+        )
+        _atomic_json_new(publish_path, report)
+        print(
+            json.dumps(
+                {
+                    "status": report["status"],
+                    "eligible": report["eligibility"]["eligible"],
+                    "output": str(publish_path),
+                    "publish_error": str(error),
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 2
+    print(
+        json.dumps(
+            {
+                "status": report["status"],
+                "eligible": report["eligibility"]["eligible"],
+                "output": str(publish_path),
+                "supported_claims": [
+                    claim["id"]
+                    for claim in report.get("claims", {}).get("claims", [])
+                    if claim["supported"]
+                ],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0 if report["status"] == "complete" else 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

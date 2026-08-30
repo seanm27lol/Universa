@@ -105,10 +105,12 @@ stays torch-free, and torch is an optional dependency:
 - Router v2 (`universa.router_v2`, no-anchor regime): mask 0.25 plus
   sign-corruption over a grid that excludes 0.0 — no clean column
   anywhere, eligibility bookkeeping never entering features. The learned
-  router still beats the polluted oracle decisively
-  (0.9375 vs 0.0625/0.0625/0.0000 at held-out 0.6/0.7/0.8 on the demo
-  block), answering the strongest criticism of the v1 win. See
-  `examples/router_v2_demo.py`.
+  router still beats the polluted oracle decisively, answering the
+  strongest criticism of the v1 win. **Second sealed result
+  (`docs/06-router-v2-sealed-1-results.md`):** all four claims supported
+  at n=36 — margins +0.90/+0.94/+0.99 against the oracle at held-out
+  0.6/0.7/0.8 and +0.67 against the non-learned profile heuristic, with
+  per-row draw convention replacing the demo's per-instance artifact.
 - `universa.partial2` — observation models for 2-complexes: independent
   B1/B2 sign corruption, consistent edge masking (B1 columns with their
   B2 rows), and observed d^2 violation handled by design: the observed

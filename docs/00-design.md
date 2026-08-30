@@ -108,8 +108,21 @@ argmin oracle collapses to 0.3750/0.0625/0.0000 — the first regime where
 the learned router earns its keep, and the mechanism is honest: the
 oracle is myopic (one polluted column) while the router integrates the
 degradation trajectory anchored at the exact fraction-0 residual. The
-comparison is asymmetric by design and reported as such; a harder v2 would
-remove the clean anchor entirely (masked + corrupted observation).
+comparison is asymmetric by design and reported as such.
+
+v2 implemented (`router_v2.py`): the no-anchor regime — mask_fraction 0.25
+plus sign-corruption over a profile grid that excludes 0.0 entirely, so no
+clean column exists anywhere (eligibility bookkeeping on the undegraded
+instance never enters features). The learned router still beats the
+polluted oracle decisively (0.9375 vs 0.0625/0.0625/0.0000 at held-out
+0.6/0.7/0.8 on the demo block), which answers the strongest criticism of
+the v1 win. One structural caveat recorded in the module: with a
+per-instance observation draw the operating fraction selects only the
+oracle's column, so learned accuracy is constant across eval fractions by
+design. `partial2.py` extends observation models to 2-complexes with
+observed d^2 violation handled by design (the observed object is a
+purported structure, not a valid complex). A sealed v2 experiment is the
+next candidate for the ceremony.
 
 ## 5. Seeded library plus discovery
 

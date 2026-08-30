@@ -102,6 +102,19 @@ stays torch-free, and torch is an optional dependency:
   but asymmetric by design — the learned router integrates the whole
   degradation trajectory anchored at the exact fraction-0 residual while
   the oracle reads one polluted column; see `examples/router_v1_demo.py`.
+- Router v2 (`universa.router_v2`, no-anchor regime): mask 0.25 plus
+  sign-corruption over a grid that excludes 0.0 — no clean column
+  anywhere, eligibility bookkeeping never entering features. The learned
+  router still beats the polluted oracle decisively
+  (0.9375 vs 0.0625/0.0625/0.0000 at held-out 0.6/0.7/0.8 on the demo
+  block), answering the strongest criticism of the v1 win. See
+  `examples/router_v2_demo.py`.
+- `universa.partial2` — observation models for 2-complexes: independent
+  B1/B2 sign corruption, consistent edge masking (B1 columns with their
+  B2 rows), and observed d^2 violation handled by design: the observed
+  object is a purported structure, not a valid complex — under
+  corruption the true target can fail d^2 while decoys stay valid, which
+  is part of why this regime is hard.
 
 Discovery head (numpy only):
 
@@ -115,7 +128,7 @@ Discovery head (numpy only):
   full coverage recovered and the planted map's misfit against the
   discovered constraint below 1e-9 on all documented seeds.
 
-137 tests plus the sealed-experiment suite. **First sealed result
+235 tests. **First sealed result
 (`docs/03-router-v1-sealed-1-results.md`):** on the graph-quotient family
 under sign-corrupted observation, the learned router beat the polluted
 oracle at every held-out fraction — mean paired accuracy margins +0.73

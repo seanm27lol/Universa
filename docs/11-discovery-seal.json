@@ -34,7 +34,7 @@
   "primary_family": [
     {
       "id": "h1-discovery-coverage-floor",
-      "statistic": "coverage_fraction",
+      "statistic": "coverage",
       "theta": "mean over eligible seeds of coverage_fraction = dim(S_disc) / dim(ker B1_true)",
       "null": "theta <= 0.9",
       "alternative": "theta > 0.9",
@@ -44,7 +44,7 @@
     },
     {
       "id": "h2-discovery-certification-rate",
-      "statistic": "certification_indicator",
+      "statistic": "cert",
       "theta": "mean over eligible seeds of 1{certificate residual <= 1e-10}",
       "null": "theta <= 0.95",
       "alternative": "theta > 0.95",
@@ -54,7 +54,7 @@
     },
     {
       "id": "h3-discovery-admission-ready",
-      "statistic": "misfit_indicator",
+      "statistic": "misfit",
       "theta": "mean over eligible seeds of 1{planted-map misfit against the discovered constraint <= 1e-9}",
       "null": "theta <= 0.95",
       "alternative": "theta > 0.95",
@@ -64,7 +64,7 @@
     },
     {
       "id": "h4-discovery-false-discovery-control",
-      "statistic": "refusal_indicator",
+      "statistic": "refusal",
       "theta": "mean over eligible seeds of 1{DiscoveryInsufficient returned on structure-free observations}",
       "null": "theta <= 0.95",
       "alternative": "theta > 0.95",

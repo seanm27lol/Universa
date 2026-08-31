@@ -117,6 +117,11 @@ stays torch-free, and torch is an optional dependency:
   object is a purported structure, not a valid complex — under
   corruption the true target can fail d^2 while decoys stay valid, which
   is part of why this regime is hard.
+- `universa.partial_sheaf` / `universa.partial_group` — observation
+  models for cellular sheaves (edge masking plus restriction-entry
+  sign corruption, dyadic-exact) and for group nerves (multiplication-
+  table corruption bypassing category validation, with the closed-form
+  degradation law `sqrt(2 (s/m)^2 round(f m^2))`).
 
 Discovery head (numpy only):
 
@@ -130,16 +135,30 @@ Discovery head (numpy only):
   full coverage recovered and the planted map's misfit against the
   discovered constraint below 1e-9 on all documented seeds.
 
-235 tests. **First sealed result
-(`docs/03-router-v1-sealed-1-results.md`):** on the graph-quotient family
-under sign-corrupted observation, the learned router beat the polluted
-oracle at every held-out fraction — mean paired accuracy margins +0.73
-(0.5), +0.91 (0.6, primary), +0.99 (0.7), all with one-sided Bonferroni
-lower bounds far above zero at n=36 — and matched the exact oracle at the
-clean anchor (bounded harm, zero variance). Full HOMYMOLY ceremony:
-frozen protocol, two-commit seal pushed before any sealed seed was
-opened, canonical run, independent recomputation from raw rows, immutable
-result artifact. Scope caveats in the results record.
+505 tests. **Sealed results so far (all under the full ceremony: frozen
+protocol, two-commit seal pushed before any sealed seed was opened,
+canonical run, independent recomputation from raw rows, immutable result
+artifact):**
+
+1. **router-v1** (`docs/03`): graph-quotient family, sign-corrupted
+   observation — learned router beats the polluted oracle at every
+   held-out fraction (+0.73/+0.91/+0.99 at 0.5/0.6/0.7) and loses
+   nothing at the clean anchor (bounded harm), 4/4 claims, n=36.
+2. **router-v2 no-anchor** (`docs/06`): masked edges + corruption, grid
+   excluding 0.0 — beats the oracle (+0.90/+0.94/+0.99 at 0.6/0.7/0.8)
+   AND the non-learned profile heuristic (+0.67), 4/4 claims, n=36.
+3. **router-2complex** (`docs/09`): 2-complex family, two constrained
+   degrees, no-anchor dual corruption — beats the oracle
+   (+0.82/+0.88/+0.94) and the heuristic (+0.58), 4/4 claims, n=36;
+   debuts full-profile raw-row retention (both non-learned arms
+   recompute from raw rows alone).
+4. **discovery** (`docs/12`): the certified discovery head with the
+   truth withheld — full kernel coverage, certification, router-ready
+   misfit, and false-discovery refusal ALL unanimous (1.0000) on 36/36
+   seeds against pre-registered floors (0.90/0.95/0.95/0.95), 4/4
+   claims; no learned model.
+
+Scope caveats in each results record.
 
 ## Layout
 

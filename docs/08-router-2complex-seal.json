@@ -1,6 +1,6 @@
 {
   "schema": "universa-seal/3",
-  "design_commit": "ffd189ce2a58810dd3eb13a55f4e0a6f0f6d04e28a",
+  "design_commit": "ffd189c44e1a21f2f73216ee0682b7c9b7ea15a3",
   "protocol_sha256": "792866b64cf5f18b7dcc701c4277d6e1930d5d8cfd0891bfc649337996a08cce",
   "runner_sha256": "1372713606d20a1e1a103b40909e910d902f856c6123256d9ad02fb3af0608f6",
   "code_manifest": {

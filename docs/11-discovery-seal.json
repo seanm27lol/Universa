@@ -1,0 +1,89 @@
+{
+  "schema": "universa-seal/4",
+  "design_commit": "9a8b4012b4c0a1926bb49a98d0c2dcde65be44bd",
+  "protocol_sha256": "41c25ee7f0a1a03d5cbe45fe4b89f24cc43c6aebb43fb440dbfa521588cf54d7",
+  "runner_sha256": "5c5160e1c884badf7feb3b5fa385b1b9b70ec54f57a894709bebaac3b74d8681",
+  "code_manifest": {
+    "src/universa/__init__.py": "920ba879666a28195183243f7b1f84ea0af2707554606c824ac05109a7dd6b13",
+    "src/universa/budgets.py": "34ccdb754f3fdc74e5501ae748e8a7898993241e544f14cda29c4152fe8eed49",
+    "src/universa/category_instances.py": "b968298513773c66fa48157c896cfb6cbb924b9a722058dcd65c425334ddd053",
+    "src/universa/complexes2.py": "c99cf71a6954f2f97c247ff90aa8cbbe287e6c091056b284a8cb2c2155b5ecf1",
+    "src/universa/discovery.py": "eaa0442f949d6348582c83e8cf1ef5f2a1e445ddfbe84e8e1bd4009d2cd90a08",
+    "src/universa/generators.py": "e3994312a083a5eb2b7ac2292ce222b779e5450128d1850a0f39af689d9f6c69",
+    "src/universa/multihop.py": "da77e4a950c61eeaeb1d33d4aa62598ee68e14903edc0e7138d7ad7f18d68261",
+    "src/universa/nerve.py": "cd644b17f07f4e4964c94078fa8d576de9b21daafe73246594a676d7f6f48ca1",
+    "src/universa/operators.py": "06d24348f9e3325ac05efb9cfe3d690b8e349fcdd53ddf537bc4c810ba9887e5",
+    "src/universa/partial.py": "7bf8d3614ee1f445fe8c739531caced307eec95733c56e8dc2d27aa6dc29e7d4",
+    "src/universa/partial2.py": "c74d557f2c53018c280bf0cc09be31be147162bfdc351a993d97d5fa75e46026",
+    "src/universa/partial_group.py": "430df243234c5b519f5ca7082d653f8c71e233cdb4795d378174dbcd06b4a06d",
+    "src/universa/partial_sheaf.py": "07e6634a874a25e2746ebb3a93658460695c590312c3afe4de25ad5d6e1442f3",
+    "src/universa/router.py": "6e3054d06fce75b298c10acfd390fc293ca1bcb77ac2541769988588647955ce",
+    "src/universa/router_v2.py": "5f36d2fb4b7ecca0089353308b1d1ff13528b7048d8b8bdc61d23f014475272d",
+    "src/universa/sheaves.py": "a35a78349d2d9fdefd44112a714468800d12ce67affac5cec960d7d2a171b300",
+    "src/universa/structures.py": "cd816128ffbefe8c8d6f683346ae463d95c7cc3a9bcd489cb4b0bee398e6da6b"
+  },
+  "train_seed_block": {
+    "first": 0,
+    "last": 0
+  },
+  "eval_seed_block": {
+    "first": 90101,
+    "last": 90136
+  },
+  "no_preview_declaration": "No seed in 90101..90136 has ever been instantiated, previewed, counted for eligibility, smoke-tested, or debugged with. A repository-wide search of the working tree and all git history before this seal found the block only as inert textual declarations in the protocol, runner, tests, and this seal, plus coincidental digit collisions inside observation_seed integers of the router-v1 and router-v2 result artifacts. If even one sealed seed is accidentally instantiated before execution, the entire block is void and a new block must be chosen and verified absent. There is no train seed block: the discovery experiment has no learned model and no training; the empty block is recorded as the sentinel {first: 0, last: 0}.",
+  "primary_family": [
+    {
+      "id": "h1-discovery-coverage-floor",
+      "statistic": "coverage_fraction",
+      "theta": "mean over eligible seeds of coverage_fraction = dim(S_disc) / dim(ker B1_true)",
+      "null": "theta <= 0.9",
+      "alternative": "theta > 0.9",
+      "bound_direction": "greater",
+      "threshold": 0.9,
+      "support_rule": "supported iff the one-sided Bonferroni lower bound (alpha = 0.05/4, Student-t critical value for the eligible n) exceeds 0.9"
+    },
+    {
+      "id": "h2-discovery-certification-rate",
+      "statistic": "certification_indicator",
+      "theta": "mean over eligible seeds of 1{certificate residual <= 1e-10}",
+      "null": "theta <= 0.95",
+      "alternative": "theta > 0.95",
+      "bound_direction": "greater",
+      "threshold": 0.95,
+      "support_rule": "supported iff the one-sided Bonferroni lower bound exceeds 0.95"
+    },
+    {
+      "id": "h3-discovery-admission-ready",
+      "statistic": "misfit_indicator",
+      "theta": "mean over eligible seeds of 1{planted-map misfit against the discovered constraint <= 1e-9}",
+      "null": "theta <= 0.95",
+      "alternative": "theta > 0.95",
+      "bound_direction": "greater",
+      "threshold": 0.95,
+      "support_rule": "supported iff the one-sided Bonferroni lower bound exceeds 0.95 (the router would accept the discovered structure)"
+    },
+    {
+      "id": "h4-discovery-false-discovery-control",
+      "statistic": "refusal_indicator",
+      "theta": "mean over eligible seeds of 1{DiscoveryInsufficient returned on structure-free observations}",
+      "null": "theta <= 0.95",
+      "alternative": "theta > 0.95",
+      "bound_direction": "greater",
+      "threshold": 0.95,
+      "support_rule": "supported iff the one-sided Bonferroni lower bound exceeds 0.95 (refusal is the correct behavior; a false constraint admitted is a specificity failure)"
+    }
+  ],
+  "stop_rules": [
+    "Any preflight mismatch: seal-validation failure (unknown seal key at any level including inside a claim object, tampered claim field, design_commit absent from history or not an ancestor of HEAD, the imported universa package not resolving under the project's src), hash mismatch, seal not committed at HEAD, on-disk seal not byte-identical to its HEAD blob, symlinked seal/protocol/runner, dirty worktree, existing output path, available CUDA, or (when torch is importable) torch thread count other than one.",
+    "A worktree found dirty, a code-manifest hash found changed, or the on-disk seal, protocol, or runner file found changed at the end-of-run re-check before publishing a complete result.",
+    "A raw-row count violating the frozen invariant 2 x |eligible seeds| (one structured row and one null-control row per eligible seed).",
+    "An instance-build exception: whole-run design_failure, never an exclusion; the offending seed is recorded, the run stops, no seed is ever deleted alone.",
+    "Fewer than 30 eligible seeds: design_failure_insufficient_eligible with no discovery execution and no claims.",
+    "Any determinism failure (including the double-execution bit-identity check), NaN, audit (other than the per-seed eligibility gate), rank, or validation failure: whole-run design_failure.",
+    "Aggregation failure or a non-finite estimand.",
+    "Any manual cancellation or infrastructure interruption: interrupted.",
+    "No outcome-dependent stopping, no interim analysis, no sample-size extension, no seed-level deletion.",
+    "Never rerun because results are surprising, weak, null, or apparently decisive; any code, tolerance, dependency, or analysis change after a partial run invalidates the seed block."
+  ],
+  "output_path": "results/experiments/discovery-sealed-1.json"
+}

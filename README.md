@@ -179,6 +179,19 @@ artifact):**
    experiment re-sealed and completed on a verified-absent replacement
    block — the failure-handling path of the ceremony exercised end to
    end.
+8. **router-loop-v2** (`docs/24`): the comparison-grade experiment —
+   the degraded-regime loop against a generic no-architecture learned
+   model and two ablations. The full architecture wins decisively:
+   +0.74 end-to-end vs generic (primary), +0.28 vs routing-only, +0.56
+   on in-library routing (3/4 claims, n=36); the generic model fails
+   everywhere (0/36 acquisition, 0.42 in-library, 0.17 null refusal).
+   The honest boundary: h4 (bounded harm vs always-discovering) NOT
+   supported — the learned alarm's selectivity costs exactly one seed
+   (160031) of in-library accuracy against discovery-only's perfect
+   record, traded against a 44% reduction in discovery invocations
+   (61 vs 108). Also the series' first train-block errata: the first
+   train block was voided pre-seal by test-side instantiation, caught
+   by the consistency audit before commit A, and replaced.
 
 Scope caveats in each results record.
 

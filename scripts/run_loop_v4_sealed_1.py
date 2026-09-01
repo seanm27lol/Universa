@@ -16,9 +16,9 @@ its decision threshold CALIBRATED on the train block by
 unit costs ``false_quiet_cost = false_alarm_cost = 1.0``, while discovery
 stays certified on the
 exact transported observations. THREE models are trained inside the
-sealed run on the train seed block 200001..200400 (never on a sealed eval
+sealed run on the train seed block 220001..220400 (never on a sealed eval
 seed) and the alarm threshold is calibrated on the same block, then FOUR
-arms are compared on the sealed eval seed block 210001..210036 x THREE
+arms are compared on the sealed eval seed block 230001..230036 x THREE
 paired conditions. Each eligible seed contributes TWELVE raw rows — one
 per (condition, arm):
 
@@ -223,7 +223,7 @@ DEFAULT_SEAL = "docs/31-router-loop-v4-seal.json"
 SEAL_SCHEMA = "universa-seal/10"
 
 PROTOCOL_SHA256 = (
-    "a60d0bb982eb1e57308e6fd2771a518c9f672d37a544506491f261c43137c2fa"
+    "93ee35e00b764bb26c9321cd8f81ca7939b9349f675efdc1ac21ed909faa36b5"
 )
 """Frozen fingerprint of the sealed protocol.
 
@@ -248,8 +248,8 @@ NUM_CLASSES = 6
 NUM_DECOYS = 3
 NUM_VIEW_CANDIDATES = NUM_DECOYS  # K = 3 for BOTH paired views
 
-TRAIN_SEEDS = tuple(range(200001, 200401))  # 200001..200400
-SEALED_EVAL_SEEDS = tuple(range(210001, 210037))  # 210001..210036
+TRAIN_SEEDS = tuple(range(220001, 220401))  # 220001..220400
+SEALED_EVAL_SEEDS = tuple(range(230001, 230037))  # 230001..230036
 
 CONDITIONS = ("in_library", "out_of_library", "null_control")
 """The frozen per-seed conditions, in campaign build order (loop_v2 names)."""
@@ -301,6 +301,24 @@ FAMILYWISE_ALPHA = 0.05
 NUM_CLAIMS = 4
 PER_CLAIM_ALPHA = FAMILYWISE_ALPHA / NUM_CLAIMS  # 0.0125
 MIN_ELIGIBLE = 30
+MAX_TRAIN_EXCLUDED = 20
+"""The frozen ceiling on excluded (non-instance) train seeds.
+
+Protocol errata 1 (docs/30): a train seed whose instance fails to build is
+a recorded EXCLUSION, not a whole-run failure — the generator's own
+discriminability guard refuses a decoy sharing the true target's kernel,
+and such a seed is not an instance of the family at all. This constant is
+the fail-closed guard over that exclusion: more than 20 non-instances in
+the declared block means something systematic is wrong rather than the
+rare generator collision the errata describes, and the run stops as a
+whole-run design failure. The first attempt's measured rate was one
+non-instance in roughly a thousand seeds built, so 20 out of 400 is a
+ceiling the frozen design expects never to approach.
+
+The guard counts EXCLUSIONS rather than survivors so that it means the
+same thing at any declared block size — the runner's tests exercise it on
+monkeypatched fixture blocks of a handful of seeds.
+"""
 AUDIT_TOL = ALARM_TOL  # 1e-9, the undegraded-instance audit tolerance
 
 # One-sided Bonferroni Student-t critical values t.ppf(1 - 0.05/4, n - 1) for
@@ -492,6 +510,8 @@ class _TrainBlock:
     out_raws: np.ndarray  # (M, K, G)
     generic_features: np.ndarray  # (2M, K, GENERIC_FEATURE_DIM)
     generic_labels: np.ndarray  # (2M,), 0 for in-library, K for out
+    built_seeds: tuple[int, ...] = ()  # the train seeds that produced rows
+    excluded_seeds: tuple[dict[str, Any], ...] = ()  # non-instances, with reasons
 
 
 # ---------------------------------------------------------------------------
@@ -1208,10 +1228,24 @@ def _build_train_block() -> _TrainBlock:
     equal-K paired views, the arch no-anchor profile blocks and raw
     profiles under the seed's shared ``"router-v2-observe"`` draw, and
     the generic spectral blocks at the seed's operating grid point over
-    the exact transported observations. Every train seed is used as-is:
-    there is NO train-side eligibility gate and no train-side dropping —
-    any train-seed build or feature-construction exception is a whole-run
-    design failure, never an exclusion.
+    the exact transported observations.
+
+    **Train-side build exclusion (protocol errata 1, docs/30).** A train
+    seed whose INSTANCE fails to build is not a training example — it is
+    not an instance of the family at all: the generator's own
+    discriminability guard refuses a decoy that shares the true target's
+    kernel, exactly as ``docs/00-design.md`` §6 records. Such a seed is
+    recorded with its reason and EXCLUDED, mirroring how the eval side
+    already treats an ineligible seed; the models train on the seeds that
+    build, and the excluded seeds and the built count are reported in the
+    training provenance. At most :data:`MAX_TRAIN_EXCLUDED` of the
+    declared train seeds may fail to build, or the run stops as a
+    whole-run design failure — the fail-closed guard over the exclusion itself.
+
+    Everything else keeps the original discipline: a FEATURE-construction
+    exception, a shape violation, or a non-finite feature is a whole-run
+    design failure, never an exclusion. A seed that builds but whose
+    features fail indicates a pipeline fault, not a non-instance.
     """
     in_blocks: list[np.ndarray] = []
     in_raws: list[np.ndarray] = []
@@ -1219,16 +1253,25 @@ def _build_train_block() -> _TrainBlock:
     out_raws: list[np.ndarray] = []
     generic_features: list[np.ndarray] = []
     generic_labels: list[int] = []
+    built_seeds: list[int] = []
+    excluded_seeds: list[dict[str, Any]] = []
     for seed in TRAIN_SEEDS:
         try:
             instance = make_budget_instance(
                 seed, NUM_VERTICES, NUM_EDGES, NUM_CLASSES, NUM_DECOYS
             )
         except Exception as error:
-            raise DesignFailureError(
-                f"train block construction failed at seed {seed}: "
-                f"{type(error).__name__}: {error}"
-            ) from error
+            # Protocol errata 1: a non-instance is excluded and recorded,
+            # never silently dropped and never fatal on its own.
+            excluded_seeds.append(
+                {
+                    "seed": seed,
+                    "reason": "instance_build_failed",
+                    "exception_type": type(error).__name__,
+                    "message": str(error),
+                }
+            )
+            continue
         in_library, out_library = _paired_views(instance)
         observation_seed = _observation_seed(seed)
         try:
@@ -1302,7 +1345,19 @@ def _build_train_block() -> _TrainBlock:
         generic_labels.append(0)  # the true candidate's index, unpermuted
         generic_features.append(out_generic)
         generic_labels.append(NUM_VIEW_CANDIDATES)  # K: the no-fit class
-    num_seeds = len(TRAIN_SEEDS)
+        built_seeds.append(seed)
+    num_seeds = len(built_seeds)
+    if len(excluded_seeds) > MAX_TRAIN_EXCLUDED:
+        raise DesignFailureError(
+            f"{len(excluded_seeds)} of {len(TRAIN_SEEDS)} declared train "
+            f"seeds failed to build an instance, above the frozen ceiling "
+            f"{MAX_TRAIN_EXCLUDED}; "
+            f"excluded: {[record['seed'] for record in excluded_seeds]}"
+        )
+    if not built_seeds:
+        raise DesignFailureError(
+            "no declared train seed built an instance"
+        )
     block = _TrainBlock(
         in_blocks=np.stack(in_blocks),
         in_raws=np.stack(in_raws),
@@ -1310,6 +1365,8 @@ def _build_train_block() -> _TrainBlock:
         out_raws=np.stack(out_raws),
         generic_features=np.stack(generic_features),
         generic_labels=np.asarray(generic_labels, dtype=np.int64),
+        built_seeds=tuple(built_seeds),
+        excluded_seeds=tuple(excluded_seeds),
     )
     expected_router = (num_seeds, NUM_VIEW_CANDIDATES, FEATURE_DIM)
     if block.in_blocks.shape != expected_router:
@@ -1570,6 +1627,25 @@ def _train_models(
             f"{type(error).__name__}: {error}"
         ) from error
     provenance = {
+        "train_block": {
+            "declared_seeds": len(TRAIN_SEEDS),
+            "declared_first": TRAIN_SEEDS[0],
+            "declared_last": TRAIN_SEEDS[-1],
+            "built_seeds": len(block.built_seeds),
+            "excluded_seeds": [dict(record) for record in block.excluded_seeds],
+            "max_excluded_ceiling": MAX_TRAIN_EXCLUDED,
+            "exclusion_rule": (
+                "protocol errata 1: a train seed whose INSTANCE fails to "
+                "build is not an instance of the family (the budgets "
+                "discriminability guard refuses a decoy sharing the true "
+                "target's kernel) and is recorded here and excluded, "
+                "mirroring the eval side's ineligibility record; a "
+                "feature-construction failure, a shape violation, or a "
+                "non-finite feature remains a whole-run design_failure, "
+                "never an exclusion; more than max_excluded_ceiling "
+                "non-instances is itself a whole-run design_failure"
+            ),
+        },
         "router": {
             "torch_seed": TORCH_SEED_ROUTER,
             "epochs": EPOCHS,
@@ -2713,6 +2789,18 @@ def _design_record() -> dict[str, Any]:
             "rows_per_train_seed": (
                 "both views: arch profile features AND generic spectral "
                 "features per candidate"
+            ),
+            "train_build_exclusion": (
+                "protocol errata 1: a train seed whose INSTANCE fails to "
+                "build is recorded and EXCLUDED (it is not an instance of "
+                "the family — the budgets discriminability guard refuses a "
+                "decoy sharing the true target's kernel), mirroring the "
+                "eval side's ineligibility record; the excluded seeds and "
+                "the built count are reported in the training provenance. "
+                "A feature-construction failure, a shape violation, or a "
+                "non-finite feature remains a whole-run design_failure. "
+                "More than 20 non-instances among the 400 declared train "
+                "seeds is itself a whole-run design_failure"
             ),
         },
         "eval_seeds": {

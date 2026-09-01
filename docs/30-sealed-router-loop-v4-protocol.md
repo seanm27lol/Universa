@@ -10,6 +10,77 @@ router-loop-v4-sealed-1.
 Protocol date: 2026-09-01.
 Experiment id: `universa-loop-v4-sealed-1`.
 
+## 0. Errata — first attempt, and the amendment it forced
+
+**Errata 1 (2026-09-01): the first canonical attempt failed, both first
+blocks are void, and the train-side build rule is amended.**
+
+The first sealed attempt — design commit `63ebafc`, seal commit `e6869ee`,
+train block `200001..200400`, eval block `210001..210036` — ran and stopped
+with status `design_failure` during train-block construction:
+
+```text
+train block construction failed at seed 200058: ValueError: decoy admits
+every transported cycle (B1_decoy f1 vanishes on the source cycle space,
+e.g. a vertex-relabeled complete quotient); choose parameters with a
+non-complete quotient so decoys have different kernels
+```
+
+That is the `universa.budgets` family's own discriminability guard, the
+design finding recorded in `docs/00-design.md` §6: a decoy sharing the true
+target's kernel is indiscriminable by any transported quantity, so the
+generator refuses to construct the instance. The original §5 declared any
+train-seed build exception a whole-run `design_failure` and never an
+exclusion, so the runner stopped exactly as frozen. **The runner was
+correct; the frozen rule was too strict.**
+
+The failed attempt produced no science and is retained immutably at
+`results/experiments/failures/router-loop-v4-sealed-1.design_failure.json`:
+0 raw rows, no model trained, no arm executed, no claim computed. All 36
+eval seeds passed the eligibility gate that runs before training — a
+deterministic build-and-audit property that carries no information about
+any claim — and no eval outcome was ever computed or seen. The canonical
+output path was never occupied.
+
+**Both first blocks are void for claims** and are never reused:
+`200001..200400` (train, consumed to seed 200058) and `210001..210036`
+(eval, instantiated by the eligibility gate). The replacement blocks are
+declared in §3 and were verified absent from the working tree and all Git
+history before this amendment.
+
+**The amendment, declared before any replacement seed was instantiated.** A
+train seed whose INSTANCE fails to build is not a training example — it is
+not an instance of the family at all. Such a seed is now a recorded,
+counted EXCLUSION rather than a whole-run failure, mirroring exactly how
+the eval side already records an ineligible seed (§10). The exclusion is
+narrow and the rest of the discipline is unchanged:
+
+- only a failure of `make_budget_instance` is an exclusion;
+- a feature-construction failure, a shape violation, or a non-finite
+  feature remains a whole-run `design_failure` — a seed that builds but
+  whose features fail signals a pipeline fault, not a non-instance;
+- the eval side is untouched: an eval-block build exception remains a
+  whole-run `design_failure` (§9, §10);
+- more than `MAX_TRAIN_EXCLUDED = 20` non-instances in the declared train
+  block, or a block where nothing builds, is itself a whole-run
+  `design_failure` — the fail-closed guard over the exclusion;
+- the excluded seeds, with their reasons, and the built count are recorded
+  in the training provenance and reported (§5, §11).
+
+**Why this is not outcome-tuning.** The amendment cannot move any claim in
+any direction: it changes only whether a run reaches the point of computing
+claims at all, never what any arm does, what any correctness bit is, or how
+any statistic is formed. It was chosen from the failure's published
+mechanism alone — no eval quantity existed to tune against, since the
+attempt produced none. The measured rate of the collision is one
+non-instance in roughly a thousand seeds built (the first attempt's 400
+train seeds plus 36 eval seeds, plus a 600-seed diagnostic sample on the
+scratch range `500001..500600`, which is burned for measurement and must
+never be declared as a train or eval block).
+
+Per §9 the amended experiment is retried exactly once, on the
+verified-absent replacement blocks of §3, under a re-sealed design.
+
 ## 1. Purpose and precise claim scope
 
 This experiment is an untouched-seed evaluation of the Universa
@@ -91,7 +162,7 @@ freezes them at `1.0` and `1.0` and uses no other values.
 outcome.** The change's entire justification is the PUBLISHED loop-v2 and
 loop-v3 records (docs/24, docs/27) and the frozen module semantics of
 `universa.loop_v2`. No seed of this experiment's eval block
-(`210001..210036`) or train block (`200001..200400`) has ever been
+(`230001..230036`) or train block (`220001..220400`) has ever been
 instantiated for any purpose (§3); the design was fixed before any eval data
 exists; no eval-side quantity — accuracy, margin, invocation count,
 threshold behavior — played any role in choosing the rule, the costs, or the
@@ -310,7 +381,7 @@ may be installed or upgraded between the seal and the run.
 seeds
 
 ```text
-200001..200400
+220001..220400
 ```
 
 This block trains the three learned models of §5 and calibrates the alarm's
@@ -318,31 +389,33 @@ threshold, inside the sealed run, after the seal. It is the same 400-seed
 data budget loop-v3 declared, carried forward unchanged: this experiment
 changes the calibration RULE, not the data budget, and holding the budget
 fixed is what makes the loop-v3/loop-v4 before/after a clean one-factor
-comparison. It is unsealed in the series' sense — the confirmatory claims
-rest solely on the untouched eval block below — but it is reserved against
-any preview until the canonical run consumes it: at the time this protocol
-was drafted it was absent from the working tree and from all Git history
-(verified by a repository-wide word-boundary search over every commit), its
-only occurrences anywhere being the inert declarations of this protocol,
-`docs/28-handoff.md`, and `docs/29-writeup.md`, and no project run had
-instantiated or previewed any member **on any generator family or in any
-pipeline stage**. The block is disjoint from every train and eval block and
-every demo or fixture seed previously declared in this series.
+comparison. It is the REPLACEMENT declaration of errata 1 (§0); the first
+declared train block `200001..200400` is void. It is unsealed in the
+series' sense — the confirmatory claims rest solely on the untouched eval
+block below — but it is reserved against any preview until the canonical
+run consumes it: at the time this amendment was written it was absent from
+the working tree and from all Git history (verified by a repository-wide
+word-boundary search over every commit, with ZERO hits), and no project run
+had instantiated or previewed any member **on any generator family or in
+any pipeline stage**. The block is disjoint from every train and eval block
+and every demo or fixture seed previously declared in this series,
+including both voided first blocks and the burned diagnostic range
+`500001..500600` of §0.
 
 **Sealed eval block:** the 36 consecutive generator seeds
 
 ```text
-210001, 210002, 210003, 210004, 210005, 210006, 210007, 210008, 210009,
-210010, 210011, 210012, 210013, 210014, 210015, 210016, 210017, 210018,
-210019, 210020, 210021, 210022, 210023, 210024, 210025, 210026, 210027,
-210028, 210029, 210030, 210031, 210032, 210033, 210034, 210035, 210036
+230001, 230002, 230003, 230004, 230005, 230006, 230007, 230008, 230009,
+230010, 230011, 230012, 230013, 230014, 230015, 230016, 230017, 230018,
+230019, 230020, 230021, 230022, 230023, 230024, 230025, 230026, 230027,
+230028, 230029, 230030, 230031, 230032, 230033, 230034, 230035, 230036
 ```
 
-At the time this protocol was drafted, this block was absent from the
-working tree and from all Git history (verified by a repository-wide
-word-boundary search over every commit; its only occurrences anywhere are the
-inert declarations of this protocol, `docs/28-handoff.md`, and
-`docs/29-writeup.md`), and no project run had instantiated or previewed any
+This is the REPLACEMENT eval declaration of errata 1 (§0); the first
+declared eval block `210001..210036` is void. At the time this amendment
+was written, this block was absent from the working tree and from all Git
+history (verified by a repository-wide word-boundary search over every
+commit, with ZERO hits), and no project run had instantiated or previewed any
 member **on any generator family or in any pipeline stage**. In particular,
 no one has built an instance, computed a residual, drawn an observation,
 trained or evaluated a model, calibrated a threshold, printed a dimension,
@@ -350,16 +423,22 @@ smoke-tested, or debugged with any seed in the block. The block is disjoint
 from every train and eval block and every demo or fixture seed previously
 declared in this series.
 
-**Block history, declared in full.** This experiment declares no errata of
-its own: both blocks above are first declarations, verified absent as stated.
-The series' prior voided blocks remain void and untouched, and are not used
-here: `130001..130036` (void for claims after the loop-v1 design failure),
-`70101..70136` (discarded unopened), and `150001..150200` (voided pre-seal by
-test-side instantiation during the loop-v2 design, never used). The consumed
-blocks of prior experiments are their sealed history, are never reused here,
-and this experiment reads their behavior only from the PUBLISHED records:
-loop-v2's eval `160001..160036` and train `170001..170200` (docs/24), and
-loop-v3's eval `190001..190036` and train `180001..180400` (docs/27).
+**Block history, declared in full.** This experiment carries one erratum of
+its own (§0): its FIRST declared blocks `200001..200400` (train) and
+`210001..210036` (eval) were consumed by the failed first attempt and are
+**void for claims**, never to be reused or partially salvaged; the blocks
+above are their verified-absent replacements. The scratch range
+`500001..500600`, used once to measure the generator-collision rate during
+the errata diagnosis, is burned and must never be declared as a train or
+eval block. The series' prior voided blocks remain void and untouched, and
+are not used here: `130001..130036` (void for claims after the loop-v1
+design failure), `70101..70136` (discarded unopened), and `150001..150200`
+(voided pre-seal by test-side instantiation during the loop-v2 design,
+never used). The consumed blocks of prior experiments are their sealed
+history, are never reused here, and this experiment reads their behavior
+only from the PUBLISHED records: loop-v2's eval `160001..160036` and train
+`170001..170200` (docs/24), and loop-v3's eval `190001..190036` and train
+`180001..180400` (docs/27).
 
 The no-preview rule remains in force until commit B of §12 — the
 machine-readable seal record — is committed **and pushed to the private
@@ -554,14 +633,14 @@ likewise a whole-run `design_failure`, never a dropped row.
 ## 5. Model and training
 
 Exactly three models are trained — inside the sealed runner, after the seal,
-using only the declared train block `200001..200400` — and no other learned
+using only the declared train block `220001..220400` — and no other learned
 parameter exists anywhere in the design. The alarm's decision threshold is
 not a learned parameter and not a frozen constant: it is computed by the
 frozen cost-aware calibration rule below on the same train rows, inside the
 same sealed run. Training happens only AFTER the eval-block eligibility gate
 of §10 passes (an insufficient-eligible run fits nothing, §9).
 
-**The train rows.** Per train seed `s` in `200001..200400`, in seed order,
+**The train rows.** Per train seed `s` in `220001..220400`, in seed order,
 the runner builds the instance, BOTH paired views' rows, the shared
 observation draw, and the exact observation matrix, exactly as §4 pins for
 eval rows:
@@ -576,10 +655,33 @@ gen_in  = generic_row_features(instance, in_library,  obs, Y, point)
 gen_out = generic_row_features(instance, out_library, obs, Y, point)
 ```
 
-with `Y` the exact 16-column transported matrix of §4. Every train seed is
-used as-is; there is no train-side eligibility gate and no train-side
-dropping — any train-seed build or feature-construction exception is a
-whole-run `design_failure`, never an exclusion.
+with `Y` the exact 16-column transported matrix of §4.
+
+**Train-side build exclusion (errata 1, §0).** A train seed whose INSTANCE
+fails to build is not a training example — it is not an instance of the
+family at all, because the generator's discriminability guard refuses a
+decoy that shares the true target's kernel (`docs/00-design.md` §6). Such a
+seed is RECORDED with its reason and EXCLUDED, mirroring exactly how §10
+records an ineligible eval seed; the models train on the seeds that build.
+The exclusion is narrow, and everything else keeps the original discipline:
+
+- only a failure of `make_budget_instance` is an exclusion;
+- a feature-construction exception, a shape violation, or a non-finite
+  feature is a whole-run `design_failure`, never an exclusion — a seed that
+  builds but whose features fail signals a pipeline fault, not a
+  non-instance;
+- more than `MAX_TRAIN_EXCLUDED = 20` non-instances in the declared block,
+  or a block in which nothing builds, is itself a whole-run
+  `design_failure` — the fail-closed guard over the exclusion. The guard
+  counts exclusions rather than survivors so that it means the same thing
+  at any block size, including the runner's monkeypatched test fixtures;
+- the excluded seeds with their reasons, the built count, the declared
+  count, and the ceiling are recorded in the training provenance and
+  reported (§11).
+
+There is still no train-side ELIGIBILITY gate in the §10 sense: nothing
+about a train seed's audit, residuals, or difficulty excludes it. Only the
+non-existence of the instance does.
 
 **Model 1 — the router.** `StructureRouter(feature_dim=18, hidden_dim=64)`,
 the shared per-candidate MLP `18 -> 64 -> 64 -> 1` of `universa.router`,
@@ -969,9 +1071,14 @@ The mapping is frozen:
 - all 36 eval seeds are attempted: instance builds run in seed order, and no
   seed is ever skipped for outcome-dependent reasons short of a build
   failure;
-- an instance-build exception — eval block or train block — is a **whole-run**
+- an EVAL-block instance-build exception is a **whole-run**
   `design_failure`, never an exclusion — the offending seed is recorded, the
   run stops, and no seed is ever deleted alone;
+- a TRAIN-block instance-build exception is a recorded EXCLUSION (errata 1,
+  §0, §5), not a stop, unless more than `MAX_TRAIN_EXCLUDED = 20` seeds are
+  excluded or none builds, which are whole-run `design_failure`s; a
+  train-side FEATURE-construction exception remains a whole-run
+  `design_failure`;
 - the eval build and the undegraded audit of §10 are the sole eligibility
   gate, and it is evaluated BEFORE any training. Every *other* failed check —
   any determinism (including the double-execution bit-identity check),
@@ -998,8 +1105,8 @@ Mandatory stop conditions (any one stops the run before or during execution):
 
 - any preflight mismatch: seal-validation failure (including an unknown seal
   key at any level including inside a claim object, a tampered claim field, a
-  `train_seed_block` other than `{first: 200001, last: 200400}`, an
-  `eval_seed_block` other than `{first: 210001, last: 210036}`, a
+  `train_seed_block` other than `{first: 220001, last: 220400}`, an
+  `eval_seed_block` other than `{first: 230001, last: 230036}`, a
   `design_commit` absent from the repository's history or not an ancestor of
   HEAD, or the imported `universa` package not resolving under the project's
   `src`), hash mismatch, a seal not committed at HEAD, an on-disk seal not
@@ -1010,7 +1117,9 @@ Mandatory stop conditions (any one stops the run before or during execution):
   protocol, or runner file found changed, at the end-of-run re-check before
   publishing a `complete` result;
 - a raw-row count that violates the frozen invariant `4 x 3 x n`;
-- an instance-build exception (eval or train block);
+- an eval-block instance-build exception; a train-block instance-build
+  exception only when it breaches the `MAX_TRAIN_EXCLUDED` ceiling or
+  empties the block; a train-block feature-construction exception;
 - fewer than 30 eligible seeds;
 - any determinism, NaN, audit, rank, training, calibration, or validation
   failure;
@@ -1057,9 +1166,12 @@ replaced, never deleted, and never scored. `n`, the number of eligible seeds,
 is the inference sample size of §7–§8. If `n < 30`, the run stops before any
 training and any loop execution with
 `design_failure_insufficient_eligible` and no claims. All 36 seeds are
-attempted, in seed order. There is no train-side eligibility gate: all 400
-train rows must build, and any train-seed build or feature exception is a
-whole-run `design_failure`.
+attempted, in seed order. There is no train-side ELIGIBILITY gate — nothing
+about a train seed's audit, residuals, or difficulty excludes it — but per
+errata 1 (§0, §5) a train seed whose INSTANCE fails to build is recorded
+and excluded as a non-instance, subject to the `MAX_TRAIN_EXCLUDED = 20`
+ceiling; a train-side feature-construction exception remains a whole-run
+`design_failure`.
 
 ## 11. Result JSON schema
 
@@ -1092,6 +1204,10 @@ The JSON contains, at minimum:
   the recorded `git status --porcelain --untracked-files=all` output (key
   `git_status_porcelain`, must be empty, recorded pre- and post-run), the
   canonical command, and `sys.argv`;
+- the train-block record of errata 1 (§5): the declared seed count and
+  range, the built count, the excluded seeds each with `seed`, `reason`,
+  `exception_type`, and `message`, the `MAX_TRAIN_EXCLUDED` ceiling, and
+  the exclusion rule in words;
 - training provenance per §5 for all three models — for the alarm
   additionally the FULL eight-field calibration record (`threshold`,
   `balanced_accuracy`, `false_quiet_rate`, `false_alarm_rate`, `total_cost`,
@@ -1174,9 +1290,13 @@ The following order is mandatory:
    costs, and its fail-closed cases including both-zero costs** — and the
    calibrated-threshold decision including the at-threshold-decides-fit case,
    the frozen correctness gate per (condition, arm) including both
-   null-control refusal shapes, all four claim decisions including the
-   `SE = 0` mechanical case and the H3 tie-fails case, the hard-coded t
-   table, eligibility and insufficient-eligible handling (no fits, no
+   null-control refusal shapes, **the errata-1 train-side build exclusion —
+   a non-instance recorded and skipped, the `MAX_TRAIN_EXCLUDED` ceiling
+   and the empty-block guard both fail-closed, a feature-construction
+   failure still fatal, and the train-block record present in the training
+   provenance** — all four claim decisions including the `SE = 0`
+   mechanical case and the H3 tie-fails case, the hard-coded t table,
+   eligibility and insufficient-eligible handling (no fits, no
    calibration), training determinism under the frozen torch seeds (including
    the calibrated threshold's determinism), failure-artifact shape
    (`supported: null`), seal parsing and validation including the declared
@@ -1199,8 +1319,8 @@ The following order is mandatory:
    - `design_commit`: the full hash of commit A;
    - `protocol_sha256`, `runner_sha256`;
    - `code_manifest`: the 19 per-file SHA-256 pairs of §2;
-   - `train_seed_block`: `{first: 200001, last: 200400}`;
-   - `eval_seed_block`: `{first: 210001, last: 210036}`;
+   - `train_seed_block`: `{first: 220001, last: 220400}`;
+   - `eval_seed_block`: `{first: 230001, last: 230036}`;
    - `no_preview_declaration`: the renewed attestation of §3, covering BOTH
      blocks, including the void-block rule;
    - `primary_family`: the four claims of §8 verbatim, as four claim objects

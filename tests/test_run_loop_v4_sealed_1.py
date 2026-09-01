@@ -1,7 +1,7 @@
 """Tests for the sealed router-loop-v4 runner
 (scripts/run_loop_v4_sealed_1.py).
 
-Seed discipline: the sealed eval block 210001..210036 — like the v1 block
+Seed discipline: the sealed eval block 230001..230036 — like the v1 block
 30101..30136, the v2 block 60101..60136, the reserved block 80101..80136,
 the discovery block 90101..90136, the sheaf block 20101..20136, the group
 block 40101..40136, the 2-complex block 70101..70136, the first loop block
@@ -10,7 +10,7 @@ block 40101..40136, the 2-complex block 70101..70136, the first loop block
 instantiated in this suite: every campaign test
 monkeypatches the runner's eval seed block down to explicit non-sealed
 fixture seeds (70001..70005) and every direct eval-instance construction
-uses those same fixture seeds. The train seed block 200001..200400 (the
+uses those same fixture seeds. The train seed block 220001..220400 (the
 runner's own TRAIN block, never an eval seed) is likewise NEVER
 instantiated in this suite: campaign tests monkeypatch TRAIN_SEEDS down
 to the protocol's sanctioned train fixture seeds (70501..70502 for the
@@ -83,9 +83,13 @@ LOOP_V2_SEALED_BLOCK = range(160001, 160037)
 # loop-v3's consumed blocks: sealed history, never reused here.
 LOOP_V3_TRAIN_BLOCK = range(180001, 180401)
 LOOP_V3_SEALED_BLOCK = range(190001, 190037)
-# This experiment's own declared blocks.
-LOOP_V4_TRAIN_BLOCK = range(200001, 200401)
-LOOP_V4_SEALED_BLOCK = range(210001, 210037)
+# loop-v4's VOIDED first blocks: consumed by the failed first attempt
+# (design_failure at train seed 200058) and never reusable.
+LOOP_V4_VOID_TRAIN_BLOCK = range(200001, 200401)
+LOOP_V4_VOID_SEALED_BLOCK = range(210001, 210037)
+# This experiment's own declared blocks (the replacement declaration).
+LOOP_V4_TRAIN_BLOCK = range(220001, 220401)
+LOOP_V4_SEALED_BLOCK = range(230001, 230037)
 
 ALL_SEALED_BLOCKS = (
     V1_SEALED_BLOCK,
@@ -101,6 +105,8 @@ ALL_SEALED_BLOCKS = (
     LOOP_V2_SEALED_BLOCK,
     LOOP_V3_TRAIN_BLOCK,
     LOOP_V3_SEALED_BLOCK,
+    LOOP_V4_VOID_TRAIN_BLOCK,
+    LOOP_V4_VOID_SEALED_BLOCK,
     LOOP_V4_TRAIN_BLOCK,
     LOOP_V4_SEALED_BLOCK,
 )
@@ -137,8 +143,8 @@ def _seal_payload(output_path: str = "result.json", **overrides: object) -> dict
         "protocol_sha256": "1" * 64,
         "runner_sha256": "2" * 64,
         "code_manifest": {"src/universa/alpha.py": "3" * 64},
-        "train_seed_block": {"first": 200001, "last": 200400},
-        "eval_seed_block": {"first": 210001, "last": 210036},
+        "train_seed_block": {"first": 220001, "last": 220400},
+        "eval_seed_block": {"first": 230001, "last": 230036},
         "no_preview_declaration": "no sealed seed was previewed before the seal",
         "primary_family": [
             _claim_object(definition) for definition in MODULE._CLAIM_DEFINITIONS
@@ -361,8 +367,8 @@ def _constant_generic_model(cls: int) -> GenericMLP:
 
 
 def test_sealed_seed_blocks_declared_disjoint_and_never_instantiated() -> None:
-    assert MODULE.SEALED_EVAL_SEEDS == tuple(range(210001, 210037))
-    assert MODULE.TRAIN_SEEDS == tuple(range(200001, 200401))
+    assert MODULE.SEALED_EVAL_SEEDS == tuple(range(230001, 230037))
+    assert MODULE.TRAIN_SEEDS == tuple(range(220001, 220401))
     assert not set(MODULE.SEALED_EVAL_SEEDS) & set(MODULE.TRAIN_SEEDS)
     # The fixture seeds belong to no seed block: eval fixtures sit outside
     # every block, and the sanctioned train fixtures (70501..70520,
@@ -384,6 +390,9 @@ def test_sealed_seed_blocks_declared_disjoint_and_never_instantiated() -> None:
             assert not set(MODULE.TRAIN_SEEDS) & set(block)
     assert not set(MODULE.TRAIN_SEEDS) & set(LOOP_V3_TRAIN_BLOCK)
     assert not set(MODULE.SEALED_EVAL_SEEDS) & set(LOOP_V3_SEALED_BLOCK)
+    # The voided first declaration is never reused.
+    assert not set(MODULE.TRAIN_SEEDS) & set(LOOP_V4_VOID_TRAIN_BLOCK)
+    assert not set(MODULE.SEALED_EVAL_SEEDS) & set(LOOP_V4_VOID_SEALED_BLOCK)
 
 
 def test_frozen_design_constants() -> None:
@@ -479,6 +488,95 @@ def test_frozen_design_constants() -> None:
     else:
         assert len(MODULE.PROTOCOL_SHA256) == 64
         assert MODULE._frozen_protocol_sha256() == MODULE.PROTOCOL_SHA256
+
+
+def test_train_build_failure_is_an_exclusion_not_a_stop(monkeypatch) -> None:
+    """Protocol errata 1: a non-instance train seed is recorded and skipped.
+
+    The first attempt died here — seed 200058's decoy shared the true
+    target's kernel, the budgets guard refused to build it, and the frozen
+    rule made that a whole-run failure. The amended rule excludes the seed
+    and records it, exactly as the eval side records an ineligible seed.
+    """
+    real_make = MODULE.make_budget_instance
+    doomed = TRAIN_FIXTURE_SEEDS[1]
+
+    def flaky(seed, *args, **kwargs):
+        if seed == doomed:
+            raise ValueError(
+                "decoy admits every transported cycle (B1_decoy f1 vanishes "
+                "on the source cycle space)"
+            )
+        return real_make(seed, *args, **kwargs)
+
+    monkeypatch.setattr(MODULE, "make_budget_instance", flaky)
+    monkeypatch.setattr(MODULE, "TRAIN_SEEDS", TRAIN_FIXTURE_SEEDS[:4])
+    block = MODULE._build_train_block()
+    assert doomed not in block.built_seeds
+    assert len(block.built_seeds) == 3
+    assert [record["seed"] for record in block.excluded_seeds] == [doomed]
+    record = block.excluded_seeds[0]
+    assert record["reason"] == "instance_build_failed"
+    assert record["exception_type"] == "ValueError"
+    assert "decoy admits every transported cycle" in record["message"]
+    # The retained rows are exactly the built seeds' rows.
+    assert block.in_blocks.shape[0] == 3
+    assert block.generic_labels.shape[0] == 6
+
+
+def test_train_build_floor_is_fail_closed(monkeypatch) -> None:
+    """Too many non-instances is still a whole-run design failure."""
+    real_make = MODULE.make_budget_instance
+
+    def mostly_broken(seed, *args, **kwargs):
+        if seed != TRAIN_FIXTURE_SEEDS[0]:
+            raise ValueError("decoy admits every transported cycle")
+        return real_make(seed, *args, **kwargs)
+
+    monkeypatch.setattr(MODULE, "make_budget_instance", mostly_broken)
+    monkeypatch.setattr(MODULE, "TRAIN_SEEDS", TRAIN_FIXTURE_SEEDS[:4])
+    monkeypatch.setattr(MODULE, "MAX_TRAIN_EXCLUDED", 1)
+    with pytest.raises(MODULE.DesignFailureError, match="above the frozen ceiling"):
+        MODULE._build_train_block()
+
+
+def test_train_feature_failure_is_still_fatal(monkeypatch) -> None:
+    """A seed that BUILDS but whose features fail is a pipeline fault.
+
+    The errata narrows the exclusion to instance construction only: a
+    feature-construction failure still stops the whole run, because it
+    signals a broken pipeline rather than a seed that is not an instance.
+    """
+    real_features = MODULE.arch_row_features
+    calls = {"n": 0}
+
+    def flaky_features(*args, **kwargs):
+        calls["n"] += 1
+        if calls["n"] == 3:
+            raise RuntimeError("certified feature machinery broke")
+        return real_features(*args, **kwargs)
+
+    monkeypatch.setattr(MODULE, "arch_row_features", flaky_features)
+    monkeypatch.setattr(MODULE, "TRAIN_SEEDS", TRAIN_FIXTURE_SEEDS[:4])
+    with pytest.raises(
+        MODULE.DesignFailureError, match="certified feature construction"
+    ):
+        MODULE._build_train_block()
+
+
+def test_train_block_provenance_records_the_exclusion(
+    monkeypatch, tmp_path: Path
+) -> None:
+    _patch_tiny_campaign(monkeypatch)
+    report = MODULE.run(tmp_path, tmp_path / "out.json", seal="seal.json")
+    assert report["status"] == "complete"
+    train = report["training"]["train_block"]
+    assert train["declared_seeds"] == len(MODULE.TRAIN_SEEDS)
+    assert train["built_seeds"] == len(MODULE.TRAIN_SEEDS)
+    assert train["excluded_seeds"] == []  # the fixture seeds all build
+    assert train["max_excluded_ceiling"] == MODULE.MAX_TRAIN_EXCLUDED
+    assert "errata 1" in train["exclusion_rule"]
+    assert "whole-run design_failure" in train["exclusion_rule"]
 
 
 def test_pinned_protocol_hash_matches_the_protocol_on_disk() -> None:
@@ -634,21 +732,21 @@ def test_load_seal_rejects_bad_hash_formats(tmp_path: Path) -> None:
 def test_load_seal_rejects_wrong_seed_blocks(tmp_path: Path) -> None:
     _write_seal(
         tmp_path,
-        _seal_payload(train_seed_block={"first": 200001, "last": 200401}),
+        _seal_payload(train_seed_block={"first": 220001, "last": 220401}),
     )
     with pytest.raises(RuntimeError, match="train_seed_block"):
         MODULE._load_seal(tmp_path, "seal.json")
     _write_seal(
         tmp_path,
-        _seal_payload(eval_seed_block={"first": 190000, "last": 210036}),
+        _seal_payload(eval_seed_block={"first": 190000, "last": 230036}),
     )
     with pytest.raises(RuntimeError, match="eval_seed_block"):
         MODULE._load_seal(tmp_path, "seal.json")
-    _write_seal(tmp_path, _seal_payload(train_seed_block=[200001, 200400]))
+    _write_seal(tmp_path, _seal_payload(train_seed_block=[220001, 220400]))
     with pytest.raises(RuntimeError, match="train_seed_block"):
         MODULE._load_seal(tmp_path, "seal.json")
     # The v1 loop's empty-train-block sentinel does NOT apply here: this
-    # experiment trains three models on 200001..200400.
+    # experiment trains three models on 220001..220400.
     _write_seal(
         tmp_path, _seal_payload(train_seed_block={"first": 0, "last": 0})
     )
@@ -657,7 +755,7 @@ def test_load_seal_rejects_wrong_seed_blocks(tmp_path: Path) -> None:
     _write_seal(
         tmp_path,
         _seal_payload(
-            eval_seed_block={"first": 210001, "last": 210036, "note": "x"}
+            eval_seed_block={"first": 230001, "last": 230036, "note": "x"}
         ),
     )
     with pytest.raises(RuntimeError, match="eval_seed_block"):
@@ -744,7 +842,7 @@ def test_load_seal_rejects_tampered_claim_values_and_unknown_keys(
     _write_seal(
         tmp_path,
         _seal_payload(
-            train_seed_block={"first": 200001, "last": 200400, "note": "x"}
+            train_seed_block={"first": 220001, "last": 220400, "note": "x"}
         ),
     )
     with pytest.raises(RuntimeError, match="train_seed_block"):
@@ -1214,7 +1312,17 @@ def test_train_block_has_no_train_side_eligibility_gate(
     assert len(report["raw_rows"]) == 36
 
 
-def test_train_block_build_exception_is_a_design_failure(monkeypatch) -> None:
+def test_train_block_with_no_buildable_seed_is_a_design_failure(
+    monkeypatch,
+) -> None:
+    """Errata 1 excludes non-instances, but an EMPTY train block is fatal.
+
+    Before the errata this asserted that any train-seed build exception
+    stopped the run. The amended rule records and skips such a seed, so the
+    fail-closed guard moves to the aggregate: a block where nothing builds
+    (or where more than the frozen ceiling fails) is still a whole-run
+    design failure.
+    """
     monkeypatch.setattr(MODULE, "TRAIN_SEEDS", (70501,))
 
     def exploding(*_args, **_kwargs):
@@ -1222,7 +1330,7 @@ def test_train_block_build_exception_is_a_design_failure(monkeypatch) -> None:
 
     monkeypatch.setattr(MODULE, "make_budget_instance", exploding)
     with pytest.raises(
-        MODULE.DesignFailureError, match="train block construction failed"
+        MODULE.DesignFailureError, match="no declared train seed built"
     ):
         MODULE._build_train_block()
 
@@ -2075,7 +2183,8 @@ def test_complete_tiny_campaign_structure_and_audit_recompute(
     assert len(margin_names) == 5
 
     training = report["training"]
-    assert set(training) == {"router", "alarm", "generic"}
+    # Errata 1 adds the train_block record beside the three model records.
+    assert set(training) == {"train_block", "router", "alarm", "generic"}
     assert training["router"]["torch_seed"] == 4242
     assert training["alarm"]["torch_seed"] == 4243
     assert training["generic"]["torch_seed"] == 4244
@@ -2167,7 +2276,7 @@ def test_tiny_campaign_instantiates_only_declared_test_seeds(
     assert report["status"] == "complete"
     assert set(seen) == {70003, 70004, 70005, 70501, 70502}
     # No instantiated seed belongs to ANY sealed block — in particular not
-    # to the runner's own blocks 200001..200400 / 210001..210036.
+    # to the runner's own blocks 220001..220400 / 230001..230036.
     for block in ALL_SEALED_BLOCKS:
         assert not set(seen) & set(block)
 
@@ -2343,9 +2452,9 @@ def test_train_block_failure_during_campaign_is_a_design_failure(
     assert report["status"] == "design_failure"
     assert report["failure"]["phase"] == "campaign"
     assert report["failure"]["type"] == "DesignFailureError"
-    assert "train block construction failed at seed 70501" in report[
-        "failure"
-    ]["message"]
+    # Errata 1: both declared train seeds are non-instances, so the block is
+    # empty and the aggregate guard stops the run.
+    assert "no declared train seed built" in report["failure"]["message"]
     assert report["training"] is None
     assert report["raw_rows"] == []
     assert report["descriptive"] is None
@@ -2876,8 +2985,8 @@ def test_design_record_pins_the_canonical_command() -> None:
 
 def test_design_record_declares_the_train_block_schedules_and_caveat() -> None:
     design = MODULE._design_record()
-    assert design["train_seed_block"] == {"first": 200001, "last": 200400}
-    assert design["eval_seeds"] == {"first": 210001, "last": 210036}
+    assert design["train_seed_block"] == {"first": 220001, "last": 220400}
+    assert design["eval_seeds"] == {"first": 230001, "last": 230036}
     assert "4242" in design["training"]["router"]
     assert "4243" in design["training"]["alarm"]
     assert "4244" in design["training"]["generic"]

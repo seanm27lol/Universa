@@ -1,14 +1,14 @@
 {
   "schema": "universa-seal/7",
-  "design_commit": "90ca3a668099306239a9a6876fec80adb3ac1375",
-  "protocol_sha256": "e4965933a1b372a266c0768d52ab491b56232db01ad00aee6e11949e99dbf157",
-  "runner_sha256": "64f3360a62996a42468d7cce88e8f9ea5fd576c7e701b7a0a8a5d5808567101d",
+  "design_commit": "8f8c8808f69cc1e2552bb312ad974c72974b7546",
+  "protocol_sha256": "b9301292d0be5e813c6fc204f03f47b953cbd0e9d346bf4ab769a737ef1aeda9",
+  "runner_sha256": "c816a854e4e06734fd796003d21a22c8cda91b7ec31275cb164f18ddd59f8d4f",
   "code_manifest": {
     "src/universa/__init__.py": "920ba879666a28195183243f7b1f84ea0af2707554606c824ac05109a7dd6b13",
     "src/universa/budgets.py": "34ccdb754f3fdc74e5501ae748e8a7898993241e544f14cda29c4152fe8eed49",
     "src/universa/category_instances.py": "b968298513773c66fa48157c896cfb6cbb924b9a722058dcd65c425334ddd053",
     "src/universa/complexes2.py": "c99cf71a6954f2f97c247ff90aa8cbbe287e6c091056b284a8cb2c2155b5ecf1",
-    "src/universa/discovery.py": "eaa0442f949d6348582c83e8cf1ef5f2a1e445ddfbe84e8e1bd4009d2cd90a08",
+    "src/universa/discovery.py": "b2eda8c55a83bbd358f86452de663fb274f124686ecc0a7f74aa8f23f07c1885",
     "src/universa/generators.py": "e3994312a083a5eb2b7ac2292ce222b779e5450128d1850a0f39af689d9f6c69",
     "src/universa/loop.py": "4d5cca521561d881de29eecb8f1dee1dfea1b13178dcc4add81d6f09d917c331",
     "src/universa/multihop.py": "da77e4a950c61eeaeb1d33d4aa62598ee68e14903edc0e7138d7ad7f18d68261",
@@ -28,10 +28,10 @@
     "last": 0
   },
   "eval_seed_block": {
-    "first": 130001,
-    "last": 130036
+    "first": 140001,
+    "last": 140036
   },
-  "no_preview_declaration": "No seed in 130001..130036 has ever been instantiated, previewed, counted for eligibility, smoke-tested, or debugged with, on any generator family or in any pipeline stage. A repository-wide search of the working tree and all git history before this seal found the block only as inert textual declarations in the protocol, runner, tests, and this seal, plus coincidental digit collisions inside retained float values of prior result artifacts. An earlier draft of the protocol named 70101..70136 as the eval block; that block is numerically contained in the 2-complex experiment's unsealed train block 70001..70200 and was discarded unopened under the series' strict no-preview standard; no member of it is used in this experiment. If even one sealed seed is accidentally instantiated before execution, the entire block is void and a new block must be chosen and verified absent. There is no train seed block: the loop experiment has no learned model and no training; the empty block is recorded as the sentinel {first: 0, last: 0}.",
+  "no_preview_declaration": "No seed in 140001..140036 has ever been instantiated, previewed, counted for eligibility, smoke-tested, or debugged with, on any generator family or in any pipeline stage. A repository-wide search of the working tree and all git history before this seal found the block only as inert textual declarations in the protocol, runner, tests, and this seal, plus coincidental digit collisions inside retained float values of prior result artifacts. BLOCK HISTORY (declared per the protocol's errata): an earlier draft named 70101..70136, discarded unopened for containment in the 2-complex train block 70001..70200. The first sealed block 130001..130036 was sealed at commit 90ca3a66 (seal commit db1737c, pushed before instantiation); its canonical run failed at seed 130006 with a design_failure caused by a rank-tolerance-inversion crash in universa.discovery's stabilization refusal path (retained immutably at results/experiments/failures/router-loop-sealed-1.design_failure.json). The fault was fixed behavior-preservingly (per-field nonnegativity replacing a false ordering invariant; no accept or refuse decision changes), per the stop rules the block is void for claims, and this seal replaces that design with the amended commit 8f8c8808 and the verified-absent replacement block 140001..140036. If even one sealed seed is accidentally instantiated before execution, the entire block is void and a new block must be chosen and verified absent. There is no train seed block: the loop experiment has no learned model and no training; the empty block is recorded as the sentinel {first: 0, last: 0}.",
   "primary_family": [
     {
       "id": "h1-loop-acquisition-rate",

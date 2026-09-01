@@ -1,0 +1,740 @@
+{
+  "audit": {
+    "arms": [
+      "arch_full",
+      "routing_only",
+      "discovery_only",
+      "generic"
+    ],
+    "build_failure_rows": 0,
+    "conditions": [
+      "in_library",
+      "out_of_library",
+      "null_control"
+    ],
+    "declared_seeds": 36,
+    "eligible_seed_ids": [
+      210001,
+      210002,
+      210003,
+      210004,
+      210005,
+      210006,
+      210007,
+      210008,
+      210009,
+      210010,
+      210011,
+      210012,
+      210013,
+      210014,
+      210015,
+      210016,
+      210017,
+      210018,
+      210019,
+      210020,
+      210021,
+      210022,
+      210023,
+      210024,
+      210025,
+      210026,
+      210027,
+      210028,
+      210029,
+      210030,
+      210031,
+      210032,
+      210033,
+      210034,
+      210035,
+      210036
+    ],
+    "eligible_seeds": 36,
+    "ineligible_seed_rows": 0,
+    "raw_rows": 0,
+    "recompute_scope": "(a) every claim statistic and every correctness decision below is recomputed from the raw rows alone: the condition/arm naming, the observation schedule (the retained observation_seed against subseed(seed, 'router-v2-observe')), the action/library coherence (route leaves the library unchanged and admits nothing; discover grows it by one and routes to the appended index; a refusal routes nowhere), the discovery-invocation discipline per arm, and the frozen condition-correctness semantics \u2014 the routing arms' decisions recompute from the retained action/routed_index, and the certified-gate semantics from the retained admitted/map_misfit against 1e-9 \u2014 followed by the per-seed condition indicators, condition-means, paired differences, means, standard deviations, SEs, one-sided lower bounds, decisions, and the descriptive recomputes (per-(condition, arm) accuracies and discovery-invocation counts; the wall-time summaries are execution metadata, recomputed from the rows but not bit-identical across executions); the eligibility counts and seed ids come from the eligibility pass, not from the raw rows. (b) what is NOT recomputable from the rows: the learned models' internal decisions \u2014 the router's argmax and soft gates, the calibrated v2 alarm's fit/no-fit, and the generic model's class \u2014 because the trained weights are not retained; the three models are hash-pinned in training (model_state_sha256), so re-running the frozen training on the frozen train block reproduces them bit-exactly. The retained per-candidate arch raw profiles (8 floats each) are the row's shared degradation-profile observation record (the alarm's profile-summary inputs are functions of them); no matrices are retained. This audit does NOT re-verify the discovery head's internal SVD certificates: the per-row certified residuals (map_misfit) are reproducible only by re-running the manifest-pinned deterministic pipeline, and that assurance is pinned by the code manifest and enforced by the per-row double-execution bit-identity check.",
+    "rows_per_seed": 12
+  },
+  "claims": {
+    "claims": [
+      {
+        "arms": [
+          "arch_full",
+          "generic"
+        ],
+        "critical_value": null,
+        "description": "the full architecture's per-seed end-to-end correctness \u2014 the mean of its correctness bits over the three paired conditions \u2014 beats the no-architecture generic arm's",
+        "direction": "greater",
+        "estimand": "mean over eligible seeds of arch_vs_generic_e2e(seed) with arch_vs_generic_e2e(seed) = arch_full_e2e - generic_e2e, where an arm's e2e is the mean of its correctness bits over the three paired conditions (in_library, out_of_library, null_control)",
+        "estimate": null,
+        "id": "h1-loopv4-arch-vs-generic-e2e",
+        "lower_bound": null,
+        "n": null,
+        "role": "primary",
+        "scope": "e2e",
+        "standard_deviation": null,
+        "standard_error": null,
+        "statistic": "arch_vs_generic_e2e",
+        "supported": null,
+        "threshold": 0.0
+      },
+      {
+        "arms": [
+          "arch_full",
+          "routing_only"
+        ],
+        "critical_value": null,
+        "description": "the full architecture's per-seed end-to-end correctness beats the routing-only ablation's (no alarm, no discovery: a forced choice that can never acquire out-of-library)",
+        "direction": "greater",
+        "estimand": "mean over eligible seeds of arch_vs_routing_only_e2e(seed) with arch_vs_routing_only_e2e(seed) = arch_full_e2e - routing_only_e2e, where an arm's e2e is the mean of its correctness bits over the three paired conditions (in_library, out_of_library, null_control)",
+        "estimate": null,
+        "id": "h2-loopv4-arch-vs-routing-only-e2e",
+        "lower_bound": null,
+        "n": null,
+        "role": "secondary",
+        "scope": "e2e",
+        "standard_deviation": null,
+        "standard_error": null,
+        "statistic": "arch_vs_routing_only_e2e",
+        "supported": null,
+        "threshold": 0.0
+      },
+      {
+        "arms": [
+          "arch_full",
+          "generic"
+        ],
+        "critical_value": null,
+        "description": "on the in-library condition the full architecture's correctness bit strictly beats the no-architecture generic arm's (the strict paired comparison at 0)",
+        "direction": "greater",
+        "estimand": "mean over eligible seeds of arch_vs_generic_inlibrary(seed) with arch_vs_generic_inlibrary(seed) = arch_full's in_library correctness bit minus generic's",
+        "estimate": null,
+        "id": "h3-loopv4-arch-vs-generic-inlibrary",
+        "lower_bound": null,
+        "n": null,
+        "role": "secondary",
+        "scope": "in_library",
+        "standard_deviation": null,
+        "standard_error": null,
+        "statistic": "arch_vs_generic_inlibrary",
+        "supported": null,
+        "threshold": 0.0
+      },
+      {
+        "arms": [
+          "arch_full",
+          "discovery_only"
+        ],
+        "critical_value": null,
+        "description": "on the in-library condition the full architecture is not worse than the discovery-only ablation by more than the 0.05 harm margin (a non-inferiority bound: always-discovering must not materially beat route-or-discover when the library fits)",
+        "direction": "greater",
+        "estimand": "mean over eligible seeds of arch_vs_discovery_only_inlibrary_harm(seed) with arch_vs_discovery_only_inlibrary_harm(seed) = arch_full's in_library correctness bit minus discovery_only's; the harm margin is -0.05",
+        "estimate": null,
+        "id": "h4-loopv4-arch-vs-discovery-only-inlibrary-harm",
+        "lower_bound": null,
+        "n": null,
+        "role": "secondary",
+        "scope": "in_library",
+        "standard_deviation": null,
+        "standard_error": null,
+        "statistic": "arch_vs_discovery_only_inlibrary_harm",
+        "supported": null,
+        "threshold": -0.05
+      }
+    ],
+    "critical_values_n30_to_n36": null,
+    "family_size": 4,
+    "familywise_alpha": 0.05,
+    "method": "one-sided Student-t lower bounds with Bonferroni correction; the generator seed is the inference unit",
+    "per_claim_alpha": 0.0125,
+    "role": "no confirmatory decision: the run did not complete"
+  },
+  "descriptive": null,
+  "design": {
+    "arms": {
+      "arch_full": "the full system: the trained StructureRouter scores the no-anchor profile blocks (hard argmax), the trained LearnedAlarmV2 decides fit/no-fit from the soft gates and the raw profile block against the train-block calibrated threshold; fit routes to the argmax, no-fit runs certified discovery on the exact observations, gated (1e-10 certification, 1e-6 novelty); on admission the row routes to the appended structure, else refused",
+      "discovery_only": "ablation that always runs certified discovery on the exact observations, novelty checked against the instance's decoy library; the library is unused for routing",
+      "generic": "the no-architecture arm: the trained GenericMLP over generic spectral features (NO commutation residual, NO degradation profile); classes 0..K-1 route, class K is no-fit and synthesizes nothing",
+      "routing_only": "ablation with no alarm and no discovery: always routes to the trained router's argmax (a forced choice; out-of-library it must pick a decoy \u2014 an honest failure)"
+    },
+    "canonical_command": "env CUDA_VISIBLE_DEVICES=-1 PYTHONPATH=src python scripts/run_loop_v4_sealed_1.py --output results/experiments/router-loop-v4-sealed-1.json",
+    "conditions": {
+      "in_library": "one row per arm over the in-library view with the exact transported observations",
+      "null_control": "one row per arm over the out-of-library view with the structure-free 'discovery-null' observations \u2014 the false-admission / refusal specificity control",
+      "out_of_library": "one row per arm over the out-of-library view (the truth withheld) with the same exact transported observations"
+    },
+    "correctness_semantics": "the frozen universa.loop_v2 semantics: in-library, the arm's final structure is the true target (route to index 0, or a certified admitted discovery with map_misfit <= 1e-9); out-of-library, a certified novel structure admitted with map_misfit <= 1e-9 (routing_only and generic can never acquire); null-control, the alarm arms must admit nothing and the refusal-only arms must refuse",
+    "declared_caveat": "demo-scale numbers are not evidence: the arms' correctness rates and their paired differences are properties of this one synthetic generator family at the frozen exp4 sizes (8 vertices, 14 edges, 6 classes, 3 decoys, M = 16 observations) in the no-anchor degraded regime, with small MLPs trained on 400 train seeds of the same family \u2014 not guarantees for other families, other library sizes, other training budgets, or real data; the generic arm is deliberately architecture-free (no commutation residual, no degradation profile); the null control is an i.i.d. Gaussian null matched to the target edge space, not a worst-case adversary; and the wall times are descriptive execution metadata, never analyzed",
+    "descriptive": "reported, never claim-tested: per-(condition, arm) accuracies (means of the correctness bits over eligible seeds), per-(condition, arm) discovery-invocation counts, wall-time summaries per (condition, arm) and per arm, the calibration record, and the three-point frontier baseline against the published docs/24 and docs/27 records (loop-v2's arch arm at 0.972/0.833/1.000 with 61/108 discovery invocations and a -1/36 bounded-harm estimate; loop-v3's at 0.611/1.000/1.000 with 86/108 invocations and a -14/36 estimate, plus its calibration record) \u2014 the price of selectivity at two sealed operating points, read by no decision rule",
+    "determinism": "every eval (seed, condition, arm) row is executed twice and required bit-identical in every field except wall_time_seconds (execution metadata; the first execution's wall time is retained); any mismatch is a whole-run design_failure; every train row and every model hash is reproducible from the frozen seeds",
+    "eligibility_rule": "the instance builds AND the undegraded audit passes: universa.budgets.make_budget_instance(seed, 8, 14, 6, 3) returns (a build exception is a whole-run design_failure, never an exclusion), the true candidate's undegraded misfit is exactly 0.0, and every decoy's undegraded misfit is strictly above 1e-9; an audit failure makes that one seed ineligible with a recorded reason (never a stop)",
+    "estimand": "per-seed condition indicators (the correctness bits per arm per condition), per-arm condition-means (e2e: the mean of an arm's bits over the three paired conditions), and the four paired per-seed differences against the full architecture: arch_vs_generic_e2e, arch_vs_routing_only_e2e, arch_vs_generic_inlibrary, and arch_vs_discovery_only_inlibrary_harm; each claim is the mean of its per-seed difference over the eligible seeds",
+    "eval_seeds": {
+      "first": 210001,
+      "last": 210036
+    },
+    "experiment_id": "universa-loop-v4-sealed-1",
+    "familywise_alpha": 0.05,
+    "inference_unit": "the generator seed",
+    "minimum_eligible": 30,
+    "no_outcome_dependent_stopping": true,
+    "no_seed_deletion": true,
+    "observation_regime": "the router-v2 no-anchor regime lifted into the loop: every candidate boundary is observed through universa.partial.ObservationModel draws with mask_fraction = 0.25 AND sign corruption swept over the profile grid 0.2..0.9 by 0.1, which EXCLUDES 0.0 \u2014 no clean column exists anywhere, so no residual the loop reads is exact and the fit/no-fit alarm must be learned; the transported vector observations y = f1 a are exact under every regime, so the certified discovery head runs unchanged at the frozen gates (certification 1e-10, novelty 1e-6, router acceptance map_misfit <= 1e-9)",
+    "observation_schedules": {
+      "null_observations": "universa.loop.null_observations(seed, ambient_dim, 16) \u2014 column j drawn from np.random.default_rng(subseed(seed, 'discovery-null', str(j))), the frozen exp4 H4 schedule",
+      "observation_seed": "subseed(seed, 'router-v2-observe'): ONE shared ObservationModel draw per seed, feeding every candidate at every grid point of every arm of every condition of the row (exact pairing), for train and eval rows alike \u2014 the router-v2 regime's canonical observation family, so the learned models' training rows and the loop rows come from one observation distribution on disjoint seed blocks; the arch and routing arms' feature blocks are therefore identical in the out-of-library and null-control conditions per seed (the alarm's decision basis precedes observations)",
+      "operating_grid_point": "universa.loop_v2.operating_grid_point(seed) \u2014 grid[subseed(seed, 'loop-v2-operating') % 8], the generic arm's single degradation level per row",
+      "structured_observations": "universa.discovery.synthesize_observations of a SwitchInstance view of the budget instance, M = 16 columns \u2014 the frozen exp4 'discovery-observation' schedule keyed on the instance seed"
+    },
+    "per_claim_alpha": 0.0125,
+    "row_count_invariant": "4 x 3 x n: exactly one row per (condition, arm) \u2014 4 arms x 3 conditions = 12 rows per eligible seed (432 rows over the declared block when every declared seed is eligible), checked before any summary",
+    "task_family": "graph-quotient switch instances via universa.budgets.make_budget_instance(num_vertices=8, num_edges=14, num_classes=6, num_decoys=3); ONE budget instance per seed with the equal-K paired views of universa.loop_v2: the in-library view (instance.true_target, *instance.decoy_targets[:-1]) with the true target at index 0, and the out-of-library view instance.decoy_targets with the truth withheld \u2014 both of size K = 3, the fixed input width of the learned alarm and the generic head",
+    "train_seed_block": {
+      "first": 200001,
+      "last": 200400
+    },
+    "training": {
+      "alarm": "LearnedAlarmV2(K=3, hidden_dim=32) via universa.loop_v2.train_alarm_v2, torch seed 4243, 150 epochs, lr 1e-3; fit/no-fit labels from the in-library vs out-of-library rows, reading the trained router's soft gates (tau = 1.0) over the alarm_features_v2 layout (K + 8 dims: the frozen v1 columns plus the five margin features)",
+      "calibration": "the alarm's decision threshold is calibrated on the train block by universa.loop_v2.calibrate_threshold_cost_aware at the frozen unit costs false_quiet_cost = 1.0 and false_alarm_cost = 1.0 (the threshold MINIMIZING the weighted total error, ties toward the larger balanced accuracy then the larger threshold, no feasibility bound); the full eight-key record (threshold, balanced_accuracy, false_quiet_rate, false_alarm_rate, total_cost, false_quiet_cost, false_alarm_cost, num_candidates) is retained in the training provenance. This replaces loop-v3's bounded rule; at equal unit costs the objective equals 2 - 2 * balanced_accuracy exactly, so the rule is unconstrained balanced-accuracy maximization \u2014 declared in the protocol, not discovered",
+      "generic": "GenericMLP(K=3, feature_dim=18, hidden_dim=64) via universa.loop_v2.train_generic, torch seed 4244, 150 epochs, lr 1e-3; index/no-fit labels (in-library labeled 0, out-of-library labeled K)",
+      "router": "StructureRouter(feature_dim=18, hidden_dim=64) via universa.router.train_router, torch seed 4242, 150 epochs, lr 1e-3, lambda_aux 0.01, tau 2.0 -> 0.25, full-batch Adam, CPU float32; the in-library arch rows, label 0 for every row \u2014 the loop's unpermuted index-0 convention (the declared consequences: the router's learned role is profile-shape scoring under the index-0 commitment; the loop's learned selectivity lives in the alarm; the out-of-library view contributes no router rows)",
+      "rows_per_train_seed": "both views: arch profile features AND generic spectral features per candidate"
+    }
+  },
+  "eligibility": {
+    "attempted": 36,
+    "build_failures": [],
+    "declared": 36,
+    "eligible": 36,
+    "eligible_seeds": [
+      210001,
+      210002,
+      210003,
+      210004,
+      210005,
+      210006,
+      210007,
+      210008,
+      210009,
+      210010,
+      210011,
+      210012,
+      210013,
+      210014,
+      210015,
+      210016,
+      210017,
+      210018,
+      210019,
+      210020,
+      210021,
+      210022,
+      210023,
+      210024,
+      210025,
+      210026,
+      210027,
+      210028,
+      210029,
+      210030,
+      210031,
+      210032,
+      210033,
+      210034,
+      210035,
+      210036
+    ],
+    "ineligible": []
+  },
+  "experiment_id": "universa-loop-v4-sealed-1",
+  "failure": {
+    "message": "train block construction failed at seed 200058: ValueError: decoy admits every transported cycle (B1_decoy f1 vanishes on the source cycle space, e.g. a vertex-relabeled complete quotient); choose parameters with a non-complete quotient so decoys have different kernels",
+    "phase": "campaign",
+    "seed": null,
+    "type": "DesignFailureError"
+  },
+  "per_seed": [],
+  "provenance": {
+    "clean_worktree": true,
+    "code_manifest": {
+      "files": {
+        "src/universa/__init__.py": "920ba879666a28195183243f7b1f84ea0af2707554606c824ac05109a7dd6b13",
+        "src/universa/budgets.py": "34ccdb754f3fdc74e5501ae748e8a7898993241e544f14cda29c4152fe8eed49",
+        "src/universa/category_instances.py": "b968298513773c66fa48157c896cfb6cbb924b9a722058dcd65c425334ddd053",
+        "src/universa/complexes2.py": "c99cf71a6954f2f97c247ff90aa8cbbe287e6c091056b284a8cb2c2155b5ecf1",
+        "src/universa/discovery.py": "b2eda8c55a83bbd358f86452de663fb274f124686ecc0a7f74aa8f23f07c1885",
+        "src/universa/generators.py": "e3994312a083a5eb2b7ac2292ce222b779e5450128d1850a0f39af689d9f6c69",
+        "src/universa/loop.py": "4d5cca521561d881de29eecb8f1dee1dfea1b13178dcc4add81d6f09d917c331",
+        "src/universa/loop_v2.py": "a08d9a2ca69e442861e5ed6c10b60a2b80b055ce4da67fdabef8e6064243e90a",
+        "src/universa/multihop.py": "da77e4a950c61eeaeb1d33d4aa62598ee68e14903edc0e7138d7ad7f18d68261",
+        "src/universa/nerve.py": "cd644b17f07f4e4964c94078fa8d576de9b21daafe73246594a676d7f6f48ca1",
+        "src/universa/operators.py": "06d24348f9e3325ac05efb9cfe3d690b8e349fcdd53ddf537bc4c810ba9887e5",
+        "src/universa/partial.py": "7bf8d3614ee1f445fe8c739531caced307eec95733c56e8dc2d27aa6dc29e7d4",
+        "src/universa/partial2.py": "c74d557f2c53018c280bf0cc09be31be147162bfdc351a993d97d5fa75e46026",
+        "src/universa/partial_group.py": "430df243234c5b519f5ca7082d653f8c71e233cdb4795d378174dbcd06b4a06d",
+        "src/universa/partial_sheaf.py": "07e6634a874a25e2746ebb3a93658460695c590312c3afe4de25ad5d6e1442f3",
+        "src/universa/router.py": "6e3054d06fce75b298c10acfd390fc293ca1bcb77ac2541769988588647955ce",
+        "src/universa/router_v2.py": "5f36d2fb4b7ecca0089353308b1d1ff13528b7048d8b8bdc61d23f014475272d",
+        "src/universa/sheaves.py": "a35a78349d2d9fdefd44112a714468800d12ce67affac5cec960d7d2a171b300",
+        "src/universa/structures.py": "cd816128ffbefe8c8d6f683346ae463d95c7cc3a9bcd489cb4b0bee398e6da6b"
+      },
+      "glob": "src/universa/*.py",
+      "sha256": "7e84992c97a3b5627d8e87f6e8576e981a74e5122970925ca8cb711b65cef2f8"
+    },
+    "environment": {
+      "numpy": "2.5.2",
+      "platform": {
+        "machine": "aarch64",
+        "node": "spark-ecfd",
+        "processor": "aarch64",
+        "release": "6.17.0-1026-nvidia",
+        "system": "Linux",
+        "version": "#26-Ubuntu SMP PREEMPT_DYNAMIC Thu Jun 25 00:57:17 UTC 2026"
+      },
+      "python": "3.12.3",
+      "torch": "2.13.0+cu130",
+      "torch_cuda_build": "13.0"
+    },
+    "execution": {
+      "argv": [
+        "scripts/run_loop_v4_sealed_1.py",
+        "--output",
+        "results/experiments/router-loop-v4-sealed-1.json"
+      ],
+      "array_dtype": "float64",
+      "compute": "torch float32 on CPU for the three learned models (StructureRouter, LearnedAlarmV2, GenericMLP); numpy float64 for the certified machinery (features, discovery, audits)",
+      "cuda_available": false,
+      "cuda_visible_devices": "",
+      "cuda_visible_devices_operator": "-1",
+      "mkl_num_threads": null,
+      "omp_num_threads": null,
+      "tensor_device": "cpu",
+      "tensor_dtype": "float32",
+      "torch_num_interop_threads": 20,
+      "torch_num_threads": 1
+    },
+    "execution_revision": "e6869ee3725afee2c2c0ff18f2dc2d9e5cb145eb",
+    "git_revision": "e6869ee3725afee2c2c0ff18f2dc2d9e5cb145eb",
+    "git_status_porcelain": "",
+    "protocol": {
+      "path": "docs/30-sealed-router-loop-v4-protocol.md",
+      "sha256": "a60d0bb982eb1e57308e6fd2771a518c9f672d37a544506491f261c43137c2fa"
+    },
+    "runner": {
+      "path": "scripts/run_loop_v4_sealed_1.py",
+      "sha256": "0a25874706adb8ab1e0d1ae233b47f889c0a6f6b91f18dbffa1159e486a5d3b2"
+    },
+    "seal": {
+      "committed_at_head": true,
+      "design_commit": "63ebafc2edba70bed831f7ef5c5fdb9c423c31db",
+      "path": "docs/31-router-loop-v4-seal.json",
+      "schema": "universa-seal/10",
+      "sha256": "a2d3e0f4fee00ad77627550c67d35857fe9ea93206149ee25deb7c49f9197819"
+    }
+  },
+  "raw_rows": [],
+  "schema": "universa-router-loop-v4-sealed-result/1",
+  "seed_records": [
+    {
+      "decoy_misfits_undegraded": [
+        4.898979485566356,
+        3.1622776601683795,
+        4.47213595499958
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210001,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.242640687119285,
+        4.69041575982343,
+        3.7416573867739413
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210002,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.898979485566356,
+        4.0,
+        3.7416573867739413
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210003,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.291502622129181,
+        3.7416573867739413,
+        4.47213595499958
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210004,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        3.4641016151377544,
+        5.291502622129181,
+        3.4641016151377544
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210005,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.47213595499958,
+        4.898979485566356,
+        4.47213595499958
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210006,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.47213595499958,
+        4.0,
+        3.4641016151377544
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210007,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        6.0,
+        5.291502622129181,
+        5.656854249492381
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210008,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.291502622129181,
+        4.898979485566356,
+        4.47213595499958
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210009,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.69041575982343,
+        4.898979485566356,
+        4.0
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210010,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.898979485566356,
+        4.0,
+        3.1622776601683795
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210011,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.0,
+        4.69041575982343,
+        3.7416573867739413
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210012,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        3.7416573867739413,
+        4.242640687119285,
+        4.242640687119285
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210013,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.830951894845301,
+        3.7416573867739413,
+        3.7416573867739413
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210014,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.830951894845301,
+        5.0990195135927845,
+        5.656854249492381
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210015,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.242640687119285,
+        4.0,
+        3.1622776601683795
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210016,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.0,
+        4.47213595499958,
+        4.47213595499958
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210017,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.47213595499958,
+        3.7416573867739413,
+        3.1622776601683795
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210018,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.0990195135927845,
+        3.4641016151377544,
+        3.1622776601683795
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210019,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.69041575982343,
+        4.898979485566356,
+        4.898979485566356
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210020,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.69041575982343,
+        4.0,
+        4.0
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210021,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.242640687119285,
+        3.1622776601683795,
+        4.242640687119285
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210022,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        3.7416573867739413,
+        3.7416573867739413,
+        5.291502622129181
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210023,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.656854249492381,
+        2.8284271247461903,
+        3.4641016151377544
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210024,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.0990195135927845,
+        5.656854249492381,
+        4.47213595499958
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210025,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        3.4641016151377544,
+        2.8284271247461903,
+        3.7416573867739413
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210026,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.656854249492381,
+        4.898979485566356,
+        6.324555320336759
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210027,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.242640687119285,
+        3.7416573867739413,
+        5.656854249492381
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210028,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.477225575051661,
+        5.477225575051661,
+        4.69041575982343
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210029,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.898979485566356,
+        3.4641016151377544,
+        2.8284271247461903
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210030,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.0,
+        5.0990195135927845,
+        5.0990195135927845
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210031,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.0,
+        4.69041575982343,
+        4.242640687119285
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210032,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.477225575051661,
+        4.69041575982343,
+        5.291502622129181
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210033,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.47213595499958,
+        4.0,
+        5.830951894845301
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210034,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        3.1622776601683795,
+        4.69041575982343,
+        4.0
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210035,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.898979485566356,
+        4.69041575982343,
+        3.4641016151377544
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 210036,
+      "true_misfit_undegraded": 0.0
+    }
+  ],
+  "status": "design_failure",
+  "stop_condition": "the campaign stopped before completion; all completed raw rows are preserved and every claim carries a null decision",
+  "training": null
+}

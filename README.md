@@ -192,6 +192,18 @@ artifact):**
    (61 vs 108). Also the series' first train-block errata: the first
    train block was voided pre-seal by test-side instantiation, caught
    by the consistency audit before commit A, and replaced.
+9. **router-loop-v3** (`docs/27`): the alarm redesign — margin
+   features, a doubled declared train block, and a train-block-
+   calibrated threshold, frozen from the published h4 mechanism. The
+   frozen calibration did exactly what it was designed to do: false
+   quiets eliminated (out-of-library acquisition 0.833 -> 1.000) at
+   the price of a 0.41 train false-alarm rate that materialized as
+   14/36 in-library harm. h1 (+0.44 e2e vs generic) and h2 (+0.20 vs
+   routing-only) supported; h3 and h4 NOT supported, reported frozen.
+   The tradeoff moved along the alarm's Pareto frontier rather than
+   closing: the threshold is a one-parameter dial, and a one-sided
+   bound is a choice of which error to pay. All 14 harm seeds named,
+   each with its decision chain in the artifact.
 
 Scope caveats in each results record.
 

@@ -1,0 +1,4955 @@
+{
+  "audit": {
+    "build_failure_rows": 0,
+    "claims": {
+      "h1-loop-acquisition-rate": {
+        "estimate": 1.0,
+        "lower_bound": 1.0,
+        "standard_deviation": 0.0,
+        "standard_error": 0.0,
+        "supported": true
+      },
+      "h2-loop-false-admission-control": {
+        "estimate": 1.0,
+        "lower_bound": 1.0,
+        "standard_deviation": 0.0,
+        "standard_error": 0.0,
+        "supported": true
+      },
+      "h3-loop-in-library-routing": {
+        "estimate": 1.0,
+        "lower_bound": 1.0,
+        "standard_deviation": 0.0,
+        "standard_error": 0.0,
+        "supported": true
+      },
+      "h4-loop-alarm-precision": {
+        "estimate": 1.0,
+        "lower_bound": 1.0,
+        "standard_deviation": 0.0,
+        "standard_error": 0.0,
+        "supported": true
+      }
+    },
+    "decision_recompute": [
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140001
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140002
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140003
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140004
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140005
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140006
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140007
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140008
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140009
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140010
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140011
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140012
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140013
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140014
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140015
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140016
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140017
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140018
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140019
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140020
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140021
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140022
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140023
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140024
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140025
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140026
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140027
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140028
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140029
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140030
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140031
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140032
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140033
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140034
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140035
+      },
+      {
+        "alarm_fired": false,
+        "alarm_silent": true,
+        "condition": "in-library",
+        "mode": "route",
+        "routing_correct": true,
+        "seed": 140036
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140001
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140002
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140003
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140004
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140005
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140006
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140007
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140008
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140009
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140010
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140011
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140012
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140013
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140014
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140015
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140016
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140017
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140018
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140019
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140020
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140021
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140022
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140023
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140024
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140025
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140026
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140027
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140028
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140029
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140030
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140031
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140032
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140033
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140034
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140035
+      },
+      {
+        "acquisition_correct": true,
+        "alarm_fired": true,
+        "condition": "out-of-library",
+        "mode": "discover",
+        "seed": 140036
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140001
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140002
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140003
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140004
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140005
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140006
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140007
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140008
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140009
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140010
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140011
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140012
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140013
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140014
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140015
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140016
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140017
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140018
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140019
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140020
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140021
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140022
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140023
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140024
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140025
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140026
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140027
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140028
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140029
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140030
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140031
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140032
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140033
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140034
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140035
+      },
+      {
+        "alarm_fired": true,
+        "condition": "null-control",
+        "mode": "refused",
+        "refused": true,
+        "seed": 140036
+      }
+    ],
+    "declared_seeds": 36,
+    "eligible_seed_ids": [
+      140001,
+      140002,
+      140003,
+      140004,
+      140005,
+      140006,
+      140007,
+      140008,
+      140009,
+      140010,
+      140011,
+      140012,
+      140013,
+      140014,
+      140015,
+      140016,
+      140017,
+      140018,
+      140019,
+      140020,
+      140021,
+      140022,
+      140023,
+      140024,
+      140025,
+      140026,
+      140027,
+      140028,
+      140029,
+      140030,
+      140031,
+      140032,
+      140033,
+      140034,
+      140035,
+      140036
+    ],
+    "eligible_seeds": 36,
+    "in_library_rows": 36,
+    "ineligible_seed_rows": 0,
+    "null_control_rows": 36,
+    "out_of_library_rows": 36,
+    "per_seed": [
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140001
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140002
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140003
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140004
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140005
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140006
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140007
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140008
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140009
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140010
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140011
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140012
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140013
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140014
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140015
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140016
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140017
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140018
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140019
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140020
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140021
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140022
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140023
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140024
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140025
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140026
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140027
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140028
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140029
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140030
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140031
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140032
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140033
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140034
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140035
+      },
+      {
+        "acquired": 1.0,
+        "alarm_silent": 1.0,
+        "control_refused": 1.0,
+        "routed_correctly": 1.0,
+        "seed": 140036
+      }
+    ],
+    "recompute_scope": "(a) every claim statistic and every alarm/routing/acquisition/refusal decision below is recomputed from the raw rows alone: the alarm decision (retained best_score against alarm_tol = 1e-9, and best_score as the minimum of the retained per-candidate scores), the routing decision (route mode commits to the first argmin of the retained scores; the routing indicator is mode 'route' to library index 0), the acquisition decision (mode 'discover' with a fired alarm, verdict 'discovered', a certificate residual, admission, and map_misfit <= 1e-9), the refusal indicator (mode 'refused'), and the mode/library coherence (route and refused leave the library unchanged; discover grows it by one and routes to the appended index), followed by the per-seed claim statistics, means, standard deviations, SEs, one-sided lower bounds, and decisions; the eligibility counts and seed ids come from the eligibility pass, not from the raw rows. (b) no matrices are retained or needed: every claim statistic is a function of the retained LoopOutcome scalar record, and no instance is rebuilt \u2014 the audit never re-runs the loop. Unlike the router experiments, no hash-pinned model exists or is needed, because nothing was trained.",
+    "rows_per_seed_per_condition": 1
+  },
+  "claims": {
+    "claims": [
+      {
+        "condition": "out-of-library",
+        "critical_value": 2.3419692993010397,
+        "description": "the per-seed acquisition rate \u2014 the loop detects the out-of-library misfit, the certified discovery head certifies a constraint, the novelty gate admits it, and the planted map commutes with it (map_misfit <= 1e-9) \u2014 clears 0.95",
+        "direction": "greater",
+        "estimand": "mean over eligible seeds of acquisition(seed) from the out-of-library condition; acquisition(seed) is 1.0 iff universa.loop.acquisition_correct(outcome, instance) on the out-of-library row \u2014 the alarm fired, the discovery head certified, the novelty gate admitted, and map_misfit <= 1e-9 \u2014 else 0.0",
+        "estimate": 1.0,
+        "id": "h1-loop-acquisition-rate",
+        "lower_bound": 1.0,
+        "n": 36,
+        "role": "primary",
+        "standard_deviation": 0.0,
+        "standard_error": 0.0,
+        "statistic": "acquisition",
+        "supported": true,
+        "threshold": 0.95
+      },
+      {
+        "condition": "null-control",
+        "critical_value": 2.3419692993010397,
+        "description": "the per-seed null-control refusal rate \u2014 structure-free i.i.d. Gaussian observations through the same discovery path are refused, never certified and admitted into the library \u2014 clears 0.95, so the false-admission rate stays below 0.05",
+        "direction": "greater",
+        "estimand": "mean over eligible seeds of refusal(seed) from the null-control condition; refusal(seed) is 1.0 iff the null-control row admitted nothing (NOT admitted: no constraint was certified and admitted into the library; a route-mode outcome admits nothing), else 0.0",
+        "estimate": 1.0,
+        "id": "h2-loop-false-admission-control",
+        "lower_bound": 1.0,
+        "n": 36,
+        "role": "secondary",
+        "standard_deviation": 0.0,
+        "standard_error": 0.0,
+        "statistic": "refusal",
+        "supported": true,
+        "threshold": 0.95
+      },
+      {
+        "condition": "in-library",
+        "critical_value": 2.3419692993010397,
+        "description": "the per-seed in-library routing rate \u2014 the alarm stays quiet and the loop commits the instance to the true target at library index 0 \u2014 clears 0.95",
+        "direction": "greater",
+        "estimand": "mean over eligible seeds of routing(seed) from the in-library condition; routing(seed) is 1.0 iff universa.loop.routing_correct(outcome) on the in-library row \u2014 mode 'route' with routed_index 0, the true target's frozen library index \u2014 else 0.0",
+        "estimate": 1.0,
+        "id": "h3-loop-in-library-routing",
+        "lower_bound": 1.0,
+        "n": 36,
+        "role": "secondary",
+        "standard_deviation": 0.0,
+        "standard_error": 0.0,
+        "statistic": "routing",
+        "supported": true,
+        "threshold": 0.95
+      },
+      {
+        "condition": "in-library",
+        "critical_value": 2.3419692993010397,
+        "description": "the per-seed in-library alarm-silence rate \u2014 the misfit alarm does not fire when the library explains the instance \u2014 clears 0.95, so the false-alarm rate stays below 0.05",
+        "direction": "greater",
+        "estimand": "mean over eligible seeds of alarm_silence(seed) from the in-library condition; alarm_silence(seed) is 1.0 iff the in-library row's misfit alarm did not fire (best_score <= 1e-9), else 0.0",
+        "estimate": 1.0,
+        "id": "h4-loop-alarm-precision",
+        "lower_bound": 1.0,
+        "n": 36,
+        "role": "secondary",
+        "standard_deviation": 0.0,
+        "standard_error": 0.0,
+        "statistic": "alarm_silence",
+        "supported": true,
+        "threshold": 0.95
+      }
+    ],
+    "critical_values_n30_to_n36": {
+      "30": 2.36384607320831,
+      "31": 2.359562458700931,
+      "32": 2.3555682821599135,
+      "33": 2.3518351803763706,
+      "34": 2.348338377257479,
+      "35": 2.3450561343451817,
+      "36": 2.3419692993010397
+    },
+    "family_size": 4,
+    "familywise_alpha": 0.05,
+    "method": "one-sided Student-t lower bounds with Bonferroni correction; the generator seed is the inference unit",
+    "per_claim_alpha": 0.0125
+  },
+  "design": {
+    "canonical_command": "env CUDA_VISIBLE_DEVICES=-1 PYTHONPATH=src python scripts/run_loop_sealed_1.py --output results/experiments/router-loop-sealed-1.json",
+    "conditions": {
+      "in-library": "one run_loop row per eligible seed over instance.candidates (the H3 routing and H4 alarm-silence statistics), retaining the full LoopOutcome scalar record plus the routing and alarm-silence indicators",
+      "null-control": "one run_loop row per eligible seed over instance.decoy_targets with the observations override null_observations(seed, ambient_dim, 16) \u2014 column j drawn from np.random.default_rng(subseed(seed, 'discovery-null', str(j))) \u2014 (the H2 refusal statistic), retaining the full LoopOutcome scalar record plus the refusal indicator",
+      "out-of-library": "one run_loop row per eligible seed over instance.decoy_targets (the H1 acquisition statistic), retaining the full LoopOutcome scalar record plus the acquisition indicator"
+    },
+    "declared_caveat": "demo-scale numbers are not evidence: the acquisition, routing, refusal, and alarm-silence rates are properties of this one synthetic generator family at the frozen exp4 sizes (8 vertices, 14 edges, 6 classes, 3 decoys, M = 16 observations) under the certified route-or-discover loop, not guarantees for other families, other library sizes, or real data; and the false-admission control is an i.i.d. Gaussian null matched to the target edge space, not a worst-case adversary",
+    "determinism": "the full per-seed pipeline \u2014 all three conditions \u2014 is executed twice and required bit-identical; any mismatch is a whole-run design_failure",
+    "eligibility_rule": "the instance builds AND the undegraded audit passes: universa.loop.make_loop_instance(seed) returns (a build exception is a whole-run design_failure, never an exclusion), the true candidate's undegraded misfit is exactly 0.0, and every decoy's undegraded misfit is strictly above 1e-9; an audit failure makes that one seed ineligible with a recorded reason (never a stop)",
+    "estimand": "per-seed statistics from the three conditions: acquisition (universa.loop.acquisition_correct) from the out-of-library condition; refusal (NOT admitted) from the null-control condition; routing (universa.loop.routing_correct) and alarm silence (the alarm did not fire) from the in-library condition; each claim is the mean of its per-seed statistic over the eligible seeds",
+    "eval_seeds": {
+      "first": 140001,
+      "last": 140036
+    },
+    "experiment_id": "universa-router-loop-sealed-1",
+    "familywise_alpha": 0.05,
+    "inference_unit": "the generator seed",
+    "minimum_eligible": 30,
+    "no_outcome_dependent_stopping": true,
+    "no_seed_deletion": true,
+    "observation_model": "the vector-observation regime of universa.discovery, consumed through universa.loop.run_loop: M = 16 transported vectors y_j = f1 a_j over certified random source cycles, synthesized deterministically from the seed by universa.discovery.synthesize_observations (the frozen 'discovery-observation' schedule); the null-control condition replaces them with 16 i.i.d. standard Gaussian columns from universa.loop.null_observations (the frozen 'discovery-null' schedule)",
+    "per_claim_alpha": 0.0125,
+    "procedure": {
+      "alarm_tol": 1e-09,
+      "in_library_call": "universa.loop.run_loop(LOOP, instance, instance.candidates, seed=seed)",
+      "loop": "universa.loop.LibraryLoop() \u2014 the frozen exp4 configuration: alarm_tol = 1e-9 (re-pinned universa.router.RESIDUAL_TOL), misfit_tol = CERT_TOL = 1e-10, novelty_tol = 1e-6, num_observations = 16",
+      "map_misfit_tol": 1e-09,
+      "misfit_tol": 1e-10,
+      "novelty_tol": 1e-06,
+      "null_control_call": "universa.loop.run_loop(LOOP, instance, instance.decoy_targets, seed=seed, observations=universa.loop.null_observations(seed, ambient_dim, 16))",
+      "num_observations": 16,
+      "out_of_library_call": "universa.loop.run_loop(LOOP, instance, instance.decoy_targets, seed=seed)"
+    },
+    "row_count_invariant": "3 x n: exactly one in-library row, one out-of-library row, and one null-control row per eligible seed (108 rows over the declared block when every declared seed is eligible), checked before any summary",
+    "task_family": "graph-quotient switch instances via universa.loop.make_loop_instance (universa.budgets.make_budget_instance at the frozen exp4 sizes: 8 vertices, 14 edges, 6 classes, 3 decoys); ONE budget instance per seed with two library views \u2014 the in-library view instance.candidates (true target at index 0) and the out-of-library view instance.decoy_targets (the truth withheld)",
+    "train_seed_block": {
+      "first": 0,
+      "last": 0
+    },
+    "training": "no training provenance exists because no training occurred: the route-or-discover loop has no learned component; the train block is the documented-empty sentinel {'first': 0, 'last': 0}"
+  },
+  "eligibility": {
+    "attempted": 36,
+    "build_failures": [],
+    "declared": 36,
+    "eligible": 36,
+    "eligible_seeds": [
+      140001,
+      140002,
+      140003,
+      140004,
+      140005,
+      140006,
+      140007,
+      140008,
+      140009,
+      140010,
+      140011,
+      140012,
+      140013,
+      140014,
+      140015,
+      140016,
+      140017,
+      140018,
+      140019,
+      140020,
+      140021,
+      140022,
+      140023,
+      140024,
+      140025,
+      140026,
+      140027,
+      140028,
+      140029,
+      140030,
+      140031,
+      140032,
+      140033,
+      140034,
+      140035,
+      140036
+    ],
+    "ineligible": []
+  },
+  "experiment_id": "universa-router-loop-sealed-1",
+  "in_library_rows": [
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.898979485566356,
+        4.69041575982343,
+        5.0990195135927845
+      ],
+      "seed": 140001
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.47213595499958,
+        4.0,
+        4.0
+      ],
+      "seed": 140002
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        5.0990195135927845,
+        4.69041575982343,
+        6.0
+      ],
+      "seed": 140003
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        3.4641016151377544,
+        4.0,
+        4.69041575982343
+      ],
+      "seed": 140004
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.0,
+        5.477225575051661,
+        4.69041575982343
+      ],
+      "seed": 140005
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        3.4641016151377544,
+        3.7416573867739413,
+        2.8284271247461903
+      ],
+      "seed": 140006
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        3.1622776601683795,
+        4.47213595499958,
+        3.4641016151377544
+      ],
+      "seed": 140007
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        5.830951894845301,
+        5.656854249492381,
+        5.477225575051661
+      ],
+      "seed": 140008
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        5.0990195135927845,
+        5.291502622129181,
+        4.242640687119285
+      ],
+      "seed": 140009
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        3.4641016151377544,
+        3.7416573867739413,
+        4.242640687119285
+      ],
+      "seed": 140010
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.898979485566356,
+        5.830951894845301,
+        4.47213595499958
+      ],
+      "seed": 140011
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.0,
+        5.0990195135927845,
+        5.0990195135927845
+      ],
+      "seed": 140012
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        5.291502622129181,
+        4.47213595499958,
+        3.4641016151377544
+      ],
+      "seed": 140013
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        5.0990195135927845,
+        4.242640687119285,
+        5.0990195135927845
+      ],
+      "seed": 140014
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        5.830951894845301,
+        4.47213595499958,
+        5.291502622129181
+      ],
+      "seed": 140015
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.69041575982343,
+        4.898979485566356,
+        3.4641016151377544
+      ],
+      "seed": 140016
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.69041575982343,
+        5.477225575051661,
+        1.4142135623730951
+      ],
+      "seed": 140017
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.898979485566356,
+        4.69041575982343,
+        3.1622776601683795
+      ],
+      "seed": 140018
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.0,
+        3.1622776601683795,
+        4.47213595499958
+      ],
+      "seed": 140019
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.0,
+        4.242640687119285,
+        4.898979485566356
+      ],
+      "seed": 140020
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.0,
+        3.7416573867739413,
+        4.898979485566356
+      ],
+      "seed": 140021
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        3.4641016151377544,
+        4.47213595499958,
+        5.291502622129181
+      ],
+      "seed": 140022
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        5.0990195135927845,
+        4.242640687119285,
+        4.69041575982343
+      ],
+      "seed": 140023
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.242640687119285,
+        4.69041575982343,
+        4.242640687119285
+      ],
+      "seed": 140024
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        5.291502622129181,
+        6.0,
+        3.4641016151377544
+      ],
+      "seed": 140025
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.242640687119285,
+        3.4641016151377544,
+        3.1622776601683795
+      ],
+      "seed": 140026
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.69041575982343,
+        3.4641016151377544,
+        4.242640687119285
+      ],
+      "seed": 140027
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.47213595499958,
+        5.291502622129181,
+        3.7416573867739413
+      ],
+      "seed": 140028
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.898979485566356,
+        4.242640687119285,
+        3.1622776601683795
+      ],
+      "seed": 140029
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.47213595499958,
+        4.69041575982343,
+        4.69041575982343
+      ],
+      "seed": 140030
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        5.477225575051661,
+        5.0990195135927845,
+        5.0990195135927845
+      ],
+      "seed": 140031
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.69041575982343,
+        5.830951894845301,
+        4.47213595499958
+      ],
+      "seed": 140032
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        3.4641016151377544,
+        5.0990195135927845,
+        5.291502622129181
+      ],
+      "seed": 140033
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        2.0,
+        4.69041575982343,
+        4.242640687119285
+      ],
+      "seed": 140034
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.47213595499958,
+        2.8284271247461903,
+        4.47213595499958
+      ],
+      "seed": 140035
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        5.0990195135927845,
+        5.291502622129181,
+        6.0
+      ],
+      "seed": 140036
+    }
+  ],
+  "null_control_rows": [
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 4.69041575982343,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.898979485566356,
+        4.69041575982343,
+        5.0990195135927845
+      ],
+      "seed": 140001
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 4.0,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.47213595499958,
+        4.0,
+        4.0
+      ],
+      "seed": 140002
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 4.69041575982343,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        5.0990195135927845,
+        4.69041575982343,
+        6.0
+      ],
+      "seed": 140003
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        3.4641016151377544,
+        4.0,
+        4.69041575982343
+      ],
+      "seed": 140004
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 4.0,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.0,
+        5.477225575051661,
+        4.69041575982343
+      ],
+      "seed": 140005
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 2.8284271247461903,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        3.4641016151377544,
+        3.7416573867739413,
+        2.8284271247461903
+      ],
+      "seed": 140006
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.1622776601683795,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        3.1622776601683795,
+        4.47213595499958,
+        3.4641016151377544
+      ],
+      "seed": 140007
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 5.477225575051661,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        5.830951894845301,
+        5.656854249492381,
+        5.477225575051661
+      ],
+      "seed": 140008
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 4.242640687119285,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        5.0990195135927845,
+        5.291502622129181,
+        4.242640687119285
+      ],
+      "seed": 140009
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        3.4641016151377544,
+        3.7416573867739413,
+        4.242640687119285
+      ],
+      "seed": 140010
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 4.47213595499958,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.898979485566356,
+        5.830951894845301,
+        4.47213595499958
+      ],
+      "seed": 140011
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 4.0,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.0,
+        5.0990195135927845,
+        5.0990195135927845
+      ],
+      "seed": 140012
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        5.291502622129181,
+        4.47213595499958,
+        3.4641016151377544
+      ],
+      "seed": 140013
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 4.242640687119285,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        5.0990195135927845,
+        4.242640687119285,
+        5.0990195135927845
+      ],
+      "seed": 140014
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 4.47213595499958,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        5.830951894845301,
+        4.47213595499958,
+        5.291502622129181
+      ],
+      "seed": 140015
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.69041575982343,
+        4.898979485566356,
+        3.4641016151377544
+      ],
+      "seed": 140016
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 1.4142135623730951,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.69041575982343,
+        5.477225575051661,
+        1.4142135623730951
+      ],
+      "seed": 140017
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.1622776601683795,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.898979485566356,
+        4.69041575982343,
+        3.1622776601683795
+      ],
+      "seed": 140018
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.1622776601683795,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.0,
+        3.1622776601683795,
+        4.47213595499958
+      ],
+      "seed": 140019
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 4.0,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.0,
+        4.242640687119285,
+        4.898979485566356
+      ],
+      "seed": 140020
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.7416573867739413,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.0,
+        3.7416573867739413,
+        4.898979485566356
+      ],
+      "seed": 140021
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        3.4641016151377544,
+        4.47213595499958,
+        5.291502622129181
+      ],
+      "seed": 140022
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 4.242640687119285,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        5.0990195135927845,
+        4.242640687119285,
+        4.69041575982343
+      ],
+      "seed": 140023
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 4.242640687119285,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.242640687119285,
+        4.69041575982343,
+        4.242640687119285
+      ],
+      "seed": 140024
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        5.291502622129181,
+        6.0,
+        3.4641016151377544
+      ],
+      "seed": 140025
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.1622776601683795,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.242640687119285,
+        3.4641016151377544,
+        3.1622776601683795
+      ],
+      "seed": 140026
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.69041575982343,
+        3.4641016151377544,
+        4.242640687119285
+      ],
+      "seed": 140027
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.7416573867739413,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.47213595499958,
+        5.291502622129181,
+        3.7416573867739413
+      ],
+      "seed": 140028
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.1622776601683795,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.898979485566356,
+        4.242640687119285,
+        3.1622776601683795
+      ],
+      "seed": 140029
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 4.47213595499958,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.47213595499958,
+        4.69041575982343,
+        4.69041575982343
+      ],
+      "seed": 140030
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 5.0990195135927845,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        5.477225575051661,
+        5.0990195135927845,
+        5.0990195135927845
+      ],
+      "seed": 140031
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 4.47213595499958,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.69041575982343,
+        5.830951894845301,
+        4.47213595499958
+      ],
+      "seed": 140032
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        3.4641016151377544,
+        5.0990195135927845,
+        5.291502622129181
+      ],
+      "seed": 140033
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 2.0,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        2.0,
+        4.69041575982343,
+        4.242640687119285
+      ],
+      "seed": 140034
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 2.8284271247461903,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.47213595499958,
+        2.8284271247461903,
+        4.47213595499958
+      ],
+      "seed": 140035
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 5.0990195135927845,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        5.0990195135927845,
+        5.291502622129181,
+        6.0
+      ],
+      "seed": 140036
+    }
+  ],
+  "out_of_library_rows": [
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.9285307281012583,
+        1.7888543819998315,
+        1.792092130136883
+      ],
+      "admission_min_distance": 1.7888543819998315,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.789e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 4.69041575982343,
+      "certificate_residual": 2.6907109394415682e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 4 in ambient dimension 9 (certificate residual 2.691e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 6.0068340291858065e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.898979485566356,
+        4.69041575982343,
+        5.0990195135927845
+      ],
+      "seed": 140001
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        2.1078861935595454,
+        1.9436098855037245,
+        2.0760087444327575
+      ],
+      "admission_min_distance": 1.9436098855037245,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.944e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 4.0,
+      "certificate_residual": 3.814322176641857e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 4 in ambient dimension 9 (certificate residual 3.814e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 8.819020833430895e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.47213595499958,
+        4.0,
+        4.0
+      ],
+      "seed": 140002
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.9481948877007451,
+        1.718326078059472,
+        1.7900626593290874
+      ],
+      "admission_min_distance": 1.718326078059472,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.718e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 4.69041575982343,
+      "certificate_residual": 2.8755434085562374e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 6 in ambient dimension 11 (certificate residual 2.876e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 7.202093294327205e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        5.0990195135927845,
+        4.69041575982343,
+        6.0
+      ],
+      "seed": 140003
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.5834286775259545,
+        1.654501053905296,
+        1.724681967080124
+      ],
+      "admission_min_distance": 1.5834286775259545,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.583e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": 3.466457207449291e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 4 in ambient dimension 9 (certificate residual 3.466e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 8.909565401217098e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        3.4641016151377544,
+        4.0,
+        4.69041575982343
+      ],
+      "seed": 140004
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.9271452692749682,
+        1.903953747444589,
+        2.0264912204760885
+      ],
+      "admission_min_distance": 1.903953747444589,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.904e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 4.0,
+      "certificate_residual": 3.0843925929147952e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 6 in ambient dimension 11 (certificate residual 3.084e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 9.974413537185044e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.0,
+        5.477225575051661,
+        4.69041575982343
+      ],
+      "seed": 140005
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.5691235643921035,
+        1.8244135628976366,
+        1.6552945357246849
+      ],
+      "admission_min_distance": 1.5691235643921035,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.569e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 2.8284271247461903,
+      "certificate_residual": 2.9985556390587244e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 4 in ambient dimension 9 (certificate residual 2.999e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 8.768871135128389e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        3.4641016151377544,
+        3.7416573867739413,
+        2.8284271247461903
+      ],
+      "seed": 140006
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.6334494114089941,
+        1.919069639911039,
+        1.7609214947522722
+      ],
+      "admission_min_distance": 1.6334494114089941,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.633e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.1622776601683795,
+      "certificate_residual": 2.2756232324791874e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 4 in ambient dimension 9 (certificate residual 2.276e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 7.443831152817679e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        3.1622776601683795,
+        4.47213595499958,
+        3.4641016151377544
+      ],
+      "seed": 140007
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        2.241399500001854,
+        2.11356219108078,
+        2.2764658246320555
+      ],
+      "admission_min_distance": 2.11356219108078,
+      "admission_reason": "admitted: certified and novel (min projector distance 2.114e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 5.477225575051661,
+      "certificate_residual": 3.1183170497089437e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 6 in ambient dimension 11 (certificate residual 3.118e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 9.017391315652457e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        5.830951894845301,
+        5.656854249492381,
+        5.477225575051661
+      ],
+      "seed": 140008
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        2.047376575462082,
+        1.9257386397092695,
+        1.8986674989594516
+      ],
+      "admission_min_distance": 1.8986674989594516,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.899e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 4.242640687119285,
+      "certificate_residual": 2.5306011072154834e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 5 in ambient dimension 10 (certificate residual 2.531e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 6.069290990630184e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        5.0990195135927845,
+        5.291502622129181,
+        4.242640687119285
+      ],
+      "seed": 140009
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.5296220414676265,
+        1.8449515315709932,
+        1.8957188610128881
+      ],
+      "admission_min_distance": 1.5296220414676265,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.530e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": 3.0473498578812917e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 5 in ambient dimension 10 (certificate residual 3.047e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 9.416374244950082e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        3.4641016151377544,
+        3.7416573867739413,
+        4.242640687119285
+      ],
+      "seed": 140010
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.864918785878377,
+        1.7740920487400305,
+        1.7152155216515172
+      ],
+      "admission_min_distance": 1.7152155216515172,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.715e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 4.47213595499958,
+      "certificate_residual": 2.690622267976866e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 4 in ambient dimension 9 (certificate residual 2.691e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 6.754674318661623e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.898979485566356,
+        5.830951894845301,
+        4.47213595499958
+      ],
+      "seed": 140011
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.6644857525712924,
+        1.6706362982485572,
+        1.8056890154489007
+      ],
+      "admission_min_distance": 1.6644857525712924,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.664e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 4.0,
+      "certificate_residual": 2.455168412821855e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 5 in ambient dimension 10 (certificate residual 2.455e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 8.419918091231764e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.0,
+        5.0990195135927845,
+        5.0990195135927845
+      ],
+      "seed": 140012
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.756373674605858,
+        1.8135294011647252,
+        1.4770978917519928
+      ],
+      "admission_min_distance": 1.4770978917519928,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.477e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": 2.2671211755641892e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 4 in ambient dimension 9 (certificate residual 2.267e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 6.738262787848611e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        5.291502622129181,
+        4.47213595499958,
+        3.4641016151377544
+      ],
+      "seed": 140013
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        2.085883287940409,
+        1.907550785693529,
+        1.94367406024236
+      ],
+      "admission_min_distance": 1.907550785693529,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.908e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 4.242640687119285,
+      "certificate_residual": 1.2347039656568e-14,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 4 in ambient dimension 9 (certificate residual 1.235e-14)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 3.617918100878655e-15,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        5.0990195135927845,
+        4.242640687119285,
+        5.0990195135927845
+      ],
+      "seed": 140014
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.856269928037958,
+        1.7077505860746034,
+        2.0534196652889736
+      ],
+      "admission_min_distance": 1.7077505860746034,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.708e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 4.47213595499958,
+      "certificate_residual": 2.9926653534358346e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 5 in ambient dimension 10 (certificate residual 2.993e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 1.041509295612341e-15,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        5.830951894845301,
+        4.47213595499958,
+        5.291502622129181
+      ],
+      "seed": 140015
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.8036780305447597,
+        1.8285485346552175,
+        1.4623479539636035
+      ],
+      "admission_min_distance": 1.4623479539636035,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.462e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": 2.2785780738656768e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 5 in ambient dimension 10 (certificate residual 2.279e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 6.239817893498112e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.69041575982343,
+        4.898979485566356,
+        3.4641016151377544
+      ],
+      "seed": 140016
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.9321835661585918,
+        1.7116453282528277,
+        0.8340576562282991
+      ],
+      "admission_min_distance": 0.8340576562282991,
+      "admission_reason": "admitted: certified and novel (min projector distance 8.341e-01 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 1.4142135623730951,
+      "certificate_residual": 3.41346310118886e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 5 in ambient dimension 10 (certificate residual 3.413e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 7.942278873888843e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.69041575982343,
+        5.477225575051661,
+        1.4142135623730951
+      ],
+      "seed": 140017
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        2.2315596406680296,
+        2.3175787303069493,
+        1.8185233094538626
+      ],
+      "admission_min_distance": 1.8185233094538626,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.819e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.1622776601683795,
+      "certificate_residual": 2.7882045353462644e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 6 in ambient dimension 12 (certificate residual 2.788e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 8.866741198945079e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.898979485566356,
+        4.69041575982343,
+        3.1622776601683795
+      ],
+      "seed": 140018
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.8135057454563215,
+        1.6228891313497242,
+        1.8203340548999714
+      ],
+      "admission_min_distance": 1.6228891313497242,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.623e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.1622776601683795,
+      "certificate_residual": 3.2818774886260505e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 6 in ambient dimension 11 (certificate residual 3.282e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 8.871575157404562e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.0,
+        3.1622776601683795,
+        4.47213595499958
+      ],
+      "seed": 140019
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        2.0455678492992977,
+        2.009830910762165,
+        2.0963417730492884
+      ],
+      "admission_min_distance": 2.009830910762165,
+      "admission_reason": "admitted: certified and novel (min projector distance 2.010e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 4.0,
+      "certificate_residual": 3.4912707809081385e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 5 in ambient dimension 10 (certificate residual 3.491e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 8.97331748451866e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.0,
+        4.242640687119285,
+        4.898979485566356
+      ],
+      "seed": 140020
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.8916088683898151,
+        1.946397065981538,
+        1.9101617598302902
+      ],
+      "admission_min_distance": 1.8916088683898151,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.892e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.7416573867739413,
+      "certificate_residual": 3.410544142310918e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 4 in ambient dimension 9 (certificate residual 3.411e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 1.1249394192887086e-15,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.0,
+        3.7416573867739413,
+        4.898979485566356
+      ],
+      "seed": 140021
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.6239567265587622,
+        2.1172134027047425,
+        2.1747143987313327
+      ],
+      "admission_min_distance": 1.6239567265587622,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.624e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": 2.1668720594857006e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 7 in ambient dimension 12 (certificate residual 2.167e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 6.092497212886261e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        3.4641016151377544,
+        4.47213595499958,
+        5.291502622129181
+      ],
+      "seed": 140022
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        2.1113592394090204,
+        2.2226718764294184,
+        2.2746080319126856
+      ],
+      "admission_min_distance": 2.1113592394090204,
+      "admission_reason": "admitted: certified and novel (min projector distance 2.111e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 4.242640687119285,
+      "certificate_residual": 2.8628566745768e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 6 in ambient dimension 11 (certificate residual 2.863e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 9.201265470611396e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        5.0990195135927845,
+        4.242640687119285,
+        4.69041575982343
+      ],
+      "seed": 140023
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        2.0008545183043176,
+        1.8286558816398502,
+        2.177193363064232
+      ],
+      "admission_min_distance": 1.8286558816398502,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.829e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 4.242640687119285,
+      "certificate_residual": 2.521589266878868e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 5 in ambient dimension 11 (certificate residual 2.522e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 7.855506088927859e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.242640687119285,
+        4.69041575982343,
+        4.242640687119285
+      ],
+      "seed": 140024
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        2.1650635094610964,
+        1.9517117471494998,
+        1.8082303419910217
+      ],
+      "admission_min_distance": 1.8082303419910217,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.808e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": 2.130616037018942e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 4 in ambient dimension 9 (certificate residual 2.131e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 7.397057859176061e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        5.291502622129181,
+        6.0,
+        3.4641016151377544
+      ],
+      "seed": 140025
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.91324857103374,
+        1.7060705243573282,
+        1.7974638781100531
+      ],
+      "admission_min_distance": 1.7060705243573282,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.706e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.1622776601683795,
+      "certificate_residual": 4.214980635382796e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 5 in ambient dimension 11 (certificate residual 4.215e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 1.0465340776256777e-15,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.242640687119285,
+        3.4641016151377544,
+        3.1622776601683795
+      ],
+      "seed": 140026
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        2.162459134457047,
+        1.7316323872686377,
+        2.0019521722558706
+      ],
+      "admission_min_distance": 1.7316323872686377,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.732e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": 1.9821695127145817e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 4 in ambient dimension 9 (certificate residual 1.982e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 7.532694061270003e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.69041575982343,
+        3.4641016151377544,
+        4.242640687119285
+      ],
+      "seed": 140027
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.5550504230351567,
+        2.1485044632421473,
+        1.771592974321887
+      ],
+      "admission_min_distance": 1.5550504230351567,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.555e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.7416573867739413,
+      "certificate_residual": 1.2543233979684916e-14,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 4 in ambient dimension 9 (certificate residual 1.254e-14)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 3.832921085344339e-15,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.47213595499958,
+        5.291502622129181,
+        3.7416573867739413
+      ],
+      "seed": 140028
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        2.079414460140503,
+        1.5827964983676062,
+        1.6524451520625378
+      ],
+      "admission_min_distance": 1.5827964983676062,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.583e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.1622776601683795,
+      "certificate_residual": 3.8901012812364176e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 5 in ambient dimension 10 (certificate residual 3.890e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 1.276019968987314e-15,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.898979485566356,
+        4.242640687119285,
+        3.1622776601683795
+      ],
+      "seed": 140029
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.749946374124737,
+        2.002001001000751,
+        2.17736819040428
+      ],
+      "admission_min_distance": 1.749946374124737,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.750e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 4.47213595499958,
+      "certificate_residual": 2.8414547260606712e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 5 in ambient dimension 10 (certificate residual 2.841e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 8.872661159269986e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.47213595499958,
+        4.69041575982343,
+        4.69041575982343
+      ],
+      "seed": 140030
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        2.1847034110109416,
+        2.140556465497227,
+        2.1873493185634794
+      ],
+      "admission_min_distance": 2.140556465497227,
+      "admission_reason": "admitted: certified and novel (min projector distance 2.141e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 5.0990195135927845,
+      "certificate_residual": 4.527730176957835e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 5 in ambient dimension 10 (certificate residual 4.528e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 1.0281115310862102e-15,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        5.477225575051661,
+        5.0990195135927845,
+        5.0990195135927845
+      ],
+      "seed": 140031
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.9791020328068973,
+        2.122479218458189,
+        1.5140115368495293
+      ],
+      "admission_min_distance": 1.5140115368495293,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.514e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 4.47213595499958,
+      "certificate_residual": 2.237755472987361e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 4 in ambient dimension 9 (certificate residual 2.238e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 6.949877249873794e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.69041575982343,
+        5.830951894845301,
+        4.47213595499958
+      ],
+      "seed": 140032
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.84836754598051,
+        2.1218471150830354,
+        1.7919483020447788
+      ],
+      "admission_min_distance": 1.7919483020447788,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.792e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": 3.739965516558542e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 6 in ambient dimension 12 (certificate residual 3.740e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 9.823147201926169e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        3.4641016151377544,
+        5.0990195135927845,
+        5.291502622129181
+      ],
+      "seed": 140033
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.193703286512977,
+        1.9574170433204778,
+        1.6240939503059206
+      ],
+      "admission_min_distance": 1.193703286512977,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.194e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 2.0,
+      "certificate_residual": 1.9034792729982584e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 5 in ambient dimension 10 (certificate residual 1.903e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 5.699821306860034e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        2.0,
+        4.69041575982343,
+        4.242640687119285
+      ],
+      "seed": 140034
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        2.0477190122556252,
+        1.4501697410966339,
+        1.9995990804676347
+      ],
+      "admission_min_distance": 1.4501697410966339,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.450e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 2.8284271247461903,
+      "certificate_residual": 2.7190480184573464e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 6 in ambient dimension 11 (certificate residual 2.719e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 6.665869171787773e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.47213595499958,
+        2.8284271247461903,
+        4.47213595499958
+      ],
+      "seed": 140035
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.8864142065194902,
+        1.8245078319450505,
+        2.032247531682602
+      ],
+      "admission_min_distance": 1.8245078319450505,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.825e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 5.0990195135927845,
+      "certificate_residual": 1.758309203840381e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 5 in ambient dimension 10 (certificate residual 1.758e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 6.072504523110365e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        5.0990195135927845,
+        5.291502622129181,
+        6.0
+      ],
+      "seed": 140036
+    }
+  ],
+  "per_seed": [
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140001
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140002
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140003
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140004
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140005
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140006
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140007
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140008
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140009
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140010
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140011
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140012
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140013
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140014
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140015
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140016
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140017
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140018
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140019
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140020
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140021
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140022
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140023
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140024
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140025
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140026
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140027
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140028
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140029
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140030
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140031
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140032
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140033
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140034
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140035
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 140036
+    }
+  ],
+  "provenance": {
+    "clean_worktree": true,
+    "code_manifest": {
+      "files": {
+        "src/universa/__init__.py": "920ba879666a28195183243f7b1f84ea0af2707554606c824ac05109a7dd6b13",
+        "src/universa/budgets.py": "34ccdb754f3fdc74e5501ae748e8a7898993241e544f14cda29c4152fe8eed49",
+        "src/universa/category_instances.py": "b968298513773c66fa48157c896cfb6cbb924b9a722058dcd65c425334ddd053",
+        "src/universa/complexes2.py": "c99cf71a6954f2f97c247ff90aa8cbbe287e6c091056b284a8cb2c2155b5ecf1",
+        "src/universa/discovery.py": "b2eda8c55a83bbd358f86452de663fb274f124686ecc0a7f74aa8f23f07c1885",
+        "src/universa/generators.py": "e3994312a083a5eb2b7ac2292ce222b779e5450128d1850a0f39af689d9f6c69",
+        "src/universa/loop.py": "4d5cca521561d881de29eecb8f1dee1dfea1b13178dcc4add81d6f09d917c331",
+        "src/universa/multihop.py": "da77e4a950c61eeaeb1d33d4aa62598ee68e14903edc0e7138d7ad7f18d68261",
+        "src/universa/nerve.py": "cd644b17f07f4e4964c94078fa8d576de9b21daafe73246594a676d7f6f48ca1",
+        "src/universa/operators.py": "06d24348f9e3325ac05efb9cfe3d690b8e349fcdd53ddf537bc4c810ba9887e5",
+        "src/universa/partial.py": "7bf8d3614ee1f445fe8c739531caced307eec95733c56e8dc2d27aa6dc29e7d4",
+        "src/universa/partial2.py": "c74d557f2c53018c280bf0cc09be31be147162bfdc351a993d97d5fa75e46026",
+        "src/universa/partial_group.py": "430df243234c5b519f5ca7082d653f8c71e233cdb4795d378174dbcd06b4a06d",
+        "src/universa/partial_sheaf.py": "07e6634a874a25e2746ebb3a93658460695c590312c3afe4de25ad5d6e1442f3",
+        "src/universa/router.py": "6e3054d06fce75b298c10acfd390fc293ca1bcb77ac2541769988588647955ce",
+        "src/universa/router_v2.py": "5f36d2fb4b7ecca0089353308b1d1ff13528b7048d8b8bdc61d23f014475272d",
+        "src/universa/sheaves.py": "a35a78349d2d9fdefd44112a714468800d12ce67affac5cec960d7d2a171b300",
+        "src/universa/structures.py": "cd816128ffbefe8c8d6f683346ae463d95c7cc3a9bcd489cb4b0bee398e6da6b"
+      },
+      "glob": "src/universa/*.py",
+      "sha256": "12e2408926a2fde85de970977a5509f3ee6769dd0d277609b73427651f514ee0"
+    },
+    "environment": {
+      "numpy": "2.5.2",
+      "platform": {
+        "machine": "aarch64",
+        "node": "spark-ecfd",
+        "processor": "aarch64",
+        "release": "6.17.0-1026-nvidia",
+        "system": "Linux",
+        "version": "#26-Ubuntu SMP PREEMPT_DYNAMIC Thu Jun 25 00:57:17 UTC 2026"
+      },
+      "python": "3.12.3",
+      "torch": "2.13.0+cu130",
+      "torch_cuda_build": "13.0"
+    },
+    "execution": {
+      "argv": [
+        "scripts/run_loop_sealed_1.py",
+        "--output",
+        "results/experiments/router-loop-sealed-1.json"
+      ],
+      "array_dtype": "float64",
+      "compute": "numpy float64 on CPU; no torch tensors anywhere in this runner",
+      "cuda_available": false,
+      "cuda_visible_devices": "",
+      "cuda_visible_devices_operator": "-1",
+      "mkl_num_threads": null,
+      "omp_num_threads": null,
+      "torch_importable": true,
+      "torch_num_interop_threads": 20,
+      "torch_num_threads": 1
+    },
+    "execution_revision": "537be3bdae87bc9f4e110b7e628ff73c2fb5bc57",
+    "git_revision": "537be3bdae87bc9f4e110b7e628ff73c2fb5bc57",
+    "git_status_porcelain": "",
+    "git_status_porcelain_post_run": "",
+    "protocol": {
+      "path": "docs/19-sealed-router-loop-protocol.md",
+      "sha256": "b9301292d0be5e813c6fc204f03f47b953cbd0e9d346bf4ab769a737ef1aeda9"
+    },
+    "runner": {
+      "path": "scripts/run_loop_sealed_1.py",
+      "sha256": "c816a854e4e06734fd796003d21a22c8cda91b7ec31275cb164f18ddd59f8d4f"
+    },
+    "seal": {
+      "committed_at_head": true,
+      "design_commit": "8f8c8808f69cc1e2552bb312ad974c72974b7546",
+      "path": "docs/20-router-loop-seal.json",
+      "schema": "universa-seal/7",
+      "sha256": "f84b913f30c1c990694e7af199c211c6ede92faea0d2b546a784b81b011cbc94"
+    }
+  },
+  "schema": "universa-router-loop-sealed-result/1",
+  "seed_records": [
+    {
+      "decoy_misfits_undegraded": [
+        4.898979485566356,
+        4.69041575982343,
+        5.0990195135927845
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140001,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.47213595499958,
+        4.0,
+        4.0
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140002,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.0990195135927845,
+        4.69041575982343,
+        6.0
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140003,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        3.4641016151377544,
+        4.0,
+        4.69041575982343
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140004,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.0,
+        5.477225575051661,
+        4.69041575982343
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140005,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        3.4641016151377544,
+        3.7416573867739413,
+        2.8284271247461903
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140006,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        3.1622776601683795,
+        4.47213595499958,
+        3.4641016151377544
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140007,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.830951894845301,
+        5.656854249492381,
+        5.477225575051661
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140008,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.0990195135927845,
+        5.291502622129181,
+        4.242640687119285
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140009,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        3.4641016151377544,
+        3.7416573867739413,
+        4.242640687119285
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140010,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.898979485566356,
+        5.830951894845301,
+        4.47213595499958
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140011,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.0,
+        5.0990195135927845,
+        5.0990195135927845
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140012,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.291502622129181,
+        4.47213595499958,
+        3.4641016151377544
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140013,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.0990195135927845,
+        4.242640687119285,
+        5.0990195135927845
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140014,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.830951894845301,
+        4.47213595499958,
+        5.291502622129181
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140015,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.69041575982343,
+        4.898979485566356,
+        3.4641016151377544
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140016,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.69041575982343,
+        5.477225575051661,
+        1.4142135623730951
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140017,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.898979485566356,
+        4.69041575982343,
+        3.1622776601683795
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140018,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.0,
+        3.1622776601683795,
+        4.47213595499958
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140019,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.0,
+        4.242640687119285,
+        4.898979485566356
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140020,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.0,
+        3.7416573867739413,
+        4.898979485566356
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140021,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        3.4641016151377544,
+        4.47213595499958,
+        5.291502622129181
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140022,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.0990195135927845,
+        4.242640687119285,
+        4.69041575982343
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140023,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.242640687119285,
+        4.69041575982343,
+        4.242640687119285
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140024,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.291502622129181,
+        6.0,
+        3.4641016151377544
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140025,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.242640687119285,
+        3.4641016151377544,
+        3.1622776601683795
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140026,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.69041575982343,
+        3.4641016151377544,
+        4.242640687119285
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140027,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.47213595499958,
+        5.291502622129181,
+        3.7416573867739413
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140028,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.898979485566356,
+        4.242640687119285,
+        3.1622776601683795
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140029,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.47213595499958,
+        4.69041575982343,
+        4.69041575982343
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140030,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.477225575051661,
+        5.0990195135927845,
+        5.0990195135927845
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140031,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.69041575982343,
+        5.830951894845301,
+        4.47213595499958
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140032,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        3.4641016151377544,
+        5.0990195135927845,
+        5.291502622129181
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140033,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        2.0,
+        4.69041575982343,
+        4.242640687119285
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140034,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.47213595499958,
+        2.8284271247461903,
+        4.47213595499958
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140035,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.0990195135927845,
+        5.291502622129181,
+        6.0
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 140036,
+      "true_misfit_undegraded": 0.0
+    }
+  ],
+  "status": "complete"
+}

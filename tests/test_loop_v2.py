@@ -20,6 +20,7 @@ from universa.generators import SwitchInstance, subseed
 from universa.loop import make_loop_instance, null_observations
 from universa.loop_v2 import (
     ALARM_THRESHOLD,
+    ALARM_V2_MARGIN_FEATURE_NAMES,
     ARMS,
     CONDITIONS,
     GENERIC_FEATURE_DIM,
@@ -28,14 +29,19 @@ from universa.loop_v2 import (
     ArmOutcome,
     GenericMLP,
     LearnedAlarm,
+    LearnedAlarmV2,
     alarm_decision,
+    alarm_decision_v2,
     alarm_features,
+    alarm_features_v2,
     arch_candidate_features,
     arch_row_features,
     arm_arch_full,
+    arm_arch_full_v2,
     arm_discovery_only,
     arm_generic,
     arm_routing_only,
+    calibrate_threshold,
     generic_candidate_features,
     generic_decision,
     generic_row_features,
@@ -43,6 +49,7 @@ from universa.loop_v2 import (
     router_argmax,
     router_gates,
     train_alarm,
+    train_alarm_v2,
     train_generic,
 )
 from universa.operators import CERT_TOL, nullspace_basis
@@ -1130,3 +1137,581 @@ def test_plain_import_of_universa_does_not_import_loop_v2_or_torch():
         timeout=120,
     )
     assert result.returncode == 0, result.stderr
+
+
+# ---------------------------------------------------------------------------
+# The alarm-v2 redesign (additive): margin features, calibrated threshold.
+# Fixtures stay inside 70001..70005 / 70501..70540 — never a sealed block.
+# ---------------------------------------------------------------------------
+
+ALARM_V2_TRAIN_SEEDS = tuple(range(70501, 70521))  # 20 seeds separate the fixtures
+MARGIN_DIMS = len(ALARM_V2_MARGIN_FEATURE_NAMES)  # 5 margin columns appended to v1
+
+
+@pytest.fixture(scope="module")
+def alarm_v2_rows(router):
+    """The v2 alarm's training rows over ALARM_V2_TRAIN_SEEDS: in-library
+    views labeled fit, the paired out-of-library views labeled no-fit, in
+    the alarm_features_v2 layout (the train-block calibration rows)."""
+    fit_rows, nofit_rows = [], []
+    for seed in ALARM_V2_TRAIN_SEEDS:
+        instance, in_library, out_library, _, _ = row_data(seed)
+        block, raw = arch_row_features(instance, in_library, observation_seed(seed))
+        fit_rows.append(alarm_features_v2(router_gates(router, block), raw))
+        block_o, raw_o = arch_row_features(
+            instance, out_library, observation_seed(seed)
+        )
+        nofit_rows.append(alarm_features_v2(router_gates(router, block_o), raw_o))
+    return np.stack(fit_rows), np.stack(nofit_rows)
+
+
+@pytest.fixture(scope="module")
+def alarm_v2(alarm_v2_rows):
+    torch.manual_seed(4243)
+    model, _ = train_alarm_v2(
+        LearnedAlarmV2(K), alarm_v2_rows[0], alarm_v2_rows[1]
+    )
+    return model
+
+
+@pytest.fixture(scope="module")
+def alarm_v2_calibration(alarm_v2, alarm_v2_rows):
+    """The frozen train-block calibration record for the trained v2 alarm."""
+    return calibrate_threshold(alarm_v2, alarm_v2_rows[0], alarm_v2_rows[1])
+
+
+def passthrough_alarm_v2() -> LearnedAlarmV2:
+    """A stub v2 alarm whose logit is GELU of the first feature (the
+    standardization buffers keep their defaults: mean 0, std 1), so hand
+    rows have hand-computable scores — the calibration and decision checks
+    below do not depend on training quality."""
+    torch.manual_seed(0)
+    model = LearnedAlarmV2(K)
+    with torch.no_grad():
+        for parameter in model.parameters():
+            parameter.zero_()
+        model.network[0].weight[0, 0] = 1.0
+        model.network[2].weight[0, 0] = 1.0
+    return model
+
+
+def one_feature_rows(column0_values) -> np.ndarray:
+    """(M, K+8) feature rows with only the first column set."""
+    rows = np.zeros((len(column0_values), K + 8))
+    rows[:, 0] = np.asarray(column0_values, dtype=np.float64)
+    return rows
+
+
+def stub_scores(model, rows) -> np.ndarray:
+    """Independent sigmoid-score recomputation for the calibration tests."""
+    model.eval()
+    with torch.no_grad():
+        return (
+            torch.sigmoid(model.logit(torch.as_tensor(rows, dtype=torch.float32)))
+            .cpu()
+            .numpy()
+        )
+
+
+def test_no_sealed_seeds_v2():
+    sealed_blocks = tuple(
+        range(start, start + 100)
+        for start in (20101, 30101, 40101, 60101, 70101, 80101, 90101)
+    ) + (
+        range(130001, 130101),
+        range(140001, 140101),
+        range(150001, 150201),
+        range(160001, 160037),
+    )
+    assert set(ALARM_V2_TRAIN_SEEDS) == set(range(70501, 70521))
+    assert not (set(ALARM_V2_TRAIN_SEEDS) & set(SEEDS))
+    for seed in ALARM_V2_TRAIN_SEEDS:
+        for block in sealed_blocks:
+            assert seed not in block
+
+
+def test_alarm_features_v2_layout_per_column():
+    assert MARGIN_DIMS == 5
+    gates = np.array([0.5, 0.3, 0.2])
+    raw = np.array([[1.0, 4.0, 9.0], [2.0, 2.0, 3.0], [5.0, 0.5, 2.0]])
+    features = alarm_features_v2(gates, raw)
+    assert features.shape == (K + 8,)
+    assert features.dtype == np.float64
+    # The leading K+3 columns are the frozen v1 layout, bit-exact.
+    assert np.array_equal(features[: K + 3], alarm_features(gates, raw))
+    # The five margin columns, recomputed independently from the raw block.
+    ordered = np.sort(raw, axis=None)
+    assert features[K + 3] == np.log1p(ordered[1] - ordered[0])  # (a)
+    sorted_gates = np.sort(gates)[::-1]
+    assert features[K + 4] == sorted_gates[0] - sorted_gates[1]  # (b)
+    assert features[K + 5] == np.log1p(raw.mean())  # (c)
+    best_row = raw[np.unravel_index(raw.argmin(), raw.shape)[0]]
+    curvature = np.abs(np.diff(np.diff(np.log1p(best_row)))).mean()
+    assert features[K + 6] == curvature  # (d)
+    assert features[K + 7] == np.log1p(raw.min())  # (e)
+    assert np.isfinite(features).all()
+
+
+def test_alarm_features_v2_margin_properties():
+    gates = np.array([0.5, 0.3, 0.2])
+    # (a) is exactly 0 when every candidate's profile is identical (no
+    # candidate stands out), positive as soon as one value stands out.
+    identical = alarm_features_v2(gates, np.full((3, 4), 2.0))
+    assert identical[K + 3] == 0.0
+    assert identical[K + 6] == 0.0  # a flat profile has no curvature
+    moved = np.full((3, 4), 2.0)
+    moved[0, 0] = 1.0  # a unique minimum: the second-smallest is 2.0
+    features = alarm_features_v2(gates, moved)
+    assert features[K + 3] == np.log1p(1.0) > 0.0
+    # (b) lies in [0, 1] and equals the true top-2 gate gap.
+    assert features[K + 4] == pytest.approx(0.2)
+    assert 0.0 <= features[K + 4] <= 1.0
+    sharp = alarm_features_v2(np.array([0.9, 0.05, 0.05]), moved)
+    assert sharp[K + 4] == pytest.approx(0.85)
+    flat = alarm_features_v2(np.array([1 / 3, 1 / 3, 1 / 3]), moved)
+    assert flat[K + 4] == 0.0  # no top-2 gap at a uniform gate
+    # K = 1: the gap is the top gate minus 0.0 (exactly 1.0), and a
+    # one-row block with G >= 2 still yields the margin.
+    single = alarm_features_v2(np.array([1.0]), np.array([[0.5, 2.0, 4.0]]))
+    assert single.shape == (1 + 8,)
+    assert single[1 + 3 + 1] == 1.0
+    assert single[1 + 3] == np.log1p(1.5)  # 2.0 - 0.5
+    # A two-point grid has no second difference: curvature 0.0 (the v1
+    # degenerate-difference convention).
+    two_point = alarm_features_v2(gates, np.array([[1.0, 3.0]] * 3))
+    assert two_point[K + 6] == 0.0
+
+
+def test_alarm_features_v2_embeds_v1_bit_exact(router):
+    # The additive contract, on hand blocks of several shapes...
+    for gates, raw in (
+        (np.array([0.5, 0.3, 0.2]), np.array([[1.0, 4.0], [2.0, 2.0], [5.0, 0.5]])),
+        (np.array([1.0]), np.array([[0.5, 2.0, 4.0]])),
+        (np.array([0.25] * 4), np.arange(8, dtype=np.float64).reshape(4, 2)),
+    ):
+        v2 = alarm_features_v2(gates, raw)
+        assert np.array_equal(v2[: len(gates) + 3], alarm_features(gates, raw))
+    # ...and on the fixture rows, both views, through the trained router.
+    for seed in SEEDS:
+        instance, in_library, out_library, _, _ = row_data(seed)
+        for library in (in_library, out_library):
+            block, raw = arch_row_features(
+                instance, library, observation_seed(seed)
+            )
+            gates = router_gates(router, block)
+            v1 = alarm_features(gates, raw)
+            v2 = alarm_features_v2(gates, raw)
+            assert v2.shape == (K + 8,) == (v1.shape[0] + MARGIN_DIMS,)
+            assert np.array_equal(v2[: K + 3], v1)  # bit-exact prefix
+
+
+def test_alarm_features_v2_fail_closed():
+    gates = np.array([0.5, 0.3, 0.2])
+    raw = np.ones((3, 2))
+    with pytest.raises(ValueError):
+        alarm_features_v2(np.array([0.5, 0.4]), np.ones((2, 3)))  # sum != 1
+    with pytest.raises(ValueError):
+        alarm_features_v2(gates, -np.ones((3, 2)))  # negative misfits
+    with pytest.raises(ValueError):
+        alarm_features_v2(gates, np.ones((2, 3)))  # K mismatch
+    with pytest.raises(ValueError):
+        alarm_features_v2(np.array([1.0, np.nan, 0.0]), np.ones((3, 2)))
+    with pytest.raises(ValueError):
+        alarm_features_v2(gates, np.full((3, 2), np.inf))
+    with pytest.raises(ValueError):
+        alarm_features_v2(np.array([1.0]), np.array([[0.5]]))  # < 2 values
+    # The v1 builder accepts the single-value block the v2 builder rejects.
+    assert alarm_features(np.array([1.0]), np.array([[0.5]])).shape == (4,)
+    with pytest.raises(ValueError):
+        alarm_features_v2(gates, raw.ravel())  # the block must be 2-D
+
+
+def test_train_alarm_v2_determinism(alarm_v2_rows):
+    torch.manual_seed(4243)
+    model_a, history_a = train_alarm_v2(
+        LearnedAlarmV2(K), alarm_v2_rows[0], alarm_v2_rows[1]
+    )
+    torch.manual_seed(4243)
+    model_b, history_b = train_alarm_v2(
+        LearnedAlarmV2(K), alarm_v2_rows[0], alarm_v2_rows[1]
+    )
+    assert history_a == history_b
+    for value_a, value_b in zip(
+        model_a.state_dict().values(), model_b.state_dict().values()
+    ):
+        assert torch.equal(value_a, value_b)
+    torch.manual_seed(4244)
+    model_c, _ = train_alarm_v2(
+        LearnedAlarmV2(K), alarm_v2_rows[0], alarm_v2_rows[1], seed=4244
+    )
+    assert any(
+        not torch.equal(value_a, value_c)
+        for value_a, value_c in zip(
+            model_a.state_dict().values(), model_c.state_dict().values()
+        )
+    )
+
+
+def test_fail_closed_train_alarm_v2_validation(alarm_v2_rows):
+    with pytest.raises(ValueError):
+        LearnedAlarmV2(0)
+    with pytest.raises(ValueError):
+        train_alarm_v2(
+            LearnedAlarmV2(K), alarm_v2_rows[0], alarm_v2_rows[1][:, :2]
+        )
+    with pytest.raises(ValueError):
+        train_alarm_v2(LearnedAlarmV2(K), alarm_v2_rows[0][:0], alarm_v2_rows[1])
+    with pytest.raises(ValueError):
+        train_alarm_v2(
+            LearnedAlarmV2(K), alarm_v2_rows[0], alarm_v2_rows[1], epochs=0
+        )
+    with pytest.raises(ValueError):
+        train_alarm_v2(
+            LearnedAlarmV2(K), alarm_v2_rows[0], alarm_v2_rows[1], lr=0.0
+        )
+    with pytest.raises(ValueError):
+        train_alarm_v2("not a model", alarm_v2_rows[0], alarm_v2_rows[1])
+    with pytest.raises(ValueError):
+        train_alarm_v2(LearnedAlarm(K), alarm_v2_rows[0], alarm_v2_rows[1])
+    with pytest.raises(ValueError):
+        train_alarm_v2(LearnedAlarmV2(K + 1), alarm_v2_rows[0], alarm_v2_rows[1])
+    bad_rows = alarm_v2_rows[0].copy()
+    bad_rows[0, 0] = np.nan
+    with pytest.raises(ValueError):
+        train_alarm_v2(LearnedAlarmV2(K), bad_rows, alarm_v2_rows[1])
+
+
+def test_calibrate_threshold_separable():
+    model = passthrough_alarm_v2()
+    rows_fit = one_feature_rows([3.0, 100.0])
+    rows_nofit = one_feature_rows([0.0, 2.0])
+    result = calibrate_threshold(model, rows_fit, rows_nofit)
+    assert set(result) == {
+        "threshold",
+        "balanced_accuracy",
+        "false_quiet_rate",
+        "false_alarm_rate",
+        "bound_satisfied",
+        "num_candidates",
+    }
+    scores_fit = stub_scores(model, rows_fit)
+    scores_nofit = stub_scores(model, rows_nofit)
+    assert scores_nofit.max() < scores_fit.min()  # hand-built separation
+    assert result["bound_satisfied"] is True
+    assert result["balanced_accuracy"] == 1.0
+    assert result["false_quiet_rate"] == 0.0
+    assert result["false_alarm_rate"] == 0.0
+    # The separating candidate: the smallest fit score (a candidate at the
+    # no-fit maximum would misclassify that fit row).
+    assert result["threshold"] == float(scores_fit.min())
+    assert result["num_candidates"] == len(
+        np.unique(np.concatenate([scores_fit, scores_nofit, [0.0, 1.0]]))
+    )
+    # At the calibrated threshold every decision is correct, including the
+    # fit row sitting exactly AT the threshold.
+    for row in rows_fit:
+        assert alarm_decision_v2(model, row, result["threshold"]) is True
+    for row in rows_nofit:
+        assert alarm_decision_v2(model, row, result["threshold"]) is False
+
+
+def test_calibrate_threshold_inseparable():
+    model = passthrough_alarm_v2()
+    rows_fit = one_feature_rows([0.0, 2.0])
+    rows_nofit = one_feature_rows([3.0, 100.0])
+    # The no-fit scores lie strictly above the fit scores and saturate at
+    # 1.0, so EVERY candidate threshold keeps at least half the no-fit
+    # rows at/above it: the 0.02 false-quiet bound is unsatisfiable.
+    result = calibrate_threshold(model, rows_fit, rows_nofit)
+    assert result["bound_satisfied"] is False
+    scores_fit = stub_scores(model, rows_fit)
+    scores_nofit = stub_scores(model, rows_nofit)
+    candidates = np.unique(np.concatenate([scores_fit, scores_nofit, [0.0, 1.0]]))
+    false_quiet_rates = {
+        float(t): float(np.mean(scores_nofit >= t)) for t in candidates
+    }
+    # The fallback picks a threshold with the minimal false-quiet rate.
+    assert result["false_quiet_rate"] == min(false_quiet_rates.values())
+    assert result["false_quiet_rate"] == 0.5
+    assert result["threshold"] == 1.0
+    assert result["balanced_accuracy"] == 0.25
+    assert result["false_alarm_rate"] == 1.0
+    assert result["num_candidates"] == len(candidates)
+
+
+def test_calibrate_threshold_fail_closed_and_deterministic():
+    model = passthrough_alarm_v2()
+    rows_fit = one_feature_rows([3.0, 100.0])
+    rows_nofit = one_feature_rows([0.0, 2.0])
+    assert calibrate_threshold(model, rows_fit, rows_nofit) == calibrate_threshold(
+        model, rows_fit, rows_nofit
+    )  # no RNG: identical records
+    with pytest.raises(ValueError):
+        calibrate_threshold(model, rows_fit[:0], rows_nofit)  # empty fit
+    with pytest.raises(ValueError):
+        calibrate_threshold(model, rows_fit, rows_nofit[:0])  # empty no-fit
+    with pytest.raises(ValueError):
+        calibrate_threshold(model, np.full((2, K + 8), np.nan), rows_nofit)
+    with pytest.raises(ValueError):
+        calibrate_threshold(model, rows_fit[:, :2], rows_nofit)  # width
+    with pytest.raises(ValueError):
+        calibrate_threshold(LearnedAlarm(K), rows_fit, rows_nofit)  # v1 model
+    with pytest.raises(ValueError):
+        calibrate_threshold(model, rows_fit, rows_nofit, max_false_quiet_rate=-0.1)
+    with pytest.raises(ValueError):
+        calibrate_threshold(model, rows_fit, rows_nofit, max_false_quiet_rate=1.5)
+    with pytest.raises(ValueError):
+        calibrate_threshold(
+            model, rows_fit, rows_nofit, max_false_quiet_rate=np.nan
+        )
+    # Non-finite scores are an error, never a warning: an infinite weight
+    # produces NaN logits through the zero features.
+    broken = passthrough_alarm_v2()
+    with torch.no_grad():
+        broken.network[0].weight[0, 0] = np.inf
+    with pytest.raises(FloatingPointError):
+        calibrate_threshold(broken, rows_fit, rows_nofit)
+
+
+def test_alarm_decision_v2_boundary_semantics():
+    model = passthrough_alarm_v2()
+    at_half = one_feature_rows([0.0])[0]  # logit GELU(0) = 0 -> score 0.5
+    below = one_feature_rows([-1.0])[0]  # score sigmoid(GELU(-1)) < 0.5
+    above = one_feature_rows([1.0])[0]  # score sigmoid(GELU(1)) > 0.5
+    # A score exactly AT the threshold decides fit.
+    assert alarm_decision_v2(model, at_half, 0.5) is True
+    assert alarm_decision_v2(model, at_half, 0.5000001) is False
+    assert alarm_decision_v2(model, below, 0.5) is False
+    assert alarm_decision_v2(model, above, 0.5) is True
+    assert alarm_decision_v2(model, at_half, 0.0) is True
+    assert alarm_decision_v2(model, at_half, 1.0) is False
+    # Deterministic: repeated calls agree.
+    assert alarm_decision_v2(model, at_half, 0.5) == alarm_decision_v2(
+        model, at_half, 0.5
+    )
+    with pytest.raises(ValueError):
+        alarm_decision_v2(LearnedAlarm(K), at_half, 0.5)  # v1 model
+    with pytest.raises(ValueError):
+        alarm_decision_v2(model, at_half[:2], 0.5)  # width mismatch
+    with pytest.raises(ValueError):
+        alarm_decision_v2(model, np.full(K + 8, np.nan), 0.5)
+    with pytest.raises(ValueError):
+        alarm_decision_v2(model, at_half, -0.1)
+    with pytest.raises(ValueError):
+        alarm_decision_v2(model, at_half, 1.5)
+    with pytest.raises(ValueError):
+        alarm_decision_v2(model, at_half, np.nan)
+
+
+def test_alarm_v2_separates_fit_nofit_on_fixture_rows(
+    router, alarm_v2, alarm_v2_rows, alarm_v2_calibration
+):
+    torch.manual_seed(4243)
+    _, history = train_alarm_v2(
+        LearnedAlarmV2(K), alarm_v2_rows[0], alarm_v2_rows[1]
+    )
+    assert history["train_accuracy"][-1] >= 0.9  # diagnostic at 0.5
+    # The train-block calibration satisfies the frozen false-quiet bound.
+    assert alarm_v2_calibration["bound_satisfied"] is True
+    assert alarm_v2_calibration["false_quiet_rate"] <= 0.02
+    # Pinned fixture behavior: fit on every in-library row, no-fit on
+    # every out-of-library row (10/10 at the calibrated threshold).
+    threshold = alarm_v2_calibration["threshold"]
+    decisions = []
+    for seed in SEEDS:
+        instance, in_library, out_library, _, _ = row_data(seed)
+        block, raw = arch_row_features(instance, in_library, observation_seed(seed))
+        block_o, raw_o = arch_row_features(
+            instance, out_library, observation_seed(seed)
+        )
+        decisions.append(
+            alarm_decision_v2(
+                alarm_v2,
+                alarm_features_v2(router_gates(router, block), raw),
+                threshold,
+            )
+        )
+        decisions.append(
+            alarm_decision_v2(
+                alarm_v2,
+                alarm_features_v2(router_gates(router, block_o), raw_o),
+                threshold,
+            )
+        )
+    assert decisions == [True, False] * len(SEEDS)
+
+
+def test_arch_arm_v2_in_library_routes_to_zero(router, alarm_v2, alarm_v2_calibration):
+    for seed in SEEDS:
+        instance, in_library, _, observations, _ = row_data(seed)
+        outcome = arm_arch_full_v2(
+            seed,
+            instance,
+            in_library,
+            router=router,
+            alarm=alarm_v2,
+            threshold=alarm_v2_calibration["threshold"],
+            observation_seed=observation_seed(seed),
+            observations=observations,
+            condition="in_library",
+        )
+        assert outcome.arm == "arch_full"  # the frozen outcome vocabulary
+        assert outcome.condition == "in_library"
+        assert outcome.action == "route"
+        assert outcome.routed_index == 0
+        assert outcome.correct
+        assert outcome.discovery_invocations == 0  # the alarm stayed quiet
+        assert not outcome.admitted
+        assert outcome.map_misfit is None
+        assert outcome.initial_library_size == K == outcome.final_library_size
+        assert outcome.detail.startswith("alarm_v2=fit")
+        assert outcome.seed == seed
+
+
+def test_arch_arm_v2_out_of_library_discovers_and_acquires(
+    router, alarm_v2, alarm_v2_calibration
+):
+    # Pinned fixture behavior: the calibrated v2 alarm classifies no-fit
+    # on every out-of-library fixture row, and the certified discovery
+    # path then acquires on the exact observations.
+    for seed in SEEDS:
+        instance, _, out_library, observations, _ = row_data(seed)
+        outcome = arm_arch_full_v2(
+            seed,
+            instance,
+            out_library,
+            router=router,
+            alarm=alarm_v2,
+            threshold=alarm_v2_calibration["threshold"],
+            observation_seed=observation_seed(seed),
+            observations=observations,
+            condition="out_of_library",
+        )
+        assert outcome.action == "discover"
+        assert outcome.routed_index == K  # the appended structure's index
+        assert outcome.correct
+        assert outcome.discovery_invocations == 1
+        assert outcome.admitted
+        assert outcome.map_misfit is not None
+        assert outcome.map_misfit <= MAP_ACCEPT_TOL
+        assert outcome.final_library_size == K + 1
+        assert "alarm_v2=no-fit" in outcome.detail
+
+
+def test_arch_arm_v2_null_control_admits_nothing(router, alarm_v2, alarm_v2_calibration):
+    for seed in SEEDS:
+        instance, _, out_library, _, nulls = row_data(seed)
+        outcome = arm_arch_full_v2(
+            seed,
+            instance,
+            out_library,
+            router=router,
+            alarm=alarm_v2,
+            threshold=alarm_v2_calibration["threshold"],
+            observation_seed=observation_seed(seed),
+            observations=nulls,
+            condition="null_control",
+        )
+        assert outcome.action == "refused"
+        assert outcome.routed_index is None
+        assert not outcome.admitted
+        assert outcome.correct  # the false-admission control
+        assert outcome.discovery_invocations == 1
+        assert outcome.final_library_size == K
+        assert "alarm_v2=no-fit" in outcome.detail
+
+
+def test_arm_v2_end_to_end_determinism(router, alarm_v2, alarm_v2_calibration):
+    threshold = alarm_v2_calibration["threshold"]
+    for seed in (70001, 70002):
+        instance, in_library, out_library, observations, nulls = row_data(seed)
+
+        def all_v2_arms():
+            return (
+                arm_arch_full_v2(
+                    seed, instance, in_library,
+                    router=router, alarm=alarm_v2, threshold=threshold,
+                    observation_seed=observation_seed(seed),
+                    observations=observations, condition="in_library",
+                ),
+                arm_arch_full_v2(
+                    seed, instance, out_library,
+                    router=router, alarm=alarm_v2, threshold=threshold,
+                    observation_seed=observation_seed(seed),
+                    observations=observations, condition="out_of_library",
+                ),
+                arm_arch_full_v2(
+                    seed, instance, out_library,
+                    router=router, alarm=alarm_v2, threshold=threshold,
+                    observation_seed=observation_seed(seed),
+                    observations=nulls, condition="null_control",
+                ),
+            )
+
+        first = all_v2_arms()
+        second = all_v2_arms()
+        assert first == second  # pure scalar records: plain equality
+
+
+def test_fail_closed_arm_v2_validation(router, alarm_v2, alarm_v2_calibration):
+    instance, in_library, out_library, observations, _ = row_data(SEED)
+    ambient = int(instance.true_target.boundaries[0].shape[1])
+    seed = observation_seed(SEED)
+    threshold = alarm_v2_calibration["threshold"]
+    with pytest.raises(ValueError):
+        arm_arch_full_v2(  # provenance: seed must equal instance.seed
+            SEED + 1, instance, in_library, router=router, alarm=alarm_v2,
+            threshold=threshold, observation_seed=seed,
+            observations=observations, condition="in_library",
+        )
+    with pytest.raises(ValueError):
+        arm_arch_full_v2(  # view/condition mismatch
+            SEED, instance, out_library, router=router, alarm=alarm_v2,
+            threshold=threshold, observation_seed=seed,
+            observations=observations, condition="in_library",
+        )
+    with pytest.raises(ValueError):
+        arm_arch_full_v2(  # the v1 alarm is not a v2 alarm
+            SEED, instance, in_library, router=router, alarm=LearnedAlarm(K),
+            threshold=threshold, observation_seed=seed,
+            observations=observations, condition="in_library",
+        )
+    with pytest.raises(ValueError):
+        arm_arch_full_v2(  # alarm K mismatch
+            SEED, instance, in_library, router=router,
+            alarm=LearnedAlarmV2(K + 1), threshold=threshold,
+            observation_seed=seed, observations=observations,
+            condition="in_library",
+        )
+    with pytest.raises(ValueError):
+        arm_arch_full_v2(  # threshold outside [0, 1]
+            SEED, instance, in_library, router=router, alarm=alarm_v2,
+            threshold=1.5, observation_seed=seed,
+            observations=observations, condition="in_library",
+        )
+    with pytest.raises(ValueError):
+        arm_arch_full_v2(  # non-finite threshold
+            SEED, instance, in_library, router=router, alarm=alarm_v2,
+            threshold=np.nan, observation_seed=seed,
+            observations=observations, condition="in_library",
+        )
+    with pytest.raises(ValueError):
+        arm_arch_full_v2(  # router feature-dim mismatch
+            SEED, instance, in_library,
+            router=StructureRouter(feature_dim=8), alarm=alarm_v2,
+            threshold=threshold, observation_seed=seed,
+            observations=observations, condition="in_library",
+        )
+    with pytest.raises(ValueError):
+        arm_arch_full_v2(  # ambient mismatch
+            SEED, instance, out_library, router=router, alarm=alarm_v2,
+            threshold=threshold, observation_seed=seed,
+            observations=np.zeros((ambient + 1, 4)), condition="out_of_library",
+        )
+    with pytest.raises(ValueError):
+        arm_arch_full_v2(  # novelty tolerance must be positive
+            SEED, instance, out_library, router=router, alarm=alarm_v2,
+            threshold=threshold, observation_seed=seed,
+            observations=observations, condition="out_of_library",
+            novelty_tol=0.0,
+        )

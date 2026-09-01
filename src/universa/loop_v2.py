@@ -101,6 +101,27 @@ condition from residuals — it records and scores it.
   ``log1p`` of the minimum raw profile value across candidates, and
   ``log1p`` of the maximum profile slope magnitude.
 
+**The alarm-v2 redesign (additive — the v1 alarm above is frozen and
+unchanged).** The sealed loop-v2 experiment
+(``docs/24-router-loop-v2-sealed-1-results.md``) found the v1 alarm's two
+error modes: false QUIETS (fit declared on out-of-library rows — no
+discovery runs, the acquisition is lost) and false ALARMS (no-fit
+declared on in-library rows — discovery correctly refuses as non-novel,
+the accuracy is lost). The v1 layout cannot see "all decoys look alike"
+(small margins) vs "one candidate stands out" (a large margin). The
+redesign is purely additive: :func:`alarm_features_v2` appends five
+margin features to the frozen v1 layout (bit-exact prefix),
+:class:`LearnedAlarmV2` reads the widened ``K + 8`` vector,
+:func:`train_alarm_v2` trains it under the v1 recipe,
+:func:`calibrate_threshold` picks the decision threshold on the TRAIN
+block by maximizing balanced accuracy subject to a frozen false-quiet
+bound, :func:`alarm_decision_v2` applies the calibrated threshold, and
+:func:`arm_arch_full_v2` runs the full loop with the v2 alarm under the
+module's frozen correctness semantics (the ``detail`` strings carry an
+``alarm_v2=`` marker for provenance). Nothing certified changes:
+discovery, admission, the router-acceptance gate, and the correctness
+semantics are exactly the v1 paths.
+
 **Import boundary and torch discipline.** Same convention as
 :mod:`universa.router`: CUDA is hidden below, then this module imports
 torch; ``universa/__init__.py`` does not import this module, so a plain
@@ -482,6 +503,85 @@ def alarm_features(gates, profile_block) -> np.ndarray:
     )
 
 
+ALARM_V2_MARGIN_FEATURE_NAMES = (
+    "log1p_profile_margin_second_minus_best",  # second-smallest minus smallest raw profile value
+    "gate_top2_gap",  # largest minus second-largest soft gate
+    "log1p_mean_profile",  # mean raw profile value across the block
+    "best_profile_curvature",  # mean |second difference| of the best candidate's log1p profile
+    "log1p_best_profile",  # absolute level of the smallest raw profile value
+)
+"""The five margin-feature columns :func:`alarm_features_v2` appends to the
+frozen v1 :func:`alarm_features` layout, in column order (K+3 .. K+7)."""
+
+
+def alarm_features_v2(gates, profile_block) -> np.ndarray:
+    """The :class:`LearnedAlarmV2` input vector: the frozen v1
+    :func:`alarm_features` layout (``K + 3`` dims, reused unchanged — the
+    additive contract is bit-exact) followed by the five margin features of
+    :data:`ALARM_V2_MARGIN_FEATURE_NAMES` (``K + 8`` dims total), all
+    computed from the raw ``(K, G)`` profile block and the gates:
+
+    * ``log1p_profile_margin_second_minus_best`` — ``log1p`` of the
+      second-smallest minus the smallest raw profile value over the whole
+      block (nonnegative by construction): the "all decoys look alike"
+      margin — small when no candidate stands out, large when one does.
+    * ``gate_top2_gap`` — the largest minus the second-largest soft gate,
+      in ``[0, 1]`` (exactly 1.0 for a single candidate: the top gate
+      minus 0.0).
+    * ``log1p_mean_profile`` — ``log1p`` of the mean raw profile value
+      across candidates and grid points: the block's overall misfit level.
+    * ``best_profile_curvature`` — the mean absolute second difference of
+      the best (minimum) candidate's ``log1p`` profile across the grid —
+      the candidate row holding the block minimum, first row index on
+      ties; exactly 0.0 when the grid has fewer than three points (the v1
+      degenerate-difference convention).
+    * ``log1p_best_profile`` — ``log1p`` of the smallest raw profile value
+      (the block's absolute best-misfit level).
+
+    Same fail-closed validation as :func:`alarm_features` (which runs
+    first and supplies the leading ``K + 3`` columns), plus one v2 check:
+    the block must hold at least two profile values for the
+    second-minus-best margin.
+    """
+    gates = np.asarray(gates, dtype=np.float64)
+    block = np.asarray(profile_block, dtype=np.float64)
+    base = alarm_features(gates, block)  # the frozen v1 layout, validated
+    if block.size < 2:
+        raise ValueError(
+            "alarm_features_v2 needs at least two profile values for the "
+            "second-minus-best margin"
+        )
+    ordered = np.sort(block, axis=None)
+    margin = float(ordered[1] - ordered[0])
+    sorted_gates = np.sort(gates)[::-1]
+    top2_gap = float(
+        sorted_gates[0] - (sorted_gates[1] if gates.size > 1 else 0.0)
+    )
+    best_row = np.log1p(
+        block[np.unravel_index(block.argmin(), block.shape)[0]]
+    )
+    second_differences = np.diff(best_row, n=2)
+    curvature = (
+        float(np.abs(second_differences).mean())
+        if second_differences.size
+        else 0.0
+    )
+    return np.concatenate(
+        [
+            base,
+            np.array(
+                [
+                    np.log1p(margin),
+                    top2_gap,
+                    float(np.log1p(block.mean())),
+                    curvature,
+                    float(np.log1p(block.min())),
+                ]
+            ),
+        ]
+    )
+
+
 # ---------------------------------------------------------------------------
 # Learned models (torch, CPU, float32, deterministic). This is the ONLY
 # section of the module that touches torch.
@@ -669,6 +769,282 @@ def alarm_decision(
             .item()
         )
     return bool(probability >= ALARM_THRESHOLD)
+
+
+class LearnedAlarmV2(nn.Module):
+    """The v2 learned fit/no-fit alarm: ``Linear(K+8, 32) GELU Linear(32, 1)``.
+
+    Same shape as :class:`LearnedAlarm` but over the
+    :func:`alarm_features_v2` layout (the frozen v1 ``K + 3`` columns plus
+    the five margin columns). Output: one logit; the decision is
+    ``sigmoid(logit) >= threshold`` with the threshold supplied EXPLICITLY
+    (calibrated on the train block by :func:`calibrate_threshold` — the v2
+    design freezes no 0.5).
+
+    The train-only standardization statistics (measured by
+    :func:`train_alarm_v2` on the training rows) live in buffers, so the
+    model is self-contained: raw float features in, logit out.
+    """
+
+    def __init__(self, num_candidates: int, hidden_dim: int = 32):
+        super().__init__()
+        if int(num_candidates) < 1 or int(hidden_dim) < 1:
+            raise ValueError("num_candidates and hidden_dim must be >= 1")
+        self.num_candidates = int(num_candidates)
+        self.hidden_dim = int(hidden_dim)
+        self.input_dim = self.num_candidates + 8
+        self.network = nn.Sequential(
+            nn.Linear(self.input_dim, self.hidden_dim),
+            nn.GELU(),
+            nn.Linear(self.hidden_dim, 1),
+        )
+        self.register_buffer("input_mean", torch.zeros(self.input_dim))
+        self.register_buffer("input_std", torch.ones(self.input_dim))
+
+    def logit(self, features: torch.Tensor) -> torch.Tensor:
+        """The alarm logit, shape ``(B,)`` from ``(B, K+8)``."""
+        if features.ndim != 2 or features.shape[-1] != self.input_dim:
+            raise ValueError(
+                f"features must have shape (B, {self.input_dim})"
+            )
+        standardized = (features - self.input_mean) / self.input_std
+        return self.network(standardized).squeeze(-1)
+
+    def forward(self, features: torch.Tensor) -> torch.Tensor:
+        return self.logit(features)
+
+
+def train_alarm_v2(
+    model: LearnedAlarmV2,
+    rows_fit,
+    rows_nofit,
+    epochs: int = 150,
+    lr: float = 1e-3,
+    seed: int = 4243,
+) -> tuple[LearnedAlarmV2, dict]:
+    """Train a :class:`LearnedAlarmV2`, deterministically, on CPU.
+
+    The :func:`train_alarm` recipe over the v2 features: ``rows_fit`` /
+    ``rows_nofit`` are ``(M, K+8)`` arrays of :func:`alarm_features_v2`
+    vectors — in-library rows are labeled fit (1), out-of-library rows
+    no-fit (0). Binary cross-entropy (on the logit), full-batch Adam
+    (every epoch is one step; no shuffling RNG exists). Standardization
+    statistics are measured on the TRAINING rows only and stored in the
+    model's buffers. ``torch.manual_seed(seed)`` runs before the
+    optimization loop; construct ``model`` itself under a manual seed for
+    deterministic initialization (the caller's concern — the model is
+    passed in, exactly the :func:`train_generic` convention, unlike
+    :func:`train_alarm`'s factory). The decision threshold is NOT set
+    here: it is calibrated afterwards by :func:`calibrate_threshold`;
+    the history's train accuracy is a diagnostic at the 0.5 score. A
+    non-finite loss is an error, never a warning.
+    """
+    rows_fit = np.asarray(rows_fit, dtype=np.float64)
+    rows_nofit = np.asarray(rows_nofit, dtype=np.float64)
+    for name, rows in (("rows_fit", rows_fit), ("rows_nofit", rows_nofit)):
+        if rows.ndim != 2 or rows.shape[0] < 1:
+            raise ValueError(f"{name} must be a nonempty 2-D array")
+        if not np.all(np.isfinite(rows)):
+            raise ValueError(f"{name} must be finite")
+    if rows_fit.shape[1] != rows_nofit.shape[1]:
+        raise ValueError("rows_fit/rows_nofit width mismatch")
+    if int(epochs) < 1:
+        raise ValueError("epochs must be >= 1")
+    if lr <= 0.0:
+        raise ValueError("lr must be positive")
+    if not isinstance(model, LearnedAlarmV2):
+        raise ValueError("model must be a LearnedAlarmV2")
+    if model.input_dim != rows_fit.shape[1]:
+        raise ValueError(
+            f"alarm input dim {model.input_dim} does not match the rows' "
+            f"width {rows_fit.shape[1]} (K gates + 8)"
+        )
+    torch.manual_seed(int(seed))
+    x = _as_float32(np.vstack([rows_fit, rows_nofit]))
+    y = torch.cat(
+        [torch.ones(rows_fit.shape[0]), torch.zeros(rows_nofit.shape[0])]
+    )
+    model.input_mean.copy_(x.mean(dim=0))
+    model.input_std.copy_(x.std(dim=0, unbiased=False).clamp_min(1e-8))
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    history: dict[str, list] = {"loss": [], "train_accuracy": []}
+    for epoch in range(int(epochs)):
+        model.train()
+        logits = model.logit(x)
+        loss = F.binary_cross_entropy_with_logits(logits, y)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        loss_value = float(loss.detach())
+        if not np.isfinite(loss_value):
+            raise FloatingPointError(
+                f"non-finite training loss at epoch {epoch}"
+            )
+        model.eval()
+        with torch.no_grad():
+            predictions = (
+                torch.sigmoid(model.logit(x)) >= ALARM_THRESHOLD
+            ).float()
+        history["loss"].append(loss_value)
+        history["train_accuracy"].append(float((predictions == y).double().mean()))
+    return model, history
+
+
+def calibrate_threshold(
+    model: LearnedAlarmV2,
+    rows_fit,
+    rows_nofit,
+    *,
+    max_false_quiet_rate: float = 0.02,
+) -> dict:
+    """The frozen train-block calibration rule for the v2 alarm's threshold.
+
+    Computes the model's sigmoid scores on both row sets and sweeps the
+    candidate thresholds — the sorted unique scores plus 0.0 and 1.0,
+    deduplicated. For each candidate ``t`` the decision is
+    ``sigmoid >= t`` => fit (exactly :func:`alarm_decision_v2`), and the
+    rule records:
+
+    * balanced accuracy — ``(TPR + TNR) / 2`` with ``TPR`` the fraction of
+      fit rows scored ``>= t`` and ``TNR`` the fraction of no-fit rows
+      scored ``< t``;
+    * false-quiet rate — the fraction of NO-FIT rows scored ``>= t``: the
+      alarm stays quiet on an out-of-library row, no discovery runs, the
+      acquisition is lost (the sealed experiment's dominant error mode,
+      ``docs/24-router-loop-v2-sealed-1-results.md``);
+    * false-alarm rate — the fraction of FIT rows scored ``< t``: the
+      alarm fires on an in-library row, discovery correctly refuses as
+      non-novel, the accuracy is lost.
+
+    Selection: the threshold maximizing balanced accuracy SUBJECT TO
+    ``false-quiet rate <= max_false_quiet_rate``; ties break toward the
+    smaller false-quiet rate, then toward the LARGER threshold (the
+    false-quiet rate is non-increasing in the threshold, so the larger
+    candidate never reintroduces a quiet). If NO candidate satisfies the
+    bound, the rule falls back to the threshold with the smallest
+    false-quiet rate, tie-broken toward the larger balanced accuracy and
+    then the larger threshold, and records ``bound_satisfied: False``.
+
+    Returns the frozen record ``{"threshold", "balanced_accuracy",
+    "false_quiet_rate", "false_alarm_rate", "bound_satisfied",
+    "num_candidates"}`` — the selected threshold, its metrics, and the
+    swept candidate count. Deterministic (no RNG anywhere). Fail-closed
+    on empty or non-finite row sets, a width mismatch, non-finite scores,
+    or a bound outside ``[0, 1]``.
+    """
+    if not isinstance(model, LearnedAlarmV2):
+        raise ValueError("model must be a LearnedAlarmV2")
+    rows_fit = np.asarray(rows_fit, dtype=np.float64)
+    rows_nofit = np.asarray(rows_nofit, dtype=np.float64)
+    for name, rows in (("rows_fit", rows_fit), ("rows_nofit", rows_nofit)):
+        if rows.ndim != 2 or rows.shape[0] < 1:
+            raise ValueError(f"{name} must be a nonempty 2-D array")
+        if not np.all(np.isfinite(rows)):
+            raise ValueError(f"{name} must be finite")
+        if rows.shape[1] != model.input_dim:
+            raise ValueError(
+                f"{name} width {rows.shape[1]} does not match the model's "
+                f"input dim {model.input_dim} (K gates + 8)"
+            )
+    bound = float(max_false_quiet_rate)
+    if not np.isfinite(bound) or not 0.0 <= bound <= 1.0:
+        raise ValueError("max_false_quiet_rate must lie in [0, 1]")
+    model.eval()
+    with torch.no_grad():
+        scores_fit = (
+            torch.sigmoid(model.logit(_as_float32(rows_fit)))
+            .cpu()
+            .numpy()
+            .astype(np.float64)
+        )
+        scores_nofit = (
+            torch.sigmoid(model.logit(_as_float32(rows_nofit)))
+            .cpu()
+            .numpy()
+            .astype(np.float64)
+        )
+    if not (
+        np.all(np.isfinite(scores_fit)) and np.all(np.isfinite(scores_nofit))
+    ):
+        raise FloatingPointError("the alarm's scores must be finite")
+    candidates = np.unique(
+        np.concatenate([scores_fit, scores_nofit, [0.0, 1.0]])
+    )
+    records = []
+    for threshold in candidates:
+        threshold = float(threshold)
+        tpr = float(np.mean(scores_fit >= threshold))
+        tnr = float(np.mean(scores_nofit < threshold))
+        records.append(
+            {
+                "threshold": threshold,
+                "balanced_accuracy": 0.5 * (tpr + tnr),
+                "false_quiet_rate": float(np.mean(scores_nofit >= threshold)),
+                "false_alarm_rate": float(np.mean(scores_fit < threshold)),
+            }
+        )
+    feasible = [
+        record
+        for record in records
+        if record["false_quiet_rate"] <= bound
+    ]
+    if feasible:
+        chosen = max(
+            feasible,
+            key=lambda record: (
+                record["balanced_accuracy"],
+                -record["false_quiet_rate"],
+                record["threshold"],
+            ),
+        )
+        bound_satisfied = True
+    else:
+        chosen = min(
+            records,
+            key=lambda record: (
+                record["false_quiet_rate"],
+                -record["balanced_accuracy"],
+                -record["threshold"],
+            ),
+        )
+        bound_satisfied = False
+    return {
+        "threshold": chosen["threshold"],
+        "balanced_accuracy": chosen["balanced_accuracy"],
+        "false_quiet_rate": chosen["false_quiet_rate"],
+        "false_alarm_rate": chosen["false_alarm_rate"],
+        "bound_satisfied": bound_satisfied,
+        "num_candidates": int(candidates.size),
+    }
+
+
+def alarm_decision_v2(
+    model: LearnedAlarmV2, features_v2, threshold: float
+) -> bool:
+    """The v2 alarm's decision: True = "fits" (route), False = "no-fit"
+    (discover). Sigmoid of the logit against the explicitly supplied
+    ``threshold`` (calibrated by :func:`calibrate_threshold`); a score
+    exactly AT the threshold decides fit. Deterministic."""
+    if not isinstance(model, LearnedAlarmV2):
+        raise ValueError("model must be a LearnedAlarmV2")
+    features = np.asarray(features_v2, dtype=np.float64)
+    if features.ndim != 1 or features.shape[0] != model.input_dim:
+        raise ValueError(
+            f"features_v2 must have shape ({model.input_dim},)"
+        )
+    if not np.all(np.isfinite(features)):
+        raise ValueError("features_v2 must be finite")
+    threshold = float(threshold)
+    if not np.isfinite(threshold) or not 0.0 <= threshold <= 1.0:
+        raise ValueError("threshold must lie in [0, 1]")
+    model.eval()
+    with torch.no_grad():
+        probability = float(
+            torch.sigmoid(model.logit(_as_float32(features).unsqueeze(0)))
+            .squeeze()
+            .item()
+        )
+    return bool(probability >= threshold)
 
 
 class GenericMLP(nn.Module):
@@ -1266,6 +1642,141 @@ def arm_arch_full(
         admitted=False,
         map_misfit=map_misfit,
         detail=f"alarm=no-fit discovery=refused ({reason})",
+        seed=seed,
+        initial_library_size=len(library),
+        final_library_size=len(library),
+    )
+
+
+def arm_arch_full_v2(
+    seed: int,
+    instance: BudgetInstance,
+    library,
+    *,
+    router: StructureRouter,
+    alarm: LearnedAlarmV2,
+    threshold: float,
+    observation_seed: int,
+    observations: np.ndarray,
+    condition: str,
+    profile_grid=NO_ANCHOR_GRID,
+    mask_fraction: float = DEFAULT_MASK_FRACTION,
+    novelty_tol: float = DEFAULT_NOVELTY_TOL,
+) -> ArmOutcome:
+    """The full degraded-regime loop with the v2 alarm: learned routing,
+    calibrated learned alarm, certified discovery.
+
+    Exactly :func:`arm_arch_full`'s structure and frozen semantics, with
+    the v1 alarm swapped for the redesign: every candidate is scored by
+    the trained ``router`` over the no-anchor profile blocks (hard
+    argmax); the trained :class:`LearnedAlarmV2` reads
+    :func:`alarm_features_v2` of the soft gates (``tau = 1.0``) and the
+    raw profile block and decides fit/no-fit against the explicitly
+    supplied ``threshold`` (calibrated on the train block by
+    :func:`calibrate_threshold`). FIT -> route to the router's argmax
+    (discovery is never invoked). NO-FIT -> certified discovery on the
+    EXACT transported ``observations`` at the frozen gates (1e-10
+    certification, 1e-6 novelty); on admission the row routes to the
+    appended structure (discover mode), else it is refused. Correctness
+    delegates to the module's frozen :func:`_condition_correct` path
+    (``arch_full`` semantics — the outcome vocabulary is unchanged); the
+    ``detail`` strings carry an ``alarm_v2=`` marker for provenance.
+    """
+    seed, library = _validate_row(seed, instance, library, condition)
+    if not isinstance(router, StructureRouter):
+        raise ValueError("router must be a universa.router.StructureRouter")
+    if not isinstance(alarm, LearnedAlarmV2):
+        raise ValueError("alarm must be a LearnedAlarmV2")
+    if alarm.num_candidates != len(library):
+        raise ValueError(
+            f"alarm expects {alarm.num_candidates} candidates but the "
+            f"library has {len(library)}"
+        )
+    if not np.isfinite(float(threshold)) or not 0.0 <= float(threshold) <= 1.0:
+        raise ValueError("threshold must lie in [0, 1]")
+    if not np.isfinite(float(novelty_tol)) or novelty_tol <= 0.0:
+        raise ValueError("novelty_tol must be positive and finite")
+    ambient_dim = int(instance.true_target.boundaries[0].shape[1])
+    _validate_observations(observations, ambient_dim)
+    block, raw = arch_row_features(
+        instance, library, observation_seed, profile_grid, mask_fraction
+    )
+    if block.shape[1] != router.feature_dim:
+        raise ValueError(
+            f"router feature dim {router.feature_dim} does not match the "
+            f"profile block width {block.shape[1]}"
+        )
+    gates = router_gates(router, block)
+    argmax = router_argmax(router, block)
+    features = alarm_features_v2(gates, raw)
+    if alarm_decision_v2(alarm, features, float(threshold)):
+        return ArmOutcome(
+            arm="arch_full",
+            condition=condition,
+            correct=_condition_correct(
+                "arch_full",
+                condition,
+                action="route",
+                routed_index=argmax,
+                admitted=False,
+                map_misfit=None,
+            ),
+            action="route",
+            routed_index=argmax,
+            discovery_invocations=0,
+            admitted=False,
+            map_misfit=None,
+            detail=f"alarm_v2=fit router_argmax={argmax}",
+            seed=seed,
+            initial_library_size=len(library),
+            final_library_size=len(library),
+        )
+    admitted, map_misfit, reason = _discovery_path(
+        instance,
+        [candidate.boundaries[0] for candidate in library],
+        observations,
+        seed,
+        float(novelty_tol),
+    )
+    if admitted:
+        return ArmOutcome(
+            arm="arch_full",
+            condition=condition,
+            correct=_condition_correct(
+                "arch_full",
+                condition,
+                action="discover",
+                routed_index=len(library),
+                admitted=True,
+                map_misfit=map_misfit,
+            ),
+            action="discover",
+            routed_index=len(library),
+            discovery_invocations=1,
+            admitted=True,
+            map_misfit=map_misfit,
+            detail=f"alarm_v2=no-fit discovery=admitted ({reason})",
+            seed=seed,
+            initial_library_size=len(library),
+            final_library_size=len(library) + 1,
+        )
+    return ArmOutcome(
+        arm="arch_full",
+        condition=condition,
+        correct=_condition_correct(
+            "arch_full",
+            condition,
+            action="refused",
+            routed_index=None,
+            admitted=False,
+            map_misfit=map_misfit,
+        ),
+        action="refused",
+        routed_index=None,
+        discovery_invocations=1,
+        admitted=False,
+        map_misfit=map_misfit,
+        detail=f"alarm_v2=no-fit discovery=refused ({reason})",
         seed=seed,
         initial_library_size=len(library),
         final_library_size=len(library),

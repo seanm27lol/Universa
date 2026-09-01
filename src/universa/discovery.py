@@ -182,8 +182,17 @@ class DiscoveryInsufficient:
             raise ValueError("an insufficiency result needs a reason")
         if self.num_observations < 0:
             raise ValueError("num_observations must be nonnegative")
-        if not 0 <= self.prefix_dim <= self.observed_dim:
-            raise ValueError("need 0 <= prefix_dim <= observed_dim")
+        if not 0 <= self.prefix_dim:
+            raise ValueError("need 0 <= prefix_dim")
+        if not 0 <= self.observed_dim:
+            raise ValueError("need 0 <= observed_dim")
+        # NOTE: prefix_dim may legitimately EXCEED observed_dim. The two
+        # ranks are estimated with matrix-dependent tolerances (each
+        # matrix's own sigma_max), so a borderline singular value can be
+        # counted in the prefix (smaller matrix, smaller tolerance) and
+        # not in the full matrix. The stabilization rule compares the two
+        # as a heuristic and refuses on any mismatch; the invariant is
+        # nonnegativity of each estimate, not an ordering between them.
         if self.certificate_residual is not None and (
             not np.isfinite(self.certificate_residual)
             or self.certificate_residual < 0.0

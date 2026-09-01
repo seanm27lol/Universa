@@ -272,3 +272,29 @@ def test_fail_closed_validation():
         )
     with pytest.raises(ValueError):
         synthesize_observations(make_instance(), -1)
+
+
+def test_stabilization_tolerance_inversion_refuses_instead_of_raising():
+    """Regression: a borderline singular value counted in the prefix's own
+    (smaller) tolerance but not the full matrix's must yield a graceful
+    DiscoveryInsufficient, not a ValueError from the result dataclass —
+    the crash that aborted the first loop-experiment attempt at seed
+    130006. Constructed directly: a full matrix whose final columns add
+    energy in a direction the prefix already spans at a borderline scale,
+    sized so the prefix counts it and the full matrix does not."""
+    rng = np.random.default_rng(7)
+    signal = rng.standard_normal((6, 1))
+    ambient = rng.standard_normal((6, 6))
+    basis, _ = np.linalg.qr(ambient)
+    borderline = basis[:, 1:] * 1e-13
+    prefix = np.concatenate([signal, borderline[:, :4]], axis=1)
+    extra = rng.standard_normal((6, 3))
+    observations = np.concatenate([prefix, extra], axis=1)
+    # Scale the tail columns up so the full matrix's sigma_max (and hence
+    # its rank tolerance) is large while the prefix's stays small.
+    observations[:, -3:] *= 1e6
+    result = discover_constraint(observations, 6, seeds=(424242,))
+    assert isinstance(result, DiscoveryInsufficient)
+    assert result.prefix_dim >= 0
+    assert result.observed_dim >= 0
+    assert "stabilized" in result.reason or "stability" in result.reason

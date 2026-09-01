@@ -1,0 +1,1175 @@
+{
+  "audit": {
+    "build_failure_rows": 0,
+    "declared_seeds": 36,
+    "eligible_seed_ids": [
+      130001,
+      130002,
+      130003,
+      130004,
+      130005,
+      130006,
+      130007,
+      130008,
+      130009,
+      130010,
+      130011,
+      130012,
+      130013,
+      130014,
+      130015,
+      130016,
+      130017,
+      130018,
+      130019,
+      130020,
+      130021,
+      130022,
+      130023,
+      130024,
+      130025,
+      130026,
+      130027,
+      130028,
+      130029,
+      130030,
+      130031,
+      130032,
+      130033,
+      130034,
+      130035,
+      130036
+    ],
+    "eligible_seeds": 36,
+    "in_library_rows": 6,
+    "ineligible_seed_rows": 0,
+    "null_control_rows": 5,
+    "out_of_library_rows": 5,
+    "recompute_scope": "(a) every claim statistic and every alarm/routing/acquisition/refusal decision below is recomputed from the raw rows alone: the alarm decision (retained best_score against alarm_tol = 1e-9, and best_score as the minimum of the retained per-candidate scores), the routing decision (route mode commits to the first argmin of the retained scores; the routing indicator is mode 'route' to library index 0), the acquisition decision (mode 'discover' with a fired alarm, verdict 'discovered', a certificate residual, admission, and map_misfit <= 1e-9), the refusal indicator (mode 'refused'), and the mode/library coherence (route and refused leave the library unchanged; discover grows it by one and routes to the appended index), followed by the per-seed claim statistics, means, standard deviations, SEs, one-sided lower bounds, and decisions; the eligibility counts and seed ids come from the eligibility pass, not from the raw rows. (b) no matrices are retained or needed: every claim statistic is a function of the retained LoopOutcome scalar record, and no instance is rebuilt \u2014 the audit never re-runs the loop. Unlike the router experiments, no hash-pinned model exists or is needed, because nothing was trained.",
+    "rows_per_seed_per_condition": 1
+  },
+  "claims": {
+    "claims": [
+      {
+        "condition": "out-of-library",
+        "critical_value": null,
+        "description": "the per-seed acquisition rate \u2014 the loop detects the out-of-library misfit, the certified discovery head certifies a constraint, the novelty gate admits it, and the planted map commutes with it (map_misfit <= 1e-9) \u2014 clears 0.95",
+        "direction": "greater",
+        "estimand": "mean over eligible seeds of acquisition(seed) from the out-of-library condition; acquisition(seed) is 1.0 iff universa.loop.acquisition_correct(outcome, instance) on the out-of-library row \u2014 the alarm fired, the discovery head certified, the novelty gate admitted, and map_misfit <= 1e-9 \u2014 else 0.0",
+        "estimate": null,
+        "id": "h1-loop-acquisition-rate",
+        "lower_bound": null,
+        "n": null,
+        "role": "primary",
+        "standard_deviation": null,
+        "standard_error": null,
+        "statistic": "acquisition",
+        "supported": null,
+        "threshold": 0.95
+      },
+      {
+        "condition": "null-control",
+        "critical_value": null,
+        "description": "the per-seed null-control refusal rate \u2014 structure-free i.i.d. Gaussian observations through the same discovery path are refused, never certified and admitted into the library \u2014 clears 0.95, so the false-admission rate stays below 0.05",
+        "direction": "greater",
+        "estimand": "mean over eligible seeds of refusal(seed) from the null-control condition; refusal(seed) is 1.0 iff the null-control row admitted nothing (NOT admitted: no constraint was certified and admitted into the library; a route-mode outcome admits nothing), else 0.0",
+        "estimate": null,
+        "id": "h2-loop-false-admission-control",
+        "lower_bound": null,
+        "n": null,
+        "role": "secondary",
+        "standard_deviation": null,
+        "standard_error": null,
+        "statistic": "refusal",
+        "supported": null,
+        "threshold": 0.95
+      },
+      {
+        "condition": "in-library",
+        "critical_value": null,
+        "description": "the per-seed in-library routing rate \u2014 the alarm stays quiet and the loop commits the instance to the true target at library index 0 \u2014 clears 0.95",
+        "direction": "greater",
+        "estimand": "mean over eligible seeds of routing(seed) from the in-library condition; routing(seed) is 1.0 iff universa.loop.routing_correct(outcome) on the in-library row \u2014 mode 'route' with routed_index 0, the true target's frozen library index \u2014 else 0.0",
+        "estimate": null,
+        "id": "h3-loop-in-library-routing",
+        "lower_bound": null,
+        "n": null,
+        "role": "secondary",
+        "standard_deviation": null,
+        "standard_error": null,
+        "statistic": "routing",
+        "supported": null,
+        "threshold": 0.95
+      },
+      {
+        "condition": "in-library",
+        "critical_value": null,
+        "description": "the per-seed in-library alarm-silence rate \u2014 the misfit alarm does not fire when the library explains the instance \u2014 clears 0.95, so the false-alarm rate stays below 0.05",
+        "direction": "greater",
+        "estimand": "mean over eligible seeds of alarm_silence(seed) from the in-library condition; alarm_silence(seed) is 1.0 iff the in-library row's misfit alarm did not fire (best_score <= 1e-9), else 0.0",
+        "estimate": null,
+        "id": "h4-loop-alarm-precision",
+        "lower_bound": null,
+        "n": null,
+        "role": "secondary",
+        "standard_deviation": null,
+        "standard_error": null,
+        "statistic": "alarm_silence",
+        "supported": null,
+        "threshold": 0.95
+      }
+    ],
+    "critical_values_n30_to_n36": null,
+    "family_size": 4,
+    "familywise_alpha": 0.05,
+    "method": "one-sided Student-t lower bounds with Bonferroni correction; the generator seed is the inference unit",
+    "per_claim_alpha": 0.0125,
+    "role": "no confirmatory decision: the run did not complete"
+  },
+  "design": {
+    "canonical_command": "env CUDA_VISIBLE_DEVICES=-1 PYTHONPATH=src python scripts/run_loop_sealed_1.py --output results/experiments/router-loop-sealed-1.json",
+    "conditions": {
+      "in-library": "one run_loop row per eligible seed over instance.candidates (the H3 routing and H4 alarm-silence statistics), retaining the full LoopOutcome scalar record plus the routing and alarm-silence indicators",
+      "null-control": "one run_loop row per eligible seed over instance.decoy_targets with the observations override null_observations(seed, ambient_dim, 16) \u2014 column j drawn from np.random.default_rng(subseed(seed, 'discovery-null', str(j))) \u2014 (the H2 refusal statistic), retaining the full LoopOutcome scalar record plus the refusal indicator",
+      "out-of-library": "one run_loop row per eligible seed over instance.decoy_targets (the H1 acquisition statistic), retaining the full LoopOutcome scalar record plus the acquisition indicator"
+    },
+    "declared_caveat": "demo-scale numbers are not evidence: the acquisition, routing, refusal, and alarm-silence rates are properties of this one synthetic generator family at the frozen exp4 sizes (8 vertices, 14 edges, 6 classes, 3 decoys, M = 16 observations) under the certified route-or-discover loop, not guarantees for other families, other library sizes, or real data; and the false-admission control is an i.i.d. Gaussian null matched to the target edge space, not a worst-case adversary",
+    "determinism": "the full per-seed pipeline \u2014 all three conditions \u2014 is executed twice and required bit-identical; any mismatch is a whole-run design_failure",
+    "eligibility_rule": "the instance builds AND the undegraded audit passes: universa.loop.make_loop_instance(seed) returns (a build exception is a whole-run design_failure, never an exclusion), the true candidate's undegraded misfit is exactly 0.0, and every decoy's undegraded misfit is strictly above 1e-9; an audit failure makes that one seed ineligible with a recorded reason (never a stop)",
+    "estimand": "per-seed statistics from the three conditions: acquisition (universa.loop.acquisition_correct) from the out-of-library condition; refusal (NOT admitted) from the null-control condition; routing (universa.loop.routing_correct) and alarm silence (the alarm did not fire) from the in-library condition; each claim is the mean of its per-seed statistic over the eligible seeds",
+    "eval_seeds": {
+      "first": 130001,
+      "last": 130036
+    },
+    "experiment_id": "universa-router-loop-sealed-1",
+    "familywise_alpha": 0.05,
+    "inference_unit": "the generator seed",
+    "minimum_eligible": 30,
+    "no_outcome_dependent_stopping": true,
+    "no_seed_deletion": true,
+    "observation_model": "the vector-observation regime of universa.discovery, consumed through universa.loop.run_loop: M = 16 transported vectors y_j = f1 a_j over certified random source cycles, synthesized deterministically from the seed by universa.discovery.synthesize_observations (the frozen 'discovery-observation' schedule); the null-control condition replaces them with 16 i.i.d. standard Gaussian columns from universa.loop.null_observations (the frozen 'discovery-null' schedule)",
+    "per_claim_alpha": 0.0125,
+    "procedure": {
+      "alarm_tol": 1e-09,
+      "in_library_call": "universa.loop.run_loop(LOOP, instance, instance.candidates, seed=seed)",
+      "loop": "universa.loop.LibraryLoop() \u2014 the frozen exp4 configuration: alarm_tol = 1e-9 (re-pinned universa.router.RESIDUAL_TOL), misfit_tol = CERT_TOL = 1e-10, novelty_tol = 1e-6, num_observations = 16",
+      "map_misfit_tol": 1e-09,
+      "misfit_tol": 1e-10,
+      "novelty_tol": 1e-06,
+      "null_control_call": "universa.loop.run_loop(LOOP, instance, instance.decoy_targets, seed=seed, observations=universa.loop.null_observations(seed, ambient_dim, 16))",
+      "num_observations": 16,
+      "out_of_library_call": "universa.loop.run_loop(LOOP, instance, instance.decoy_targets, seed=seed)"
+    },
+    "row_count_invariant": "3 x n: exactly one in-library row, one out-of-library row, and one null-control row per eligible seed (108 rows over the declared block when every declared seed is eligible), checked before any summary",
+    "task_family": "graph-quotient switch instances via universa.loop.make_loop_instance (universa.budgets.make_budget_instance at the frozen exp4 sizes: 8 vertices, 14 edges, 6 classes, 3 decoys); ONE budget instance per seed with two library views \u2014 the in-library view instance.candidates (true target at index 0) and the out-of-library view instance.decoy_targets (the truth withheld)",
+    "train_seed_block": {
+      "first": 0,
+      "last": 0
+    },
+    "training": "no training provenance exists because no training occurred: the route-or-discover loop has no learned component; the train block is the documented-empty sentinel {'first': 0, 'last': 0}"
+  },
+  "eligibility": {
+    "attempted": 36,
+    "build_failures": [],
+    "declared": 36,
+    "eligible": 36,
+    "eligible_seeds": [
+      130001,
+      130002,
+      130003,
+      130004,
+      130005,
+      130006,
+      130007,
+      130008,
+      130009,
+      130010,
+      130011,
+      130012,
+      130013,
+      130014,
+      130015,
+      130016,
+      130017,
+      130018,
+      130019,
+      130020,
+      130021,
+      130022,
+      130023,
+      130024,
+      130025,
+      130026,
+      130027,
+      130028,
+      130029,
+      130030,
+      130031,
+      130032,
+      130033,
+      130034,
+      130035,
+      130036
+    ],
+    "ineligible": []
+  },
+  "experiment_id": "universa-router-loop-sealed-1",
+  "failure": {
+    "message": "seed 130006: certified loop pass failed: ValueError: need 0 <= prefix_dim <= observed_dim",
+    "phase": "campaign",
+    "seed": 130006,
+    "type": "DesignFailureError"
+  },
+  "in_library_rows": [
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        4.242640687119285,
+        4.0,
+        3.4641016151377544
+      ],
+      "seed": 130001
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        5.830951894845301,
+        4.898979485566356,
+        5.291502622129181
+      ],
+      "seed": 130002
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        5.0990195135927845,
+        3.1622776601683795,
+        5.291502622129181
+      ],
+      "seed": 130003
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        5.0990195135927845,
+        4.69041575982343,
+        4.47213595499958
+      ],
+      "seed": 130004
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        3.4641016151377544,
+        5.291502622129181,
+        3.7416573867739413
+      ],
+      "seed": 130005
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": false,
+      "alarm_silent": true,
+      "best_score": 0.0,
+      "certificate_residual": null,
+      "condition": "in-library",
+      "discovery_reason": null,
+      "discovery_verdict": null,
+      "final_library_size": 4,
+      "initial_library_size": 4,
+      "map_misfit": null,
+      "mode": "route",
+      "num_observations": null,
+      "routed_index": 0,
+      "routing_correct": true,
+      "scores": [
+        0.0,
+        6.324555320336759,
+        6.0,
+        4.47213595499958
+      ],
+      "seed": 130006
+    }
+  ],
+  "null_control_rows": [
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        4.242640687119285,
+        4.0,
+        3.4641016151377544
+      ],
+      "seed": 130001
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 4.898979485566356,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        5.830951894845301,
+        4.898979485566356,
+        5.291502622129181
+      ],
+      "seed": 130002
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.1622776601683795,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        5.0990195135927845,
+        3.1622776601683795,
+        5.291502622129181
+      ],
+      "seed": 130003
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 4.47213595499958,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        5.0990195135927845,
+        4.69041575982343,
+        4.47213595499958
+      ],
+      "seed": 130004
+    },
+    {
+      "admission_distances": null,
+      "admission_min_distance": null,
+      "admission_reason": null,
+      "admitted": false,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": null,
+      "condition": "null-control",
+      "discovery_reason": "observations span the whole ambient space: the annihilator is trivial, there is no constraint to discover",
+      "discovery_verdict": "insufficient",
+      "final_library_size": 3,
+      "initial_library_size": 3,
+      "map_misfit": null,
+      "mode": "refused",
+      "num_observations": 16,
+      "refused": true,
+      "routed_index": null,
+      "scores": [
+        3.4641016151377544,
+        5.291502622129181,
+        3.7416573867739413
+      ],
+      "seed": 130005
+    }
+  ],
+  "out_of_library_rows": [
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.9540406479398456,
+        1.7685524526509748,
+        1.7162008464469845
+      ],
+      "admission_min_distance": 1.7162008464469845,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.716e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": 2.462751983718843e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 5 in ambient dimension 10 (certificate residual 2.463e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 6.184830358757242e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        4.242640687119285,
+        4.0,
+        3.4641016151377544
+      ],
+      "seed": 130001
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        2.1560960089940338,
+        1.7805371380569404,
+        1.9339079605813714
+      ],
+      "admission_min_distance": 1.7805371380569404,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.781e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 4.898979485566356,
+      "certificate_residual": 2.1855935082506953e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 4 in ambient dimension 9 (certificate residual 2.186e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 7.966927992872681e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        5.830951894845301,
+        4.898979485566356,
+        5.291502622129181
+      ],
+      "seed": 130002
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.7879377258381821,
+        1.4635222374206984,
+        1.47576043193298
+      ],
+      "admission_min_distance": 1.4635222374206984,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.464e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.1622776601683795,
+      "certificate_residual": 2.8350020321299072e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 4 in ambient dimension 9 (certificate residual 2.835e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 6.937662411469976e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        5.0990195135927845,
+        3.1622776601683795,
+        5.291502622129181
+      ],
+      "seed": 130003
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        2.2337687955717285,
+        2.241132690619065,
+        2.100831279158815
+      ],
+      "admission_min_distance": 2.100831279158815,
+      "admission_reason": "admitted: certified and novel (min projector distance 2.101e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 4.47213595499958,
+      "certificate_residual": 3.4612034746376897e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 6 in ambient dimension 12 (certificate residual 3.461e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 1.0584500225102862e-15,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        5.0990195135927845,
+        4.69041575982343,
+        4.47213595499958
+      ],
+      "seed": 130004
+    },
+    {
+      "acquisition_correct": true,
+      "admission_distances": [
+        1.9472253139442726,
+        2.060488785479727,
+        1.9336846439619355
+      ],
+      "admission_min_distance": 1.9336846439619355,
+      "admission_reason": "admitted: certified and novel (min projector distance 1.934e+00 > novelty_tol 1.000e-06)",
+      "admitted": true,
+      "alarm_fired": true,
+      "best_score": 3.4641016151377544,
+      "certificate_residual": 3.4313704179979502e-15,
+      "condition": "out-of-library",
+      "discovery_reason": "certified subspace of dimension 5 in ambient dimension 10 (certificate residual 3.431e-15)",
+      "discovery_verdict": "discovered",
+      "final_library_size": 4,
+      "initial_library_size": 3,
+      "map_misfit": 8.926223117007704e-16,
+      "mode": "discover",
+      "num_observations": 16,
+      "routed_index": 3,
+      "scores": [
+        3.4641016151377544,
+        5.291502622129181,
+        3.7416573867739413
+      ],
+      "seed": 130005
+    }
+  ],
+  "per_seed": [
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 130001
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 130002
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 130003
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 130004
+    },
+    {
+      "acquired": 1.0,
+      "alarm_silent": 1.0,
+      "control_refused": 1.0,
+      "routed_correctly": 1.0,
+      "seed": 130005
+    }
+  ],
+  "provenance": {
+    "clean_worktree": true,
+    "code_manifest": {
+      "files": {
+        "src/universa/__init__.py": "920ba879666a28195183243f7b1f84ea0af2707554606c824ac05109a7dd6b13",
+        "src/universa/budgets.py": "34ccdb754f3fdc74e5501ae748e8a7898993241e544f14cda29c4152fe8eed49",
+        "src/universa/category_instances.py": "b968298513773c66fa48157c896cfb6cbb924b9a722058dcd65c425334ddd053",
+        "src/universa/complexes2.py": "c99cf71a6954f2f97c247ff90aa8cbbe287e6c091056b284a8cb2c2155b5ecf1",
+        "src/universa/discovery.py": "eaa0442f949d6348582c83e8cf1ef5f2a1e445ddfbe84e8e1bd4009d2cd90a08",
+        "src/universa/generators.py": "e3994312a083a5eb2b7ac2292ce222b779e5450128d1850a0f39af689d9f6c69",
+        "src/universa/loop.py": "4d5cca521561d881de29eecb8f1dee1dfea1b13178dcc4add81d6f09d917c331",
+        "src/universa/multihop.py": "da77e4a950c61eeaeb1d33d4aa62598ee68e14903edc0e7138d7ad7f18d68261",
+        "src/universa/nerve.py": "cd644b17f07f4e4964c94078fa8d576de9b21daafe73246594a676d7f6f48ca1",
+        "src/universa/operators.py": "06d24348f9e3325ac05efb9cfe3d690b8e349fcdd53ddf537bc4c810ba9887e5",
+        "src/universa/partial.py": "7bf8d3614ee1f445fe8c739531caced307eec95733c56e8dc2d27aa6dc29e7d4",
+        "src/universa/partial2.py": "c74d557f2c53018c280bf0cc09be31be147162bfdc351a993d97d5fa75e46026",
+        "src/universa/partial_group.py": "430df243234c5b519f5ca7082d653f8c71e233cdb4795d378174dbcd06b4a06d",
+        "src/universa/partial_sheaf.py": "07e6634a874a25e2746ebb3a93658460695c590312c3afe4de25ad5d6e1442f3",
+        "src/universa/router.py": "6e3054d06fce75b298c10acfd390fc293ca1bcb77ac2541769988588647955ce",
+        "src/universa/router_v2.py": "5f36d2fb4b7ecca0089353308b1d1ff13528b7048d8b8bdc61d23f014475272d",
+        "src/universa/sheaves.py": "a35a78349d2d9fdefd44112a714468800d12ce67affac5cec960d7d2a171b300",
+        "src/universa/structures.py": "cd816128ffbefe8c8d6f683346ae463d95c7cc3a9bcd489cb4b0bee398e6da6b"
+      },
+      "glob": "src/universa/*.py",
+      "sha256": "84c8d05035993f3efb998d2f71fcea6143c953b155d432687314588df10e028c"
+    },
+    "environment": {
+      "numpy": "2.5.2",
+      "platform": {
+        "machine": "aarch64",
+        "node": "spark-ecfd",
+        "processor": "aarch64",
+        "release": "6.17.0-1026-nvidia",
+        "system": "Linux",
+        "version": "#26-Ubuntu SMP PREEMPT_DYNAMIC Thu Jun 25 00:57:17 UTC 2026"
+      },
+      "python": "3.12.3",
+      "torch": "2.13.0+cu130",
+      "torch_cuda_build": "13.0"
+    },
+    "execution": {
+      "argv": [
+        "scripts/run_loop_sealed_1.py",
+        "--output",
+        "results/experiments/router-loop-sealed-1.json"
+      ],
+      "array_dtype": "float64",
+      "compute": "numpy float64 on CPU; no torch tensors anywhere in this runner",
+      "cuda_available": false,
+      "cuda_visible_devices": "",
+      "cuda_visible_devices_operator": "-1",
+      "mkl_num_threads": null,
+      "omp_num_threads": null,
+      "torch_importable": true,
+      "torch_num_interop_threads": 20,
+      "torch_num_threads": 1
+    },
+    "execution_revision": "db1737c7940b9ea26a8c638e9a8e91d2dd46c5fe",
+    "git_revision": "db1737c7940b9ea26a8c638e9a8e91d2dd46c5fe",
+    "git_status_porcelain": "",
+    "protocol": {
+      "path": "docs/19-sealed-router-loop-protocol.md",
+      "sha256": "e4965933a1b372a266c0768d52ab491b56232db01ad00aee6e11949e99dbf157"
+    },
+    "runner": {
+      "path": "scripts/run_loop_sealed_1.py",
+      "sha256": "64f3360a62996a42468d7cce88e8f9ea5fd576c7e701b7a0a8a5d5808567101d"
+    },
+    "seal": {
+      "committed_at_head": true,
+      "design_commit": "90ca3a668099306239a9a6876fec80adb3ac1375",
+      "path": "docs/20-router-loop-seal.json",
+      "schema": "universa-seal/7",
+      "sha256": "dae9102312b7b01072875ce044d34c2b029197aff23de8d9ae0349ce01ad273b"
+    }
+  },
+  "schema": "universa-router-loop-sealed-result/1",
+  "seed_records": [
+    {
+      "decoy_misfits_undegraded": [
+        4.242640687119285,
+        4.0,
+        3.4641016151377544
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130001,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.830951894845301,
+        4.898979485566356,
+        5.291502622129181
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130002,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.0990195135927845,
+        3.1622776601683795,
+        5.291502622129181
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130003,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.0990195135927845,
+        4.69041575982343,
+        4.47213595499958
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130004,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        3.4641016151377544,
+        5.291502622129181,
+        3.7416573867739413
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130005,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        6.324555320336759,
+        6.0,
+        4.47213595499958
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130006,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        6.164414002968976,
+        2.8284271247461903,
+        6.782329983125268
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130007,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.0,
+        4.898979485566356,
+        3.1622776601683795
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130008,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.291502622129181,
+        5.0990195135927845,
+        5.656854249492381
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130009,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.656854249492381,
+        5.0990195135927845,
+        4.0
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130010,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.0990195135927845,
+        5.477225575051661,
+        3.7416573867739413
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130011,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.47213595499958,
+        4.47213595499958,
+        3.4641016151377544
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130012,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.0990195135927845,
+        5.291502622129181,
+        4.898979485566356
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130013,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.242640687119285,
+        4.47213595499958,
+        3.1622776601683795
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130014,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.242640687119285,
+        3.1622776601683795,
+        4.0
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130015,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.477225575051661,
+        2.0,
+        3.4641016151377544
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130016,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        3.4641016151377544,
+        5.291502622129181,
+        3.1622776601683795
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130017,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.69041575982343,
+        4.69041575982343,
+        4.69041575982343
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130018,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        3.7416573867739413,
+        4.242640687119285,
+        2.449489742783178
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130019,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.242640687119285,
+        2.8284271247461903,
+        4.0
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130020,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.47213595499958,
+        6.0,
+        5.477225575051661
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130021,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.0,
+        5.291502622129181,
+        4.0
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130022,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.477225575051661,
+        4.0,
+        4.898979485566356
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130023,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        3.7416573867739413,
+        4.242640687119285,
+        4.242640687119285
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130024,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.656854249492381,
+        5.477225575051661,
+        4.0
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130025,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.291502622129181,
+        4.47213595499958,
+        4.69041575982343
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130026,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.0990195135927845,
+        4.242640687119285,
+        4.47213595499958
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130027,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.0,
+        4.242640687119285,
+        4.47213595499958
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130028,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.0,
+        4.898979485566356,
+        4.0
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130029,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        3.4641016151377544,
+        5.0990195135927845,
+        4.0
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130030,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        6.164414002968976,
+        5.656854249492381,
+        6.324555320336759
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130031,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.69041575982343,
+        4.47213595499958,
+        4.69041575982343
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130032,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.242640687119285,
+        4.242640687119285,
+        4.47213595499958
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130033,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.69041575982343,
+        5.0990195135927845,
+        3.7416573867739413
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130034,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        5.291502622129181,
+        6.164414002968976,
+        4.69041575982343
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130035,
+      "true_misfit_undegraded": 0.0
+    },
+    {
+      "decoy_misfits_undegraded": [
+        4.0,
+        2.8284271247461903,
+        4.0
+      ],
+      "eligible": true,
+      "reason": null,
+      "seed": 130036,
+      "true_misfit_undegraded": 0.0
+    }
+  ],
+  "status": "design_failure",
+  "stop_condition": "the campaign stopped before completion; all completed raw rows are preserved and every claim carries a null decision"
+}

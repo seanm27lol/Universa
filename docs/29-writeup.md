@@ -18,20 +18,23 @@ compiles to a chain complex, the atomic move is transport-along-a-chain-map
 followed by projection onto the target's consistent subspace, and the
 residual left over is both the routing score and the discovery signal.
 
-Nine experiments were run under a frozen sealing ceremony on untouched seed
-blocks. **33 of 36 pre-registered claims were supported.** The learned
+Ten experiments were run under a frozen sealing ceremony on untouched seed
+blocks. **36 of 40 pre-registered claims were supported.** The learned
 router beats the exact classical reading of the same degraded operator on
 all four structure families (16/16 claims); the certified discovery head is
 unanimous at 100% on coverage, certification, router-readiness, and
 false-discovery refusal; and the composed route-or-discover loop beats a
 deliberately architecture-free learned model by **74 pts end-to-end**.
 
-The three failed claims all concern one component — the learned alarm that
+The four failed claims all concern one component — the learned alarm that
 decides *whether the library fits at all* — and they are the most
-informative result in the series. Two sealed operating points now bound its
-Pareto frontier: (83% acquisition, −1 seed of in-library harm) and (100%
-acquisition, −14 seeds of harm). The alarm's threshold is a one-parameter
-dial, and a one-sided error bound is a choice of which error to pay.
+informative result in the series. Three sealed operating points now map its
+Pareto frontier, and the third does not merely trade along it: cost-aware
+calibration at equal unit costs **dominates** the original operating point,
+matching its in-library accuracy and its −1/36 harm while adding 14 points
+of acquisition. The alarm's threshold is a one-parameter dial, a one-sided
+error bound is a choice of which error to pay, and pricing both errors
+symmetrically is the right instrument when the costs are symmetric.
 
 ---
 
@@ -118,7 +121,7 @@ bounds at Bonferroni-corrected α = 0.0125 (four claims), critical value
 every df from 29 to 35. Where SE = 0 mechanically (unanimous outcomes), the
 lower bound equals the estimate, per protocol.
 
-**The ceremony bit five times, on record:**
+**The ceremony bit six times, on record:**
 
 | # | what happened | when it was caught |
 |---|---|---|
@@ -126,7 +129,8 @@ lower bound equals the estimate, per protocol.
 | 2 | Seal `statistic` keys misaligned in the discovery seal | Preflight, before any seed opened |
 | 3 | Discovery crashed at seed 130006 on its *refusal* path (a borderline singular value counted in the prefix rank but not the full rank) | Canonical run; artifact retained, block voided, behavior-preserving fix, one retry on a verified-absent replacement |
 | 4 | Loop-v2's first train block instantiated `150001..150010` in a test fixture | Pre-seal consistency audit, before commit A existed |
-| 5 | Three claims failed | Reported frozen; never reinterpreted, never retuned |
+| 5 | Loop-v4's first attempt hit the generator's discriminability guard at train seed 200058 | Canonical run; artifact retained, both blocks voided, protocol amended, one retry on verified-absent replacements |
+| 6 | Four claims failed | Reported frozen; never reinterpreted, never retuned |
 
 Item 5 is the load-bearing one. A protocol that only ever confirms is not a
 protocol.
@@ -302,18 +306,56 @@ on variance — arch-v2 still leads the generic model in-library (+8.3 pts) but
 the 14 false alarms push the lower bound to −15.2. h4 failed decisively:
 −38.9 pts against a −5.0 margin.
 
+### Experiment 10 — cost-aware calibration (3/4)
+
+Loop-v3's bound was the wrong instrument for a symmetric cost structure. A
+false quiet costs one out-of-library seed; a false alarm costs one
+in-library seed; the two conditions carry equal weight end-to-end. So
+experiment 10 prices both at 1.0 and drops the constraint — declaring up
+front that at equal costs this rule **is** unconstrained balanced-accuracy
+maximization, since `FQ + FA = 2 − 2·balanced_accuracy` exactly.
+
+The calibration moved the threshold off the constraint (0.8897 → 0.5307)
+and cut the train false-alarm rate from 41% to 4.25%.
+
+| condition | arch-full-v4 | generic | routing-only | discovery-only |
+|---|---:|---:|---:|---:|
+| in-library | 97.2% | 58.3% | 97.2% | 100% |
+| out-of-library | 97.2% | 0% | 0% | 100% |
+| null-control | 100% | 88.9% | 100% | 100% |
+| **end-to-end** | **98.2%** | 49.1% | 65.7% | 100% |
+
+h1 (+49.1 pts), h2 (+32.4 pts), and **h3 (+38.9 pts) — the claim loop-v3
+failed** — all supported. h4 fails again, at exactly −1/36 (seed 230011).
+
 ### The frontier
 
-| operating point | out-of-library acquisition | in-library harm vs always-discovering |
-|---|---|---|
-| loop-v2 (simplest alarm) | 83.3% | −1/36 |
-| loop-v3 (calibrated alarm) | **100%** | −14/36 |
+| operating point | threshold | out-of-library acquisition | in-library | harm |
+|---|---:|---:|---:|---:|
+| loop-v2 (simplest alarm) | 0.5 | 83.3% | 97.2% | −1/36 |
+| loop-v3 (bounded false-quiet) | 0.8897 | **100%** | 61.1% | −14/36 |
+| loop-v4 (cost-aware, 1:1) | 0.5307 | 97.2% | 97.2% | −1/36 |
 
-**The tradeoff moved along the alarm's Pareto frontier; it did not close.**
-The threshold is a one-parameter dial and the alarm's intrinsic separation
-(78.5% balanced accuracy) is not sharp enough to make both sides cheap at
-once. Bounding one error one-sidedly is a *choice of which error to pay* —
-and the series now has that choice measured to the seed at two points.
+**Loop-v4 dominates loop-v2** — same in-library accuracy, same −1/36 harm,
++13.9 pts of acquisition — so the frontier was not merely traversed, it was
+pushed. Against loop-v3 it buys 36.1 pts of in-library accuracy for 2.8
+pts of acquisition.
+
+**The honest confound.** The v3→v4 comparison changes the rule *and* the
+train block, and it cannot do otherwise: a consumed block is never reused.
+Loop-v3's alarm reached 78.5% balanced accuracy on its block; loop-v4's
+reached 94.0% on its own. Part of the gain is a better-separated alarm, not
+only a better rule. What the rule change alone demonstrably did is move the
+threshold off the constraint and cut the train false-alarm rate by an order
+of magnitude.
+
+**The alarm is still the ceiling.** h4 has now failed three times — −1/36,
+−14/36, −1/36 — with the identical mechanism every time: the alarm fires
+in-library, certified discovery correctly refuses as non-novel, the route
+credit is forfeited. A bounded-harm claim against always-discovering may be
+unwinnable while the alarm is learned and always-discovering is perfect
+in-library by construction. That is a statement about the claim's design,
+not a reinterpretation of its outcome.
 
 The architecture's advantage over the no-architecture model survives both
 designs (h1 supported in both), as does the discovery head's contribution
@@ -344,24 +386,34 @@ Stated plainly, because the ceremony's value depends on it:
 
 ## 8. What is next
 
-The documented next design is **cost-aware calibration** (loop-v4): choose
-the alarm threshold on the train block to minimize total measured error
-(false-quiet rate + false-alarm rate), tie-broken toward larger balanced
-accuracy — pricing both error modes symmetrically instead of bounding one.
-Everything else stays frozen from loop-v3. The expectation is a mid-frontier
-operating point; either h4 outcome will be reported frozen.
+Loop-v4 closed the cost-aware question (§6). What it leaves open is
+sharper than what it answered:
 
-Seed blocks `200001..200400` (train) and `210001..210036` (eval) were scanned
-and verified absent on 2026-09-01, and are reserved in `docs/28-handoff.md`.
+- **h4 may be unwinnable as posed.** It has failed three times with one
+  mechanism. Always-discovering is perfect in-library by construction, so
+  any learned alarm with a nonzero false-alarm rate loses to it there. A
+  bounded-harm claim that prices the *invocation savings* against the
+  accuracy cost — loop-v4 spent 71 discovery calls to discovery-only's 108
+  — would test the actual engineering tradeoff rather than a comparison
+  the architecture cannot win.
+- **The train-block confound is now the limiting factor** on every
+  alarm-arc comparison. Each experiment necessarily draws a fresh block,
+  and the alarm's intrinsic separation moved from 78.5% to 94.0% balanced
+  accuracy between two of them. Isolating a rule change from a block
+  change would need several blocks per design.
+- **The other three structure families have no loop experiment at all.**
+  The route-or-discover loop is sealed only on graph quotients; the sweep
+  that made the router result convincing has not been run for the loop.
 
-This must be a new sealed experiment. It is never a retune of loop-v3.
+Any of these is a new sealed experiment on new verified-absent seeds, never
+a retune of a completed one.
 
 ---
 
 ## 9. Reproduction
 
 ```bash
-PYTHONPATH=src python -m pytest -q        # 999 tests
+PYTHONPATH=src python -m pytest -q        # 1100 tests
 python examples/quickstart.py             # misfit-discrimination demo
 ```
 
@@ -382,11 +434,13 @@ stays torch-free.
 | 7 | router-loop | `docs/19` | `docs/20` | `docs/21` | 4/4 |
 | 8 | router-loop-v2 | `docs/22` | `docs/23` | `docs/24` | 3/4 |
 | 9 | router-loop-v3 | `docs/25` | `docs/26` | `docs/27` | 2/4 |
+| 10 | router-loop-v4 | `docs/30` | `docs/31` | `docs/32` | 3/4 |
 
-Immutable artifacts: `results/experiments/*.json`. Retained failure:
-`results/experiments/failures/router-loop-sealed-1.design_failure.json`.
+Immutable artifacts: `results/experiments/*.json`. Retained failures:
+`results/experiments/failures/router-loop-sealed-1.design_failure.json` and
+`results/experiments/failures/router-loop-v4-sealed-1.design_failure.json`.
 Design record: `docs/00-design.md`. Continuation state: `docs/28-handoff.md`.
 
-**Total: 33 of 36 pre-registered claims supported across nine sealed
-experiments.** The three that failed all name the same component, and each
+**Total: 36 of 40 pre-registered claims supported across ten sealed
+experiments.** The four that failed all name the same component, and each
 one names its seeds.

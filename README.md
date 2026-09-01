@@ -135,7 +135,7 @@ Discovery head (numpy only):
   full coverage recovered and the planted map's misfit against the
   discovered constraint below 1e-9 on all documented seeds.
 
-999 tests. **Sealed results so far (all under the full ceremony: frozen
+1100 tests. **Sealed results so far (all under the full ceremony: frozen
 protocol, two-commit seal pushed before any sealed seed was opened,
 canonical run, independent recomputation from raw rows, immutable result
 artifact):**
@@ -205,10 +205,27 @@ artifact):**
    bound is a choice of which error to pay. All 14 harm seeds named,
    each with its decision chain in the artifact.
 
+10. **router-loop-v4** (`docs/32`): the cost-aware calibration — the
+    alarm's threshold chosen to minimize false-quiet plus false-alarm
+    rate at equal unit costs, replacing v3's binding one-sided bound.
+    The protocol declares up front that at equal costs this rule *is*
+    unconstrained balanced-accuracy maximization
+    (`FQ + FA = 2 − 2·balanced_accuracy`, exactly). 3/4 claims: +49
+    pts e2e vs generic, +32 vs routing-only, and **h3 supported (+39
+    pts) where loop-v3's failed**. h4 NOT supported, reported frozen —
+    exactly one seed (230011), the same mechanism as loop-v2's. The
+    resulting point **dominates loop-v2**: identical in-library
+    accuracy and identical −1/36 harm with +14 pts of acquisition, at
+    98.15% end-to-end. First attempt failed at train seed 200058 on
+    the generator's discriminability guard; errata 1 made a train-side
+    non-instance a recorded exclusion, both blocks were voided, and
+    the experiment was re-sealed and completed on verified-absent
+    replacements.
+
 Scope caveats in each results record.
 
 **Synthesis: `docs/29-writeup.md`** — the whole series in one document
-(33/36 pre-registered claims supported, the four-family sweep, the
+(36/40 pre-registered claims supported, the four-family sweep, the
 certified discovery head, and the learned alarm's measured Pareto
 frontier), quoting the sealed artifacts only.
 

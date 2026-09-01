@@ -135,7 +135,7 @@ Discovery head (numpy only):
   full coverage recovered and the planted map's misfit against the
   discovered constraint below 1e-9 on all documented seeds.
 
-505 tests. **Sealed results so far (all under the full ceremony: frozen
+999 tests. **Sealed results so far (all under the full ceremony: frozen
 protocol, two-commit seal pushed before any sealed seed was opened,
 canonical run, independent recomputation from raw rows, immutable result
 artifact):**
@@ -206,6 +206,11 @@ artifact):**
    each with its decision chain in the artifact.
 
 Scope caveats in each results record.
+
+**Synthesis: `docs/29-writeup.md`** — the whole series in one document
+(33/36 pre-registered claims supported, the four-family sweep, the
+certified discovery head, and the learned alarm's measured Pareto
+frontier), quoting the sealed artifacts only.
 
 ## Layout
 

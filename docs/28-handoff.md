@@ -52,11 +52,19 @@ symmetrically instead of bounding one. Everything else (features,
 models, conditions, claims) unchanged from loop-v3. Expectation: a
 mid-frontier operating point; either h4 outcome is reported frozen.
 
-- New train block needed (loop-v3 consumed `180001..180400`): e.g.
-  `200001..200400`. New eval block: e.g. `210001..210036`. **Verify
-  absence with the word-boundary scan below BEFORE writing the protocol.**
-- Alternatively: stop the arc here and write the paper/blog — the
-  material is complete (nine experiments, win/boundary/redesign/frontier).
+- Blocks **RESERVED** (loop-v3 consumed `180001..180400`): train
+  `200001..200400`, eval `210001..210036`. Word-boundary absence scan run
+  2026-09-01 over the whole repo (106 text files, excluding `.git`,
+  `.venv`, `.pytest_cache`): the only hits are this file's own mentions of
+  the four block endpoints — inert text constants, the tolerated category.
+  No runner, test, fixture, or artifact instantiates either block. Both
+  are clear. Re-run the scan before the protocol anyway (cheap, and the
+  guarantee is only as fresh as its last run); expect the same inert hits
+  from this section plus `docs/29-writeup.md` §8.
+- The write-up path is **done**: `docs/29-writeup.md` synthesizes all nine
+  experiments (33/36 claims, the four-family sweep, the discovery head,
+  and the alarm's Pareto frontier) from the sealed record. It quotes the
+  artifacts only — no new numbers.
 
 ## 3. Ceremony playbook (any sealed experiment)
 
@@ -92,7 +100,9 @@ mid-frontier operating point; either h4 outcome is reported frozen.
   or previews: 30101..30136, 60101..60136, 80101..80136, 90101..90136,
   20101..20136, 40101..40136, 70101..70136 (discarded), 130001..130036
   (void), 140001..140036, 150001..150200 (void), 160001..160036,
-  170001..170200, 180001..180400, 190001..190036. Sanctioned fixtures:
+  170001..170200, 180001..180400, 190001..190036,
+  **200001..200400 (reserved, loop-v4 train)**,
+  **210001..210036 (reserved, loop-v4 eval)**. Sanctioned fixtures:
   70001..70005, 70501..70540, 70601..70620, hand-built fixtures.
 - Tests monkeypatch `SEALED_EVAL_SEEDS`/`TRAIN_SEEDS` to fixtures.
 - Sealed runners/tests from completed experiments are read-only history.

@@ -157,6 +157,17 @@ artifact):**
    misfit, and false-discovery refusal ALL unanimous (1.0000) on 36/36
    seeds against pre-registered floors (0.90/0.95/0.95/0.95), 4/4
    claims; no learned model.
+5. **router-sheaf** (`docs/15`): cellular-sheaf family, naturality
+   residual under masked+corrupted restrictions — beats the oracle
+   (+0.88/+0.97/+0.99 at 0.6/0.7/0.8) and the heuristic (+0.61), 4/4
+   claims, n=36; learned router at 1.0000 accuracy everywhere.
+6. **router-group** (`docs/18`): group-nerve family, corruption of the
+   multiplication table — beats the oracle (+0.15/+0.70/+0.95) and the
+   heuristic (+0.05), 4/4 claims, n=36; learned router again perfect;
+   the true profile matches the protocol's declared closed form
+   bit-exactly at all 3456 grid entries. The sweep is complete: all
+   four structure families carry the degraded-regime result, 16/16
+   claims supported.
 
 Scope caveats in each results record.
 

@@ -1018,6 +1018,150 @@ def calibrate_threshold(
     }
 
 
+def calibrate_threshold_cost_aware(
+    model: LearnedAlarmV2,
+    rows_fit,
+    rows_nofit,
+    *,
+    false_quiet_cost: float = 1.0,
+    false_alarm_cost: float = 1.0,
+) -> dict:
+    """The cost-aware train-block calibration rule for the v2 alarm.
+
+    The counterpart to :func:`calibrate_threshold`, which maximizes
+    balanced accuracy SUBJECT TO a one-sided bound on the false-quiet
+    rate. The sealed loop-v3 result
+    (``docs/27-router-loop-v3-sealed-1-results.md``) measured what that
+    bound costs: it eliminated false quiets entirely (out-of-library
+    acquisition 0.833 -> 1.000) and paid a 0.41 train false-alarm rate
+    that materialized as 14/36 in-library harm. This rule prices BOTH
+    error modes instead of bounding one.
+
+    Scores and the candidate sweep are identical to
+    :func:`calibrate_threshold` — the sorted unique sigmoid scores of
+    both row sets plus 0.0 and 1.0, deduplicated, with the decision
+    ``sigmoid >= t`` => fit (exactly :func:`alarm_decision_v2`) and the
+    same three metrics per candidate.
+
+    Selection: the threshold MINIMIZING the weighted total error
+
+    ``total_cost = false_quiet_cost * FQ + false_alarm_cost * FA``
+
+    with ties broken toward the LARGER balanced accuracy and then the
+    LARGER threshold. There is no feasibility bound, so there is no
+    fallback branch and no ``bound_satisfied`` key: the rule always
+    selects the sweep's cost minimizer.
+
+    **The equal-cost identity (recorded because it makes the frozen rule
+    analyzable, not because it is a defect).** ``FQ = 1 - TNR`` and
+    ``FA = 1 - TPR`` while ``balanced_accuracy = (TPR + TNR) / 2``, so at
+    equal unit costs
+
+    ``FQ + FA = 2 - 2 * balanced_accuracy``
+
+    exactly. With ``false_quiet_cost == false_alarm_cost`` this rule is
+    therefore identical to UNCONSTRAINED balanced-accuracy maximization,
+    the balanced-accuracy tiebreak can never fire (equal cost implies
+    equal balanced accuracy), and the larger-threshold tiebreak does all
+    the tie-breaking work. That is the intended frozen instantiation:
+    the two error modes carry equal measured task cost in this
+    experiment — a false quiet costs one out-of-library seed, a false
+    alarm costs one in-library seed, and the two conditions enter the
+    end-to-end mean with equal weight. The costs are parameters rather
+    than constants so that an asymmetric pricing is expressible without
+    a second rule; under unequal costs the identity breaks and the
+    balanced-accuracy tiebreak becomes live.
+
+    Returns the frozen record ``{"threshold", "balanced_accuracy",
+    "false_quiet_rate", "false_alarm_rate", "total_cost",
+    "false_quiet_cost", "false_alarm_cost", "num_candidates"}``.
+    Deterministic (no RNG anywhere). Fail-closed on empty or non-finite
+    row sets, a width mismatch, non-finite scores, or costs that are
+    non-finite, negative, or both zero.
+    """
+    if not isinstance(model, LearnedAlarmV2):
+        raise ValueError("model must be a LearnedAlarmV2")
+    rows_fit = np.asarray(rows_fit, dtype=np.float64)
+    rows_nofit = np.asarray(rows_nofit, dtype=np.float64)
+    for name, rows in (("rows_fit", rows_fit), ("rows_nofit", rows_nofit)):
+        if rows.ndim != 2 or rows.shape[0] < 1:
+            raise ValueError(f"{name} must be a nonempty 2-D array")
+        if not np.all(np.isfinite(rows)):
+            raise ValueError(f"{name} must be finite")
+        if rows.shape[1] != model.input_dim:
+            raise ValueError(
+                f"{name} width {rows.shape[1]} does not match the model's "
+                f"input dim {model.input_dim} (K gates + 8)"
+            )
+    costs = {
+        "false_quiet_cost": float(false_quiet_cost),
+        "false_alarm_cost": float(false_alarm_cost),
+    }
+    for name, cost in costs.items():
+        if not np.isfinite(cost) or cost < 0.0:
+            raise ValueError(f"{name} must be finite and nonnegative")
+    if costs["false_quiet_cost"] + costs["false_alarm_cost"] <= 0.0:
+        raise ValueError("the two costs must not both be zero")
+    model.eval()
+    with torch.no_grad():
+        scores_fit = (
+            torch.sigmoid(model.logit(_as_float32(rows_fit)))
+            .cpu()
+            .numpy()
+            .astype(np.float64)
+        )
+        scores_nofit = (
+            torch.sigmoid(model.logit(_as_float32(rows_nofit)))
+            .cpu()
+            .numpy()
+            .astype(np.float64)
+        )
+    if not (
+        np.all(np.isfinite(scores_fit)) and np.all(np.isfinite(scores_nofit))
+    ):
+        raise FloatingPointError("the alarm's scores must be finite")
+    candidates = np.unique(
+        np.concatenate([scores_fit, scores_nofit, [0.0, 1.0]])
+    )
+    records = []
+    for threshold in candidates:
+        threshold = float(threshold)
+        tpr = float(np.mean(scores_fit >= threshold))
+        tnr = float(np.mean(scores_nofit < threshold))
+        false_quiet_rate = float(np.mean(scores_nofit >= threshold))
+        false_alarm_rate = float(np.mean(scores_fit < threshold))
+        records.append(
+            {
+                "threshold": threshold,
+                "balanced_accuracy": 0.5 * (tpr + tnr),
+                "false_quiet_rate": false_quiet_rate,
+                "false_alarm_rate": false_alarm_rate,
+                "total_cost": (
+                    costs["false_quiet_cost"] * false_quiet_rate
+                    + costs["false_alarm_cost"] * false_alarm_rate
+                ),
+            }
+        )
+    chosen = min(
+        records,
+        key=lambda record: (
+            record["total_cost"],
+            -record["balanced_accuracy"],
+            -record["threshold"],
+        ),
+    )
+    return {
+        "threshold": chosen["threshold"],
+        "balanced_accuracy": chosen["balanced_accuracy"],
+        "false_quiet_rate": chosen["false_quiet_rate"],
+        "false_alarm_rate": chosen["false_alarm_rate"],
+        "total_cost": chosen["total_cost"],
+        "false_quiet_cost": costs["false_quiet_cost"],
+        "false_alarm_cost": costs["false_alarm_cost"],
+        "num_candidates": int(candidates.size),
+    }
+
+
 def alarm_decision_v2(
     model: LearnedAlarmV2, features_v2, threshold: float
 ) -> bool:

@@ -42,6 +42,7 @@ from universa.loop_v2 import (
     arm_generic,
     arm_routing_only,
     calibrate_threshold,
+    calibrate_threshold_cost_aware,
     generic_candidate_features,
     generic_decision,
     generic_row_features,
@@ -1471,6 +1472,211 @@ def test_calibrate_threshold_fail_closed_and_deterministic():
         broken.network[0].weight[0, 0] = np.inf
     with pytest.raises(FloatingPointError):
         calibrate_threshold(broken, rows_fit, rows_nofit)
+
+
+def sweep_records(model, rows_fit, rows_nofit) -> list[dict]:
+    """Independent reimplementation of the calibration sweep, so the
+    cost-aware tests below check the rule against a recomputation rather
+    than against hand-transcribed sigmoid values."""
+    scores_fit = stub_scores(model, rows_fit)
+    scores_nofit = stub_scores(model, rows_nofit)
+    candidates = np.unique(np.concatenate([scores_fit, scores_nofit, [0.0, 1.0]]))
+    records = []
+    for threshold in candidates:
+        threshold = float(threshold)
+        tpr = float(np.mean(scores_fit >= threshold))
+        tnr = float(np.mean(scores_nofit < threshold))
+        records.append(
+            {
+                "threshold": threshold,
+                "balanced_accuracy": 0.5 * (tpr + tnr),
+                "false_quiet_rate": float(np.mean(scores_nofit >= threshold)),
+                "false_alarm_rate": float(np.mean(scores_fit < threshold)),
+            }
+        )
+    return records
+
+
+def test_calibrate_threshold_cost_aware_separable():
+    model = passthrough_alarm_v2()
+    rows_fit = one_feature_rows([3.0, 100.0])
+    rows_nofit = one_feature_rows([0.0, 2.0])
+    result = calibrate_threshold_cost_aware(model, rows_fit, rows_nofit)
+    # The record shape differs from the bounded rule's by construction: a
+    # total_cost and its two weights, and NO bound_satisfied key (there is
+    # no feasibility bound to satisfy).
+    assert set(result) == {
+        "threshold",
+        "balanced_accuracy",
+        "false_quiet_rate",
+        "false_alarm_rate",
+        "total_cost",
+        "false_quiet_cost",
+        "false_alarm_cost",
+        "num_candidates",
+    }
+    scores_fit = stub_scores(model, rows_fit)
+    assert result["total_cost"] == 0.0
+    assert result["balanced_accuracy"] == 1.0
+    assert result["false_quiet_rate"] == 0.0
+    assert result["false_alarm_rate"] == 0.0
+    assert result["threshold"] == float(scores_fit.min())
+    assert result["false_quiet_cost"] == 1.0
+    assert result["false_alarm_cost"] == 1.0
+    # Where a perfect split exists both rules find it.
+    assert result["threshold"] == calibrate_threshold(
+        model, rows_fit, rows_nofit
+    )["threshold"]
+
+
+def test_calibrate_threshold_cost_aware_equal_cost_identity():
+    model = passthrough_alarm_v2()
+    # Four rows per class: every rate is a multiple of 0.25 and therefore
+    # exact in binary floating point, so the identity below is bit-exact
+    # rather than approximate.
+    rows_fit = one_feature_rows([0.0, 1.0, 2.0, 3.0])
+    rows_nofit = one_feature_rows([-1.0, 0.0, 0.5, 100.0])
+    result = calibrate_threshold_cost_aware(model, rows_fit, rows_nofit)
+    # FQ = 1 - TNR and FA = 1 - TPR, so at equal unit costs the objective
+    # is exactly 2 - 2 * balanced_accuracy.
+    assert (
+        result["false_quiet_rate"] + result["false_alarm_rate"]
+        == result["total_cost"]
+    )
+    assert result["total_cost"] == 2.0 - 2.0 * result["balanced_accuracy"]
+    # Equal costs therefore make the rule identical to UNCONSTRAINED
+    # balanced-accuracy maximization, tie-broken toward the larger
+    # threshold.
+    records = sweep_records(model, rows_fit, rows_nofit)
+    best = max(
+        records,
+        key=lambda record: (record["balanced_accuracy"], record["threshold"]),
+    )
+    assert result["threshold"] == best["threshold"]
+    assert result["balanced_accuracy"] == best["balanced_accuracy"]
+    assert result["num_candidates"] == len(records)
+
+
+def test_calibrate_threshold_cost_aware_differs_from_bounded_rule():
+    model = passthrough_alarm_v2()
+    # The loop-v3 shape in miniature: the no-fit rows sit mostly BELOW the
+    # fit rows, so driving the false-quiet rate to zero costs a large
+    # false-alarm rate. Three fit rows share the no-fit cluster's score.
+    rows_fit = one_feature_rows([0.0, 0.0, 0.0, 3.0])
+    rows_nofit = one_feature_rows([-1.0, -1.0, -1.0, 2.0])
+    records = sweep_records(model, rows_fit, rows_nofit)
+    cost_aware = calibrate_threshold_cost_aware(model, rows_fit, rows_nofit)
+    bounded = calibrate_threshold(model, rows_fit, rows_nofit)
+    # The bounded rule must reach false_quiet_rate 0 to satisfy 0.02, which
+    # forces a threshold above every no-fit score.
+    assert bounded["bound_satisfied"] is True
+    assert bounded["false_quiet_rate"] == 0.0
+    # The cost minimizer instead accepts some false quiets to buy a much
+    # smaller false-alarm rate: a strictly different operating point.
+    assert cost_aware["threshold"] != bounded["threshold"]
+    assert cost_aware["false_alarm_rate"] < bounded["false_alarm_rate"]
+    assert cost_aware["false_quiet_rate"] > bounded["false_quiet_rate"]
+    assert cost_aware["balanced_accuracy"] > bounded["balanced_accuracy"]
+    # and it is the sweep's true minimizer.
+    best = min(
+        records,
+        key=lambda record: (
+            record["false_quiet_rate"] + record["false_alarm_rate"],
+            -record["balanced_accuracy"],
+            -record["threshold"],
+        ),
+    )
+    assert cost_aware["threshold"] == best["threshold"]
+    assert cost_aware["total_cost"] == (
+        best["false_quiet_rate"] + best["false_alarm_rate"]
+    )
+    bounded_cost = bounded["false_quiet_rate"] + bounded["false_alarm_rate"]
+    assert cost_aware["total_cost"] < bounded_cost
+
+
+def test_calibrate_threshold_cost_aware_asymmetric_costs():
+    model = passthrough_alarm_v2()
+    rows_fit = one_feature_rows([0.0, 0.0, 0.0, 3.0])
+    rows_nofit = one_feature_rows([-1.0, -1.0, -1.0, 2.0])
+    equal = calibrate_threshold_cost_aware(model, rows_fit, rows_nofit)
+    # Pricing a false quiet ten times a false alarm recovers the bounded
+    # rule's operating point: the asymmetric weights are what "bound the
+    # false-quiet rate" was implicitly expressing.
+    quiet_heavy = calibrate_threshold_cost_aware(
+        model, rows_fit, rows_nofit, false_quiet_cost=10.0
+    )
+    assert quiet_heavy["threshold"] != equal["threshold"]
+    assert quiet_heavy["false_quiet_rate"] == 0.0
+    assert quiet_heavy["threshold"] == calibrate_threshold(
+        model, rows_fit, rows_nofit
+    )["threshold"]
+    assert quiet_heavy["false_quiet_cost"] == 10.0
+    assert quiet_heavy["false_alarm_cost"] == 1.0
+    # Under unequal costs the RULE is no longer balanced-accuracy
+    # maximization: it deliberately gives balanced accuracy up to buy the
+    # error mode it prices higher. (The equal-cost record is the
+    # unconstrained balanced-accuracy maximizer, by the identity above.)
+    assert quiet_heavy["balanced_accuracy"] < equal["balanced_accuracy"]
+    # The mirror image: pricing a false alarm heavily pushes the threshold
+    # down instead.
+    alarm_heavy = calibrate_threshold_cost_aware(
+        model, rows_fit, rows_nofit, false_alarm_cost=10.0
+    )
+    assert alarm_heavy["false_alarm_rate"] == 0.0
+    assert alarm_heavy["threshold"] < quiet_heavy["threshold"]
+
+
+def test_calibrate_threshold_cost_aware_fail_closed_and_deterministic():
+    model = passthrough_alarm_v2()
+    rows_fit = one_feature_rows([3.0, 100.0])
+    rows_nofit = one_feature_rows([0.0, 2.0])
+    assert calibrate_threshold_cost_aware(
+        model, rows_fit, rows_nofit
+    ) == calibrate_threshold_cost_aware(
+        model, rows_fit, rows_nofit
+    )  # no RNG: identical records
+    with pytest.raises(ValueError):
+        calibrate_threshold_cost_aware(model, rows_fit[:0], rows_nofit)
+    with pytest.raises(ValueError):
+        calibrate_threshold_cost_aware(model, rows_fit, rows_nofit[:0])
+    with pytest.raises(ValueError):
+        calibrate_threshold_cost_aware(
+            model, np.full((2, K + 8), np.nan), rows_nofit
+        )
+    with pytest.raises(ValueError):
+        calibrate_threshold_cost_aware(model, rows_fit[:, :2], rows_nofit)
+    with pytest.raises(ValueError):
+        calibrate_threshold_cost_aware(LearnedAlarm(K), rows_fit, rows_nofit)
+    # Cost validation: negative, non-finite, and both-zero are all refused.
+    with pytest.raises(ValueError):
+        calibrate_threshold_cost_aware(
+            model, rows_fit, rows_nofit, false_quiet_cost=-1.0
+        )
+    with pytest.raises(ValueError):
+        calibrate_threshold_cost_aware(
+            model, rows_fit, rows_nofit, false_alarm_cost=-1.0
+        )
+    with pytest.raises(ValueError):
+        calibrate_threshold_cost_aware(
+            model, rows_fit, rows_nofit, false_quiet_cost=np.nan
+        )
+    with pytest.raises(ValueError):
+        calibrate_threshold_cost_aware(
+            model, rows_fit, rows_nofit, false_alarm_cost=np.inf
+        )
+    with pytest.raises(ValueError):
+        calibrate_threshold_cost_aware(
+            model,
+            rows_fit,
+            rows_nofit,
+            false_quiet_cost=0.0,
+            false_alarm_cost=0.0,
+        )
+    broken = passthrough_alarm_v2()
+    with torch.no_grad():
+        broken.network[0].weight[0, 0] = np.inf
+    with pytest.raises(FloatingPointError):
+        calibrate_threshold_cost_aware(broken, rows_fit, rows_nofit)
 
 
 def test_alarm_decision_v2_boundary_semantics():

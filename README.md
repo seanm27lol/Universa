@@ -168,6 +168,17 @@ artifact):**
    bit-exactly at all 3456 grid entries. The sweep is complete: all
    four structure families carry the degraded-regime result, 16/16
    claims supported.
+7. **router-loop** (`docs/21`): the route-or-discover loop as one
+   system — alarm precision, in-library routing, end-to-end
+   acquisition on withheld truths, and false-admission refusal ALL
+   unanimous (1.0000) on 36/36 sealed seeds, 4/4 claims; no learned
+   model. The first attempt failed at seed 130006 (a rank-tolerance
+   crash in discovery's stabilization refusal path) and was retained
+   immutably; the fault was diagnosed without inspecting successful
+   outcomes, fixed behavior-preservingly, the block voided, and the
+   experiment re-sealed and completed on a verified-absent replacement
+   block — the failure-handling path of the ceremony exercised end to
+   end.
 
 Scope caveats in each results record.
 

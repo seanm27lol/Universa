@@ -1,6 +1,6 @@
 """Tests for the sealed router-loop runner (scripts/run_loop_sealed_1.py).
 
-Seed discipline: the sealed eval block 130001..130036 — like the v1 block
+Seed discipline: the sealed eval block 140001..140036 — like the v1 block
 30101..30136, the v2 block 60101..60136, the reserved block 80101..80136,
 the discovery block 90101..90136, the sheaf block 20101..20136, and the
 group block 40101..40136 — is NEVER instantiated in this suite: every
@@ -53,7 +53,7 @@ RESERVED_SEALED_BLOCK = range(80101, 80137)
 DISCOVERY_SEALED_BLOCK = range(90101, 90137)
 SHEAF_SEALED_BLOCK = range(20101, 20137)
 GROUP_SEALED_BLOCK = range(40101, 40137)
-LOOP_SEALED_BLOCK = range(130001, 130037)
+LOOP_SEALED_BLOCK = range(140001, 140037)
 
 
 # ---------------------------------------------------------------------------
@@ -85,7 +85,7 @@ def _seal_payload(output_path: str = "result.json", **overrides: object) -> dict
         "runner_sha256": "2" * 64,
         "code_manifest": {"src/universa/alpha.py": "3" * 64},
         "train_seed_block": {"first": 0, "last": 0},
-        "eval_seed_block": {"first": 130001, "last": 130036},
+        "eval_seed_block": {"first": 140001, "last": 140036},
         "no_preview_declaration": "no sealed seed was previewed before the seal",
         "primary_family": [
             _claim_object(definition) for definition in MODULE._CLAIM_DEFINITIONS
@@ -244,7 +244,7 @@ def _definition(claim_id: str) -> dict:
 
 
 def test_sealed_seed_block_declared_disjoint_and_never_instantiated() -> None:
-    assert MODULE.SEALED_EVAL_SEEDS == tuple(range(130001, 130037))
+    assert MODULE.SEALED_EVAL_SEEDS == tuple(range(140001, 140037))
     assert MODULE.TRAIN_SEEDS == ()
     assert not set(MODULE.SEALED_EVAL_SEEDS) & set(FIXTURE_SEEDS)
     assert not set(MODULE.SEALED_EVAL_SEEDS) & set(V1_SEALED_BLOCK)
@@ -333,7 +333,7 @@ def test_load_seal_accepts_a_valid_frozen_seal(tmp_path: Path) -> None:
     seal = MODULE._load_seal(tmp_path, "seal.json")
     assert seal["schema"] == "universa-seal/7"
     assert seal["train_seed_block"] == {"first": 0, "last": 0}
-    assert seal["eval_seed_block"] == {"first": 130001, "last": 130036}
+    assert seal["eval_seed_block"] == {"first": 140001, "last": 140036}
     assert [claim["id"] for claim in seal["primary_family"]] == list(
         MODULE.CLAIM_IDS
     )
@@ -414,13 +414,13 @@ def test_load_seal_rejects_wrong_seed_blocks(tmp_path: Path) -> None:
         MODULE._load_seal(tmp_path, "seal.json")
     _write_seal(
         tmp_path,
-        _seal_payload(eval_seed_block={"first": 130000, "last": 130036}),
+        _seal_payload(eval_seed_block={"first": 140000, "last": 140036}),
     )
     with pytest.raises(RuntimeError, match="eval_seed_block"):
         MODULE._load_seal(tmp_path, "seal.json")
     _write_seal(
         tmp_path,
-        _seal_payload(eval_seed_block={"first": 130001, "last": 130037}),
+        _seal_payload(eval_seed_block={"first": 140001, "last": 140037}),
     )
     with pytest.raises(RuntimeError, match="eval_seed_block"):
         MODULE._load_seal(tmp_path, "seal.json")
@@ -2236,7 +2236,7 @@ def test_design_record_declares_the_empty_train_block_and_caveat() -> None:
     design = MODULE._design_record()
     assert design["train_seed_block"] == {"first": 0, "last": 0}
     assert "no training occurred" in design["training"]
-    assert design["eval_seeds"] == {"first": 130001, "last": 130036}
+    assert design["eval_seeds"] == {"first": 140001, "last": 140036}
     assert design["procedure"]["num_observations"] == 16
     assert design["procedure"]["alarm_tol"] == 1e-9
     assert design["procedure"]["misfit_tol"] == CERT_TOL

@@ -180,45 +180,52 @@ value (any other value is a seal-validation failure) and must never
 instantiate a train seed: there are no train rows, no fit, and no
 train-side audits in this design.
 
-**Sealed eval block:** the 36 consecutive generator seeds
+**Sealed eval block (second, replacement):** the 36 consecutive generator seeds
 
 ```text
-130001, 130002, 130003, 130004, 130005, 130006, 130007, 130008, 130009,
-130010, 130011, 130012, 130013, 130014, 130015, 130016, 130017, 130018,
-130019, 130020, 130021, 130022, 130023, 130024, 130025, 130026, 130027,
-130028, 130029, 130030, 130031, 130032, 130033, 130034, 130035, 130036
+140001, 140002, 140003, 140004, 140005, 140006, 140007, 140008, 140009,
+140010, 140011, 140012, 140013, 140014, 140015, 140016, 140017, 140018,
+140019, 140020, 140021, 140022, 140023, 140024, 140025, 140026, 140027,
+140028, 140029, 140030, 140031, 140032, 140033, 140034, 140035, 140036
 ```
 
-At the time this protocol was drafted, this block was absent from the working
-tree and from all Git history (verified by a repository-wide word-boundary
-search over every commit; incidental digit collisions inside unrelated float
-strings of prior result artifacts are not seed uses, and no `"seed"` field or
-seed literal in the block exists anywhere), and no project run had
-instantiated or previewed any member **on any generator family or in any
-pipeline stage**. In particular, no one has built a loop, budget, switch, or
-2-complex instance, synthesized an observation, run the loop, run discovery,
-computed a commutation score, certificate residual, or map misfit, printed a
-dimension, smoke-tested, or debugged with any seed in the block. The block is
-disjoint from the v1 train block `10001..10200`, the v1 sealed eval block
-`30101..30136`, the v2 train block `50001..50200`, the v2 sealed eval block
-`60101..60136`, the 2-complex train block `70001..70200`, the 2-complex sealed
-eval block `80101..80136`, the discovery sealed eval block `90101..90136`,
-the sheaf train block `11001..11200`, the sheaf sealed eval block
-`20101..20136`, the group train block `21001..21200`, the group sealed eval
-block `40101..40136`, and every demo seed.
+At the time this amendment was drafted, this block was absent from the
+working tree and from all Git history (verified by a repository-wide
+word-boundary search over every commit; incidental digit collisions inside
+unrelated float strings of prior result artifacts are not seed uses, and no
+`"seed"` field or seed literal in the block exists anywhere), and no project
+run had instantiated or previewed any member **on any generator family or in
+any pipeline stage**. The block is disjoint from every train and eval block
+and every demo seed previously declared in this series.
 
-**Why this block and not `70101..70136` (declared).** An earlier draft of this
-protocol named `70101..70136` as the eval block. That block is numerically
-contained in the 2-complex experiment's train block `70001..70200`
-(`docs/08-router-2complex-seal.json`): those seeds were instantiated as
-2-complex-family train instances — a different structure family and task —
-before the loop experiment was designed. Under the series' strict no-preview
-standard (a sealed block must never have been instantiated in any dataset
-construction, for any purpose), a merely-declared containment is weaker than
-verified absence, so the block was discarded unopened and replaced with
-`130001..130036`, which is verified absent from every dataset construction in
-the repository's history. No member of `70101..70136` will be used in this
-experiment.
+**Block history, declared in full (the protocol's errata).**
+
+1. `70101..70136` — named in the first draft; discarded unopened because it
+   is numerically contained in the 2-complex experiment's unsealed train
+   block `70001..70200` (a declared-containment is weaker than verified
+   absence under the series' strict no-preview standard).
+2. `130001..130036` — the first sealed block, sealed at commit
+   `90ca3a66…` (commit B `db1737c7…`, pushed before instantiation). The
+   canonical run **failed at seed 130006** with status `design_failure`:
+   `certified loop pass failed: ValueError: need 0 <= prefix_dim <=
+   observed_dim`. The failed attempt is retained immutably at
+   `results/experiments/failures/router-loop-sealed-1.design_failure.json`
+   and no claims were computed. Diagnosis (without inspecting any
+   successful outcome): the stabilization rule in
+   `universa.discovery.discover_constraint` estimates the prefix rank and
+   the full rank with matrix-dependent tolerances (each matrix's own
+   `sigma_max`); a borderline singular value can be counted in the prefix
+   but not the full matrix, making `prefix_dim > observed_dim`, which the
+   `DiscoveryInsufficient` dataclass then refused to construct — a crash on
+   the refusal path, reached only after the stabilization rule had already
+   decided to refuse. The fix is behavior-preserving for every accept and
+   refuse decision: the dataclass invariant is relaxed from the false
+   ordering assumption to per-field nonnegativity, documented in
+   `src/universa/discovery.py`, with a regression test constructing the
+   exact tolerance inversion. Per the stop rules (a code change after a
+   partial run invalidates the seed block), `130001..130036` is **void for
+   claims** and will never be used in any experiment.
+3. `140001..140036` — the replacement, verified absent as above.
 
 The no-preview rule remains in force until commit B of §12 — the
 machine-readable seal record — is committed **and pushed to the private
@@ -778,7 +785,7 @@ The following order is mandatory:
    - `code_manifest`: the 18 per-file SHA-256 pairs of §2;
    - `train_seed_block`: exactly `{first: 0, last: 0}` — the documented
      empty-block sentinel of §3 (this experiment trains nothing);
-   - `eval_seed_block`: `{first: 130001, last: 130036}`;
+   - `eval_seed_block`: `{first: 140001, last: 140036}`;
    - `no_preview_declaration`: the renewed attestation of §3, including the
      discarded-block declaration recorded there;
    - `primary_family`: the four claims of §8 verbatim, as four claim objects

@@ -7,7 +7,7 @@ only — is evaluated on the graph-quotient switch family at the frozen
 exp4 sizes (``make_loop_instance(seed)`` =
 ``make_budget_instance(seed, 8, 14, 6, 3)``: ONE budget instance with
 two library views, the paired conditions) over the sealed eval seed
-block 130001..130036. Each eligible seed contributes THREE raw rows, one
+block 140001..140036. Each eligible seed contributes THREE raw rows, one
 per condition:
 
 * **in-library** — one :func:`universa.loop.run_loop` pass over the
@@ -158,7 +158,7 @@ DEFAULT_SEAL = "docs/20-router-loop-seal.json"
 SEAL_SCHEMA = "universa-seal/7"
 
 PROTOCOL_SHA256 = (
-    "e4965933a1b372a266c0768d52ab491b56232db01ad00aee6e11949e99dbf157"
+    "b9301292d0be5e813c6fc204f03f47b953cbd0e9d346bf4ab769a737ef1aeda9"
 )
 """Frozen fingerprint of the sealed protocol.
 
@@ -194,7 +194,7 @@ sealed block stays inert until preflight passes.
 # block and first > last encodes the empty set.
 TRAIN_SEEDS: tuple[int, ...] = ()
 TRAIN_SEED_BLOCK = {"first": 0, "last": 0}
-SEALED_EVAL_SEEDS = tuple(range(130001, 130037))  # 130001..130036
+SEALED_EVAL_SEEDS = tuple(range(140001, 140037))  # 140001..140036
 
 CONDITIONS = ("in-library", "out-of-library", "null-control")
 """The frozen per-seed conditions, in campaign build order."""

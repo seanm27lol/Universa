@@ -1,4 +1,4 @@
-# Structure-switching under seal: nine experiments
+# Structure-switching under seal: ten experiments
 
 Status: write-up, 2026-09-01. This document is the synthesis of the sealed
 experiment series recorded in `docs/01`–`27`. It introduces no new results

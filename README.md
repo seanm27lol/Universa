@@ -5,9 +5,17 @@ the nuances of each mathematical domain in domain-native data structures and
 *switch* between structures internally, transporting information along explicit
 maps and projecting onto each structure's consistent subspace.
 
-Sibling of [HOMYMOLY](https://github.com/seanm27lol/HOMYMOLY) (private), which
-supplies the motivating evidence and the audit methodology. Universa is a
-separate, private research repo; nothing here is a result yet.
+Sibling of [HOMYMOLY](https://github.com/seanm27lol/HOMYMOLY), which supplies
+the motivating evidence and the audit methodology.
+
+**Ten sealed experiments are complete.** 36 of 40 pre-registered claims are
+supported; the four that failed are reported as failed, with named seeds and
+decision chains. Every experiment ran under a two-commit ceremony — a frozen
+protocol and a machine-readable seal pushed before any declared seed was
+instantiated — and every result was independently recomputed from its retained
+raw rows. `docs/29-writeup.md` is the synthesis;
+`results/experiments/` holds the immutable artifacts, including two retained
+failures.
 
 ## The thesis in one paragraph
 

@@ -121,6 +121,11 @@ Move fast here; this is support, not the thesis.
   end-to-end. State plainly that the generic arm cannot acquire *by
   construction*, so that leg is a design constant, not a finding.
 
+**Asset: `docs/figures/arms-by-condition.svg`.** Four arms across three
+conditions, with the two structural zeros drawn as explicit labeled zeros.
+The caption does the honest work: those zeros are properties of the design,
+declared in the protocol before any data — not training failures.
+
 ## 5. The frontier — the figure (~600 words)
 
 **Asset: `docs/figures/alarm-frontier.svg`** (PNG fallback beside it).
@@ -135,6 +140,16 @@ library fits at all. It has exactly one knob. Three sealed settings:
 - **loop-v4**, price both errors equally: 97.2% / 97.2%, −1/36, 98.15%
   end-to-end. **It dominates loop-v2** — same accuracy, same harm, +13.9
   points of acquisition.
+
+**Name the rules — they are textbook, and saying so is what makes the rest
+credible** (see `docs/34-related-work.md` §3). loop-v3's rule is
+**Neyman–Pearson classification**: minimize one error subject to a hard
+bound on the other. loop-v4's is **Chow's rule** — cost-sensitive rejection
+at explicit costs. The frontier is a detection-error tradeoff curve, the
+same object as an ROC/DET plot. Presenting either as a novel method would
+be the fastest way to lose a reader who knows the literature; presenting
+them by name and showing what happened when each was *sealed and measured
+inside a working system* is the actual contribution.
 
 The lesson generalizes past this project: **a one-sided bound is a choice
 about which error to pay, and it is the wrong instrument when your costs are
@@ -190,6 +205,10 @@ from quietly changing the claim.
 **Ready:**
 - `docs/figures/alarm-frontier.svg` / `.png` — the money plot, coordinates
   recomputed from the sealed artifacts by `scripts/make_frontier_figure.py`.
+- `docs/figures/arms-by-condition.svg` — §4's figure, bar heights recomputed
+  from the retained correctness bits by `scripts/make_arms_figure.py`.
+- `docs/34-related-work.md` — first-pass survey across all five areas, with
+  the positioning consequences spelled out.
 - All numbers: `docs/29-writeup.md` (the synthesis) and `docs/01`–`32`.
 
 **Needed before publishing:**
@@ -197,12 +216,15 @@ from quietly changing the claim.
    Linking a private repo undercuts it. Either open `Universa` (and decide
    about `HOMYMOLY`, which supplies the motivating result) or soften every
    "auditable" sentence to "auditable to reviewers on request."
-2. **A second figure** would help §4 — per-condition accuracy across the
-   four arms, showing the generic model failing structurally. Not yet built.
-3. **Related work** — the blog can gesture where the arXiv version must be
-   thorough: MoE/Switch routing, sheaf neural networks and topological deep
-   learning, neurosymbolic architectures, and preregistration in ML. I
-   cannot write this from the repo; it needs a literature pass.
+2. **Absorb the related-work consequences** (`docs/34` §3). The alarm
+   sections must name Neyman–Pearson and Chow rather than presenting the
+   calibration rules as novel. This is a rewrite of §5's framing, already
+   applied to this outline but not yet to `docs/29-writeup.md` or the
+   results records.
+3. **Close the citation gaps** listed at the end of `docs/34`: Chow (1970)
+   primary, the foundational neural sheaf diffusion paper, DreamCoder, plus
+   unsearched areas (conformal prediction for the admission gate,
+   architecture search as an alternative framing for "switching").
 4. **A title.** Candidates: "Ten sealed experiments", "What pre-registration
    costs, and what it buys", "The four claims that failed".
 

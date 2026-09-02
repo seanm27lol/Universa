@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 540" width="900" height="540" font-family="system-ui,-apple-system,&quot;Segoe UI&quot;,sans-serif" role="img" aria-label="Per-condition accuracy for four arms across three conditions.">
+<rect width="900" height="540" fill="#fcfcfb"/>
+<text x="92" y="34" font-size="19" font-weight="600" fill="#0b0b0b">Two arms can never acquire a missing structure — by construction</text>
+<text x="92" y="56" font-size="13.5" fill="#52514e">Accuracy per condition, 36 sealed seeds, loop-v4. The two zeros are design constants, not training failures.</text>
+<rect x="92" y="72" width="11" height="11" rx="2.5" fill="#2a78d6"/>
+<text x="109" y="82" font-size="12.5" fill="#52514e">full architecture</text>
+<rect x="237.0" y="72" width="11" height="11" rx="2.5" fill="#eb6834"/>
+<text x="254.0" y="82" font-size="12.5" fill="#52514e">routing only</text>
+<rect x="347.0" y="72" width="11" height="11" rx="2.5" fill="#1baf7a"/>
+<text x="364.0" y="82" font-size="12.5" fill="#52514e">always discover</text>
+<rect x="478.0" y="72" width="11" height="11" rx="2.5" fill="#eda100"/>
+<text x="495.0" y="82" font-size="12.5" fill="#52514e">no architecture</text>
+<line x1="92" y1="404.0" x2="852" y2="404.0" stroke="#c3c2b7" stroke-width="1.5"/>
+<text x="80" y="408.0" font-size="12" fill="#898781" text-anchor="end" font-variant-numeric="tabular-nums">0%</text>
+<line x1="92" y1="332.5" x2="852" y2="332.5" stroke="#e1e0d9" stroke-width="1"/>
+<text x="80" y="336.5" font-size="12" fill="#898781" text-anchor="end" font-variant-numeric="tabular-nums">25%</text>
+<line x1="92" y1="261.0" x2="852" y2="261.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="80" y="265.0" font-size="12" fill="#898781" text-anchor="end" font-variant-numeric="tabular-nums">50%</text>
+<line x1="92" y1="189.5" x2="852" y2="189.5" stroke="#e1e0d9" stroke-width="1"/>
+<text x="80" y="193.5" font-size="12" fill="#898781" text-anchor="end" font-variant-numeric="tabular-nums">75%</text>
+<line x1="92" y1="118.0" x2="852" y2="118.0" stroke="#e1e0d9" stroke-width="1"/>
+<text x="80" y="122.0" font-size="12" fill="#898781" text-anchor="end" font-variant-numeric="tabular-nums">100%</text>
+<rect x="92.0" y="125.9" width="45.8" height="278.1" rx="4" fill="#2a78d6"/>
+<rect x="92.0" y="398.0" width="45.8" height="6.0" fill="#2a78d6"/>
+<text x="114.9" y="117.9" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="400" font-variant-numeric="tabular-nums">97%</text>
+<rect x="139.8" y="125.9" width="45.8" height="278.1" rx="4" fill="#eb6834"/>
+<rect x="139.8" y="398.0" width="45.8" height="6.0" fill="#eb6834"/>
+<text x="162.8" y="117.9" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="400" font-variant-numeric="tabular-nums">97%</text>
+<rect x="187.7" y="118.0" width="45.8" height="286.0" rx="4" fill="#1baf7a"/>
+<rect x="187.7" y="398.0" width="45.8" height="6.0" fill="#1baf7a"/>
+<text x="210.6" y="110.0" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="400" font-variant-numeric="tabular-nums">100%</text>
+<rect x="235.5" y="237.2" width="45.8" height="166.8" rx="4" fill="#eda100"/>
+<rect x="235.5" y="398.0" width="45.8" height="6.0" fill="#eda100"/>
+<text x="258.4" y="229.2" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="400" font-variant-numeric="tabular-nums">58%</text>
+<text x="186.7" y="430.0" font-size="13.5" font-weight="600" fill="#0b0b0b" text-anchor="middle">in-library</text>
+<text x="186.7" y="448.0" font-size="12" fill="#898781" text-anchor="middle">the structure is in the library</text>
+<rect x="377.3" y="125.9" width="45.8" height="278.1" rx="4" fill="#2a78d6"/>
+<rect x="377.3" y="398.0" width="45.8" height="6.0" fill="#2a78d6"/>
+<text x="400.3" y="117.9" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="400" font-variant-numeric="tabular-nums">97%</text>
+<line x1="425.2" y1="404.0" x2="471.0" y2="404.0" stroke="#eb6834" stroke-width="3"/>
+<text x="448.1" y="396.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle" font-weight="600" font-variant-numeric="tabular-nums">0%</text>
+<rect x="473.0" y="118.0" width="45.8" height="286.0" rx="4" fill="#1baf7a"/>
+<rect x="473.0" y="398.0" width="45.8" height="6.0" fill="#1baf7a"/>
+<text x="495.9" y="110.0" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="400" font-variant-numeric="tabular-nums">100%</text>
+<line x1="520.8" y1="404.0" x2="566.7" y2="404.0" stroke="#eda100" stroke-width="3"/>
+<text x="543.8" y="396.0" font-size="11.5" fill="#0b0b0b" text-anchor="middle" font-weight="600" font-variant-numeric="tabular-nums">0%</text>
+<text x="472.0" y="430.0" font-size="13.5" font-weight="600" fill="#0b0b0b" text-anchor="middle">out-of-library</text>
+<text x="472.0" y="448.0" font-size="12" fill="#898781" text-anchor="middle">the structure is withheld</text>
+<rect x="662.7" y="118.0" width="45.8" height="286.0" rx="4" fill="#2a78d6"/>
+<rect x="662.7" y="398.0" width="45.8" height="6.0" fill="#2a78d6"/>
+<text x="685.6" y="110.0" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="400" font-variant-numeric="tabular-nums">100%</text>
+<rect x="710.5" y="118.0" width="45.8" height="286.0" rx="4" fill="#eb6834"/>
+<rect x="710.5" y="398.0" width="45.8" height="6.0" fill="#eb6834"/>
+<text x="733.4" y="110.0" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="400" font-variant-numeric="tabular-nums">100%</text>
+<rect x="758.3" y="118.0" width="45.8" height="286.0" rx="4" fill="#1baf7a"/>
+<rect x="758.3" y="398.0" width="45.8" height="6.0" fill="#1baf7a"/>
+<text x="781.2" y="110.0" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="400" font-variant-numeric="tabular-nums">100%</text>
+<rect x="806.2" y="149.8" width="45.8" height="254.2" rx="4" fill="#eda100"/>
+<rect x="806.2" y="398.0" width="45.8" height="6.0" fill="#eda100"/>
+<text x="829.1" y="141.8" font-size="11.5" fill="#52514e" text-anchor="middle" font-weight="400" font-variant-numeric="tabular-nums">89%</text>
+<text x="757.3" y="430.0" font-size="13.5" font-weight="600" fill="#0b0b0b" text-anchor="middle">null control</text>
+<text x="757.3" y="448.0" font-size="12" fill="#898781" text-anchor="middle">there is no structure</text>
+<text x="92" y="490" font-size="12.5" fill="#52514e">Routing-only has no discovery channel and the no-architecture model has no certified synthesis channel, so neither can</text>
+<text x="92" y="508" font-size="12.5" fill="#52514e">ever acquire a withheld structure — that leg is a property of the design, and the protocol declares it before any data.</text>
+<text x="92" y="532" font-size="12" fill="#898781">The full architecture reaches this with 71 discovery calls; always-discover needs 108.</text>
+</svg>

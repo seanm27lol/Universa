@@ -19,6 +19,15 @@ diffusion that handles heterophily and oversmoothing better than isotropic
 message passing. This is the same object as `universa.sheaves`, used for the
 same reason.
 
+- **Bodnar, Di Giovanni, Chamberlain, Liò & Bronstein, *Neural Sheaf
+  Diffusion: A Topological Perspective on Heterophily and Oversmoothing in
+  GNNs*, NeurIPS 2022** — https://arxiv.org/abs/2202.04579 (the foundational
+  paper; code at https://github.com/twitter-research/neural-sheaf-diffusion).
+  Its framing is the one to engage directly: a standard GNN implicitly
+  assumes a *trivial* underlying sheaf, and the choice of sheaf is what the
+  Laplacian, the diffusion, and the model inherit. Universa's position is the
+  next question along — if the sheaf is a choice, which one, and what if none
+  of the available ones fit?
 - Barbero et al., *Sheaf Neural Networks with Connection Laplacians* —
   https://arxiv.org/pdf/2206.08702
 - Bronstein, *Neural Sheaf Diffusion for deep learning on graphs* (overview)
@@ -98,9 +107,13 @@ expected loss where misclassification and abstention carry explicit costs.
 Equal costs collapsing to balanced-accuracy maximization is the elementary
 special case.
 
-- Chow, *On optimum recognition error and reject tradeoff* (1970) — the
-  origin; see also *Classification with reject option* —
-  https://www.researchgate.net/publication/227705183_Classification_with_reject_option
+- **C. K. Chow, *On optimum recognition error and reject tradeoff*, IEEE
+  Transactions on Information Theory, vol. IT-16, no. 1, pp. 41–46, January
+  1970**, doi:10.1109/TIT.1970.1054406 —
+  https://ieeexplore.ieee.org/document/1054406/ · dblp:
+  https://dblp.org/rec/journals/tit/Chow70.html. The origin of the optimum
+  rejection rule and of the **error–reject curve**, which is the standard
+  name for what the frontier figure plots. Use that name.
 - *Classification with Rejection Based on Cost-sensitive Classification* —
   https://arxiv.org/pdf/2010.11748
 - Cortes, DeSalvo & Mohri, *Boosting with Abstention* —
@@ -134,9 +147,13 @@ alarm is, mechanically, an OOD detector over library fit.
    cost-sensitive one *inside a working system*, with all three operating
    points published including the two that failed their claims. The rules
    are textbook; running them under seal and reporting the failures is not.
-3. **The frontier plot is a detection-error tradeoff curve.** Say so.
-   Relate it to the ROC/DET framing rather than presenting it as a bespoke
-   construction. This strengthens it: readers already know how to read it.
+3. **The frontier plot is an error–reject curve** (Chow 1970), the standard
+   object for exactly this tradeoff, and a cousin of the ROC/DET framing.
+   Name it. This strengthens the figure rather than weakening it: readers
+   already know how to read one, and the novelty is that these three points
+   are *sealed* rather than swept post hoc — a swept curve tells you what
+   the tradeoff looks like, three pre-registered points tell you what you
+   would have committed to.
 4. **The equal-cost identity is elementary.** `FQ + FA = 2 − 2·balanced
    accuracy` should be presented as "declared up front so no one thinks we
    discovered it late," not as an insight. The protocol already frames it
@@ -153,20 +170,53 @@ alarm is, mechanically, an OOD detector over library fit.
 The discovery head — propose a new certified structure, gate it for
 novelty, admit it to the library — is library learning with a certificate.
 
+- **Ellis, Wong, Nye, Sablé-Meyer, Morales, Hewitt, Cary, Solar-Lezama &
+  Tenenbaum, *DreamCoder: Bootstrapping Inductive Program Synthesis with
+  Wake-Sleep Library Learning*, PLDI 2021** — https://arxiv.org/abs/2006.08381
+  · https://dl.acm.org/doi/10.1145/3453483.3454080. Extended version:
+  *DreamCoder: growing generalizable, interpretable knowledge with
+  wake–sleep Bayesian program learning*, Phil. Trans. R. Soc. A 381(2251) —
+  https://royalsocietypublishing.org/rsta/article/381/2251/20220050/112456/
+  DreamCoder-growing-generalizable-interpretable. The direct analogue: a
+  library that grows as new abstractions are discovered and admitted.
+- *LILO: Learning Interpretable Libraries by Compressing and Documenting
+  Code* — https://arxiv.org/pdf/2310.19791
 - *Neurosymbolic Programming* (survey) —
   https://www.researchgate.net/publication/356895111_Neurosymbolic_Programming
 - *Towards Modular Algorithm Induction* — https://arxiv.org/pdf/2003.04227
 - *Unsupervised Learning of Neurosymbolic Encoders* — https://arxiv.org/pdf/2107.13132
-- Routing networks (a router selecting function blocks, trained with RL) and
-  DreamCoder-style library learning are the reference points; both are
-  covered in the neurosymbolic survey above.
 
 **What is left over.** The admission gate is *certified* — a candidate is
 admitted only if its constraint certifies (SVD residual) and is genuinely
 novel (projector distance), and the sealed experiment measured 100% refusal
-on structure-free controls. Neurosymbolic library learning generally admits
-by likelihood or description length, not by a certificate with a refusal
-guarantee. That contrast is worth a paragraph.
+on structure-free controls. DreamCoder-style library learning admits by
+description length / Bayesian program-prior compression, not by a
+certificate with a refusal guarantee. That contrast is worth a paragraph.
+
+**The strengthening path — conformal novelty detection.** There is now a
+literature giving *distribution-free FDR guarantees* on exactly the
+admission decision Universa makes with a deterministic certificate. This is
+the natural next rigour step, and it should appear in future work rather
+than be discovered by a reviewer:
+
+- *Adaptive novelty detection with false discovery rate guarantee* —
+  https://arxiv.org/pdf/2208.06685
+- *Full-conformal novelty detection* — https://arxiv.org/html/2501.02703
+- *Conformal novelty detection with false discovery rate control at the
+  boundary* — https://arxiv.org/abs/2601.02610
+- *Classification with Reject Option: Distribution-free Error Guarantees via
+  Conformal Prediction* — https://arxiv.org/abs/2506.21802 (bridges the
+  alarm and the admission gate: turns a conformal predictor into a
+  reject-option classifier with a proven error rate, and plots **error–reject
+  curves** to set an acceptable error or reject rate — the same object as
+  the frontier figure, arrived at from the guarantee side)
+
+The honest comparison: Universa's gate is *exact but distributional-
+assumption-free only because it is deterministic* — it certifies an
+algebraic property of the candidate, and the sealed experiment measured its
+refusal rate at 100% on 36 null controls. Conformal methods instead give a
+finite-sample FDR guarantee under exchangeability. These are different kinds
+of assurance and the paper should say which it is claiming.
 
 ## 5. Preregistration and reproducibility in ML
 
@@ -204,17 +254,54 @@ position against the simulation-studies template specifically and say what
 the ceremony adds beyond it (hash-pinned code manifests, seed-block absence
 proofs, and the retained-failure discipline).
 
+## 6. Switching itself — conditional computation
+
+The word "switching" has a home: **dynamic neural networks / conditional
+computation**, where the architecture activated depends on the input.
+Universa's router is a sample-wise dynamic model in this taxonomy, and the
+paper should place it there rather than inventing vocabulary.
+
+- Han, Huang, Song, Yang, Wang & Wang, *Dynamic Neural Networks: A Survey* —
+  https://arxiv.org/abs/2102.04906 (the standard taxonomy: sample-wise,
+  spatial-wise, temporal-wise; Universa is squarely sample-wise)
+- *Conditional computation in neural networks: principles and research
+  trends* — https://arxiv.org/html/2403.07965v1
+- *Dynamic neural networks: advantages and challenges*, National Science
+  Review — https://academic.oup.com/nsr/article/11/8/nwae088/7624214
+
+**What is left over.** Dynamic networks switch among *learned* modules
+chosen for efficiency — gating, early exit, adaptive depth. The selection is
+justified by the loss, and there is nothing to verify. Universa switches
+among *structures with certified constraint sets*, so a switch is checkable
+after the fact and a wrong switch has a residual signature. Note also the
+motive differs: conditional computation is overwhelmingly an efficiency
+literature (allocate compute where needed); Universa's switching is a
+correctness mechanism, and the efficiency result (71 discovery calls versus
+108) is a side effect rather than the goal. Say that explicitly — a reviewer
+from this field will otherwise expect FLOPs tables.
+
 ---
+
+## Gaps closed since the first pass
+
+All four citation gaps from the first pass are now closed with primary
+sources: Chow 1970 (§3), Bodnar et al. NeurIPS 2022 (§1), DreamCoder PLDI
+2021 (§4), and the conformal-novelty thread (§4). The two unsearched areas
+are done: conformal prediction for the admission gate (§4) and the framing
+for "switching," which turned out to be conditional computation rather than
+architecture search (§6).
 
 ## Gaps still open
 
-- **Chow (1970) primary reference** not yet pinned to a stable citation;
-  currently reached through secondary sources.
-- **Bodnar/Hansen neural sheaf diffusion** — the foundational SNN paper is
-  cited here only through Bronstein's overview and the Connection Laplacians
-  paper; the original needs a direct citation.
-- **DreamCoder** — named from memory of the neurosymbolic survey rather than
-  fetched; needs its own citation before it appears in a draft.
-- **No search done yet** on: conformal prediction for the admission gate
-  (likely relevant to certified novelty), and on structure/architecture
-  search as an alternative framing for "switching."
+- **No citation has been read in full.** Everything here rests on abstracts,
+  overviews, and search summaries. Before any claim of the form "X does not
+  do Y" reaches a draft, the primary source needs reading — that class of
+  claim is exactly what referees check first.
+- **No positioning yet against preregistered-only workshop papers**
+  specifically; the preregistration literature (§5) is about the practice,
+  not about worked ML examples, and a direct comparison to whatever those
+  workshops produced would sharpen the methodology claim.
+- **The efficiency framing is unexamined.** If the paper engages the
+  conditional-computation literature (§6), it inherits an expectation of
+  cost accounting that the sealed experiments never measured — wall times
+  are recorded as descriptive metadata only, never claim-tested.

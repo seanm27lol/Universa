@@ -315,8 +315,20 @@ experiment 10 prices both at 1.0 and drops the constraint — declaring up
 front that at equal costs this rule **is** unconstrained balanced-accuracy
 maximization, since `FQ + FA = 2 − 2·balanced_accuracy` exactly.
 
+**Both rules are textbook, and the paper says so** (`docs/34-related-work.md`
+§3). Loop-v3's is **Neyman–Pearson classification** — minimize one error
+subject to a hard bound on the other. Loop-v4's is **Chow's rule** (1970),
+cost-sensitive rejection at explicit costs, with the equal-cost collapse as
+its elementary special case. The alarm itself is a learned rejection gate,
+and bounding the false-quiet rate is standard OOD thresholding practice.
+None of that is a contribution. What is uncommon is running the two rules
+under seal, inside a working system, and publishing all three operating
+points — including the two whose claims failed.
+
 The calibration moved the threshold off the constraint (0.8897 → 0.5307)
 and cut the train false-alarm rate from 41% to 4.25%.
+
+![Per-condition accuracy across the four arms; the two zeros are structural](figures/arms-by-condition.svg)
 
 | condition | arch-full-v4 | generic | routing-only | discovery-only |
 |---|---:|---:|---:|---:|
@@ -330,11 +342,19 @@ failed** — all supported. h4 fails again, at exactly −1/36 (seed 230011).
 
 ### The frontier
 
+![The alarm's error–reject curve across three sealed operating points](figures/alarm-frontier.svg)
+
 | operating point | threshold | out-of-library acquisition | in-library | harm |
 |---|---:|---:|---:|---:|
 | loop-v2 (simplest alarm) | 0.5 | 83.3% | 97.2% | −1/36 |
 | loop-v3 (bounded false-quiet) | 0.8897 | **100%** | 61.1% | −14/36 |
 | loop-v4 (cost-aware, 1:1) | 0.5307 | 97.2% | 97.2% | −1/36 |
+
+This is an **error–reject curve** in Chow's sense, and naming it that way is
+the point: readers already know how to read one. What differs from the usual
+presentation is that these three points are *sealed* rather than swept post
+hoc. A swept curve tells you what the tradeoff looks like; three
+pre-registered points tell you what you would have committed to.
 
 **Loop-v4 dominates loop-v2** — same in-library accuracy, same −1/36 harm,
 +13.9 pts of acquisition — so the frontier was not merely traversed, it was
@@ -356,6 +376,12 @@ credit is forfeited. A bounded-harm claim against always-discovering may be
 unwinnable while the alarm is learned and always-discovering is perfect
 in-library by construction. That is a statement about the claim's design,
 not a reinterpretation of its outcome.
+
+In the selective-classification vocabulary this is the **coverage/risk
+tradeoff**: always-discovering is the full-coverage arm, and the ceiling on
+the accepted subset is exactly what h4 was written to bound. Naming it does
+not change the frozen outcome; it makes the diagnosis a recognizable result
+rather than an anecdote.
 
 The architecture's advantage over the no-architecture model survives both
 designs (h1 supported in both), as does the discovery head's contribution
@@ -404,9 +430,29 @@ sharper than what it answered:
 - **The other three structure families have no loop experiment at all.**
   The route-or-discover loop is sealed only on graph quotients; the sweep
   that made the router result convincing has not been run for the loop.
+- **The admission gate could carry a distribution-free guarantee.** It
+  currently gives a deterministic algebraic certificate, measured at 100%
+  refusal on 36 null controls. Conformal novelty detection offers
+  finite-sample FDR control over the same decision. Those are different
+  kinds of assurance, and pairing them is the obvious rigour step
+  (`docs/34-related-work.md` §4).
 
 Any of these is a new sealed experiment on new verified-absent seeds, never
 a retune of a completed one.
+
+## Where this sits
+
+`docs/34-related-work.md` is the survey. The short version: the chain-complex
+format is shared ground with topological deep learning and sheaf neural
+networks — the switching and the discovery are the claim, not the format;
+the router is Switch-style MoE and is presented as borrowed; the alarm's two
+calibration rules are Neyman–Pearson and Chow; the discovery head is library
+learning with a certificate instead of a description-length prior; and the
+switching itself belongs to the conditional-computation taxonomy, with the
+difference that a switch here is checkable rather than only trained. The
+methodology has the thinnest competition: the preregistration literature
+argues for the practice and supplies templates, but worked series at this
+granularity are scarce.
 
 ---
 

@@ -187,3 +187,30 @@ Declared scope: the graph-quotient family at frozen sizes under the
 no-anchor degraded regime; the generic arm is architecture-free by
 construction; the v3→v4 comparison carries the train-block confound of §5;
 and every failed claim is reported frozen and never reinterpreted.
+
+## 8. Addendum (2026-09-02): vocabulary, added after the fact
+
+Added after this record was committed, and marked as such. **It changes no
+claim, no number, and no outcome** — it supplies the standard names for
+things this record described in its own words, following the literature
+survey in `docs/34-related-work.md` §3:
+
+- The calibration rule of this experiment is **Chow's rule** (C. K. Chow,
+  *On optimum recognition error and reject tradeoff*, IEEE Trans. Inf.
+  Theory IT-16(1):41–46, 1970) — cost-sensitive rejection at explicit
+  costs. The equal-cost collapse to balanced accuracy that §1 declares up
+  front is its elementary special case.
+- Loop-v3's rule is **Neyman–Pearson classification** — minimize one error
+  subject to a hard bound on the other.
+- The alarm is a **learned rejection gate**; bounding its false-quiet rate
+  is standard out-of-distribution thresholding practice.
+- The three-point frontier of §5 is an **error–reject curve** in Chow's
+  sense.
+- h4's diagnosis in §7 is the **coverage/risk tradeoff** of selective
+  classification: always-discovering is the full-coverage arm, and the
+  ceiling on the accepted subset is what h4 was written to bound.
+
+Neither calibration rule is novel, and this record should not be read as
+claiming otherwise. What the experiment contributes is the sealed
+measurement of both inside a working system, with all outcomes published
+including the two claims that failed.
